@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+
+
+    /* Design System – Modern Minimalist */
+    --color-primary: #2563EB;
+    --color-primary-foreground: #ffffff;
+    --color-muted: #F1F5F9;
+    --color-muted-foreground: #64748B;
+    --color-border: #E2E8F0;
+    --color-surface: #FFFFFF;
+    --color-background: #F8FAFC;
+    --color-text: #0F172A;
+    --color-text-secondary: #475569;
+    --color-success: #16A34A;
+    --color-warning: #D97706;
+    --color-danger: #DC2626;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+
+    --color-primary: #3B82F6;
+    --color-primary-foreground: #ffffff;
+    --color-muted: #1E293B;
+    --color-muted-foreground: #94A3B8;
+    --color-border: #334155;
+    --color-surface: #0F172A;
+    --color-background: #020617;
+    --color-text: #F8FAFC;
+    --color-text-secondary: #CBD5E1;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-[--color-background] text-[--color-text] antialiased;
+    font-size: 1.15rem; /* Increased from 1.05rem */
+    line-height: 1.6; /* Slight increase for better readability with larger font */
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(211, 211, 211, 0.2) 25%,
+    rgba(211, 211, 211, 0.3) 50%,
+    rgba(211, 211, 211, 0.2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* ========================================
+   COMPACT UI SYSTEM — Global Overrides
+   Tightens spacing, radius, typography
+   across all pages for a dense, modern feel.
+   ======================================== */
+
+@layer utilities {
+  /* Page-level spacing normalization */
+  .space-y-8 > * + * { margin-top: 1.25rem !important; }   /* 20px instead of 32px */
+  .space-y-6 > * + * { margin-top: 1rem !important; }      /* 16px instead of 24px */
+
+  /* Tighten oversized paddings used on page wrappers */
+  .pb-12 { padding-bottom: 2rem !important; }
+}
+
+@layer components {
+  /* ---- Table cells: px-8 py-6 → compact ---- */
+  table th { padding: 0.625rem 1rem !important; }  /* py-2.5 px-4 */
+  table td { padding: 0.5rem 1rem !important; }    /* py-2 px-4 */
+
+  /* ---- Page headings: text-3xl → text-2xl ---- */
+  h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
+
+  /* ---- Smaller empty-state containers ---- */
+  .border-dashed { padding: 2.5rem 1.5rem !important; }
+
+  /* ---- Compact alert/info banners ---- */
+  .bg-red-50, .bg-emerald-50, .bg-amber-50 {
+    padding: 0.625rem 1rem !important;
+    border-radius: 0.75rem !important;
+  }
+}
+

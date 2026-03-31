@@ -1,0 +1,11 @@
+id:
+  hello: "Halo Dunia"
+  auth:
+    login_success: "Login berhasil"
+    login_failed: "Email atau password salah"
+    register_success: "Registrasi berhasil"
+  books:
+    not_found: "Buku tidak ditemukan"
+  borrowings:
+    success: "Berhasil meminjam buku"
+    failed: "Gagal meminjam buku"

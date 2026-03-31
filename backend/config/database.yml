@@ -1,0 +1,23 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  # For details on connection pooling, see Rails configuration guide
+  # https://guides.rubyonrails.org/configuring.html#database-pooling
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: <%= ENV.fetch("DB_USERNAME") { 'julio' } %>
+  password: <%= ENV.fetch("DB_PASSWORD") { '' } %>
+  # host: <%= ENV.fetch("DB_HOST") { 'localhost' } %>
+
+development:
+  <<: *default
+  database: clever_archives_development
+
+test:
+  <<: *default
+  database: clever_archives_test
+
+production:
+  <<: *default
+  database: clever_archives_production
+  username: clever_archives
+  password: <%= ENV["CLEVER_ARCHIVES_DATABASE_PASSWORD"] %>

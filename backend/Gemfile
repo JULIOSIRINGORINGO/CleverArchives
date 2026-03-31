@@ -1,0 +1,42 @@
+source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+
+ruby '3.3.0'
+
+gem 'rails', '~> 7.1.0'
+gem 'pg', '~> 1.1'
+gem 'puma', '~> 6.0'
+gem 'tzinfo-data', platforms: %i[ mswin mingw x64_mingw jruby ]
+gem 'bootsnap', require: false
+
+# Multi-tenancy & Auth
+gem 'devise'
+gem 'devise-jwt'
+gem 'pundit'
+gem 'jwt'
+gem 'pagy', '~> 6.0'
+
+# Search & Background Jobs
+gem 'meilisearch-rails'
+gem 'sidekiq'
+gem 'redis'
+gem 'connection_pool', '< 3.0'
+
+# API & Serialization
+gem 'active_model_serializers'
+gem 'rack-cors'
+
+# Digital Archive specifics
+gem 'pdf-reader'
+gem 'epub-parser'
+
+group :development, :test do
+  gem 'debug', platforms: %i[ mswin mingw x64_mingw ]
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
+  gem 'faker'
+end
+
+group :development do
+  gem 'web-console'
+end
