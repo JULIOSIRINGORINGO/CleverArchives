@@ -6,12 +6,14 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { MaintenanceBanner } from '@/components/MaintenanceBanner';
+import { GlobalDataPrefetcher } from '@/components/layout/GlobalDataPrefetcher';
 
 export default function StandardLayout({ children }: { children: React.ReactNode }) {
   const { sidebarCollapsed } = useUIStore();
 
   return (
     <AuthGuard>
+      <GlobalDataPrefetcher />
       <div className="flex h-screen bg-[--color-background] text-[--color-text] overflow-hidden fixed inset-0">
         <Sidebar />
         <div className={cn(
@@ -20,10 +22,8 @@ export default function StandardLayout({ children }: { children: React.ReactNode
         )}>
           <MaintenanceBanner />
           <Navbar />
-          <main className="flex-1 px-4 md:px-6 pt-0 pb-0 overflow-hidden">
-            <div className="w-full h-full flex flex-col">
-              {children}
-            </div>
+          <main className="flex-1 overflow-hidden relative">
+            {children}
           </main>
         </div>
       </div>

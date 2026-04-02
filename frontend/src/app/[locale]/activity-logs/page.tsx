@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiService } from "@/services/api";
+import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
   History, User, Activity, Calendar, 
   Search, Filter, ChevronLeft, ChevronRight,
@@ -27,8 +28,16 @@ export default function ActivityLogsPage() {
   const t = useTranslations("ActivityLogs");
   const locale = useLocale();
   const { user, loading: authLoading } = useAuth();
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const { cache } = useSWRConfig();
+  
+  // Try to get initial logs from cache to avoid flicker
+  const initialKey = unstable_serialize(['/activity_logs', null, '', '', '', '']);
+  const cachedLogs = cache.get(initialKey)?.data;
+  const initialLogsData = cachedLogs?.logs || cachedLogs || [];
+
+  const [logs, setLogs] = useState<LogEntry[]>(Array.isArray(initialLogsData) ? initialLogsData : []);
+  const [loading, setLoading] = useState(!cachedLogs);
   const searchParams = useSearchParams();
   const tenantId = searchParams.get("tenant_id");
   const [filter, setFilter] = useState({ 
@@ -38,23 +47,47 @@ export default function ActivityLogsPage() {
     tenant_id: tenantId || ""
   });
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      fetchLogs();
+  const [lastSync, setLastSync] = useState<string | null>(null);
+
+  // useSWR for activity logs
+  const { mutate: mutateLogs } = useSWR(
+    !authLoading && user ? ['/activity_logs', lastSync, filter.action_type, filter.from, filter.to, filter.tenant_id] : null,
+    () => apiService.auditLogs.list({ 
+      ...filter,
+      updated_after: lastSync || ''
+    }),
+    {
+      refreshInterval: 15000,
+      revalidateOnFocus: true,
+      onSuccess: (newData) => {
+        if (newData?.logs) {
+          setLogs(prev => {
+            const newItems = newData.logs;
+            if (newItems.length === 0) return prev;
+
+            const merged = [...prev];
+            newItems.forEach((item: LogEntry) => {
+              const idx = merged.findIndex(l => l.id === item.id);
+              if (idx > -1) merged[idx] = item;
+              else merged.unshift(item);
+            });
+            return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          });
+          setLastSync(new Date().toISOString());
+        }
+        setLoading(false);
+      }
     }
-  }, [user, authLoading]);
+  );
 
   const fetchLogs = async () => {
-    setLoading(true);
-    try {
-      const res = await apiService.auditLogs.list(filter);
-      setLogs(res.logs || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    mutateLogs();
   };
+
+  useEffect(() => { 
+    setLastSync(null);
+    // No-clear: we leave the old data shown until SWR gets a fresh list for the new filter.
+  }, [filter.action_type, filter.from, filter.to, filter.tenant_id]);
 
   const getActionIcon = (action: string) => {
     if (action.includes('login')) return <Shield size={16} className="text-emerald-500" />;

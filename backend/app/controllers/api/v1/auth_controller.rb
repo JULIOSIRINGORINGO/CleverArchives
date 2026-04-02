@@ -39,7 +39,7 @@ module Api
         redirect_url = if Rails.env.production?
           "https://#{subdomain}.cleverarchives.com/auth/callback?token=#{token}"
         else
-          "http://#{subdomain}.lvh.me:3000/auth/callback?token=#{token}"
+          "http://#{subdomain}.localhost:3000/auth/callback?token=#{token}"
         end
 
         render json: {

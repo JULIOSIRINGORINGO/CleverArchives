@@ -17,18 +17,18 @@ interface ToastProps {
 const variantConfig = {
   success: {
     icon: CheckCircle2,
-    className: "bg-emerald-50 text-emerald-900 border-emerald-100",
-    iconClassName: "text-emerald-500",
+    className: "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/20",
+    iconClassName: "text-white",
   },
   error: {
     icon: AlertCircle,
-    className: "bg-destructive/10 text-destructive border-destructive/20",
-    iconClassName: "text-destructive",
+    className: "bg-rose-500 text-white border-rose-600 shadow-rose-500/20",
+    iconClassName: "text-white",
   },
   info: {
     icon: Info,
-    className: "bg-primary/10 text-primary border-primary/20",
-    iconClassName: "text-primary",
+    className: "bg-primary text-white border-primary-dark shadow-primary/20",
+    iconClassName: "text-white",
   },
 };
 
@@ -60,7 +60,7 @@ const Toast = ({ id, message, variant = "info", onClose }: ToastProps) => {
       <p className="flex-1 text-sm font-bold">{message}</p>
       <button
         onClick={() => onClose(id)}
-        className="shrink-0 p-1 rounded-lg hover:bg-black/5 transition-colors"
+        className="shrink-0 p-1 rounded-lg hover:bg-white/20 transition-colors"
       >
         <X size={16} />
       </button>

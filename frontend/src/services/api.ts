@@ -110,7 +110,10 @@ export const apiService = {
     clearAll: () => apiFetch('/notifications/clear_all', { method: 'POST' }),
   },
   tenantMessages: {
-    list: () => apiFetch('/tenant_messages'),
+    list: (params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch(`/tenant_messages${query}`);
+    },
     create: (data: any) => {
       const isFormData = data instanceof FormData;
       return apiFetch('/tenant_messages', { method: 'POST', body: isFormData ? data : JSON.stringify({ tenant_message: data }) });
@@ -134,7 +137,10 @@ export const apiService = {
       apiFetch(`/support_tickets/${id}/reply`, { method: 'POST', body: JSON.stringify({ body }) }),
   },
   messages: {
-    list: () => apiFetch('/internal_messages'),
+    list: (params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch(`/internal_messages${query}`);
+    },
     create: (data: any) => {
       const isFormData = data instanceof FormData;
       return apiFetch('/internal_messages', { method: 'POST', body: isFormData ? data : JSON.stringify(data) });
@@ -184,7 +190,10 @@ export const apiService = {
     },
   },
   members: {
-    list: () => apiFetch('/members'),
+    list: (params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch(`/members${query}`);
+    },
     get: (id: string) => apiFetch(`/members/${id}`),
     update: (id: string, data: any) => apiFetch(`/members/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     uploadAvatar: (id: string, file: File) => {
@@ -218,7 +227,10 @@ export const apiService = {
     get: (id: string | number) => apiFetch(`/ebooks/${id}`),
   },
   categories: {
-    list: () => apiFetch('/categories'),
+    list: (params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch(`/categories${query}`);
+    },
   },
   invitations: {
     create: (data: { email: string; expires_at?: string; tenant_id?: string | number }) =>
@@ -247,4 +259,7 @@ export const apiService = {
     return apiFetch(endpoint, { method: 'PATCH', body: isFormData ? data : JSON.stringify(data) });
   },
   delete: (endpoint: string) => apiFetch(endpoint, { method: 'DELETE' }),
+  
+  // SWR/React Query fetcher
+  fetcher: (url: string) => apiFetch(url),
 };

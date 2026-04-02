@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiService } from "@/services/api";
+import useSWR from "swr";
 import { 
   Megaphone, Inbox, Send, MessageSquare, 
   Clock, CheckCircle, AlertCircle, Building2,
@@ -59,24 +60,49 @@ export default function CommunicationCenterPage() {
   // Selected BC for detail popup
   const [selectedBC, setSelectedBC] = useState<Broadcast | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [activeTab]);
+  const [lastSyncBC, setLastSyncBC] = useState<string | null>(null);
+
+  // useSWR for incremental broadcasts
+  const { data: bcData, mutate: mutateBC } = useSWR(
+    activeTab === 'broadcast' ? ['/system/broadcasts', lastSyncBC] : null,
+    () => apiService.messages.list(lastSyncBC ? { updated_after: lastSyncBC } : {}),
+    {
+      refreshInterval: 10000,
+      revalidateOnFocus: true,
+      onSuccess: (newData) => {
+        if (newData?.messages) {
+          setBroadcasts(prev => {
+            const newItems = newData.messages;
+            if (newItems.length === 0) return prev;
+
+            const merged = [...prev];
+            newItems.forEach((item: Broadcast) => {
+              const idx = merged.findIndex(m => m.id === item.id);
+              if (idx > -1) merged[idx] = item;
+              else merged.unshift(item);
+            });
+            return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          });
+          setLastSyncBC(new Date().toISOString());
+        }
+        setLoading(false);
+      }
+    }
+  );
 
   const fetchData = async () => {
-    setLoading(true);
-    try {
-      if (activeTab === 'broadcast') {
-        const res = await apiService.messages.list();
-        setBroadcasts(res.messages || []);
-      } else {
+    if (activeTab === 'broadcast') {
+      mutateBC();
+    } else {
+      setLoading(true);
+      try {
         const res = await apiService.supportTickets.list();
         setTickets(res.tickets || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 

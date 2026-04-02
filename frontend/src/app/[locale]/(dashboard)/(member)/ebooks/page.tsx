@@ -3,150 +3,232 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
-  FileText, Download, Play, BookOpen, 
-  Search, Filter, ArrowUpRight, Clock,
-  Book
+  FileText, Download, Play, 
+  Search, Clock, Book, ChevronDown,
+  LayoutGrid, List
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem 
+} from "@/components/ui/DropdownMenu";
+import { UnifiedFilterBar } from "@/components/ui/UnifiedFilterBar";
+import { BookListCard } from "@/components/books/BookListCard";
+import { BookListStack } from "@/components/books/BookListStack";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiService } from "@/services/api";
-import { useTranslations } from "next-intl";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
+import { DashboardPage } from "@/components/layout/DashboardPage";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function EbooksPage() {
   const t = useTranslations("EbookLibrary");
   const { user } = useAuth();
   const params = useParams();
-  const locale = params?.locale || 'en';
+  const locale = useLocale();
   const router = useRouter();
   const [ebooks, setEbooks] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<'standard' | 'compact'>('standard');
 
   const isAdmin = ["admin", "librarian", "developer"].includes(user?.role?.name || "");
 
   useEffect(() => {
-    const fetchEbooks = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const json = await apiService.ebooks.list();
-        setEbooks(Array.isArray(json) ? json : []);
+        const [ebooksData, categoriesData] = await Promise.all([
+          apiService.ebooks.list(),
+          apiService.categories.list()
+        ]);
+        
+        setEbooks(Array.isArray(ebooksData) ? ebooksData : []);
+        
+        const cats = categoriesData?.data || categoriesData;
+        if (Array.isArray(cats)) {
+          const sorted = [...cats].sort((a, b) => a.name.localeCompare(b.name));
+          setCategories(sorted);
+        }
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
+        setLoadingCategories(false);
       }
     };
-    fetchEbooks();
+    fetchData();
   }, []);
 
   const filteredEbooks = ebooks.filter(e => {
     const matchesSearch = e.book?.title?.toLowerCase().includes(search.toLowerCase()) || 
                          e.book?.author?.name?.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === 'all' || e.file_format?.toLowerCase() === filter.toLowerCase();
+    
+    // Support category filter and format filter (legacy)
+    const matchesFilter = filter === 'all' || 
+                         String(e.book?.category_id) === String(filter) ||
+                         e.file_format?.toLowerCase() === filter.toLowerCase();
     return matchesSearch && matchesFilter;
   });
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-12 px-2 md:px-0 text-foreground">
-      <PageHeader
-        title={t("title")}
-        badge={t("digital_collection")}
-        icon={<Book size={24} strokeWidth={2.5} />}
-      >
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-          <div className="relative w-full sm:w-64 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" size={18} />
-            <Input 
-              placeholder={t("search_placeholder")} 
-              className="pl-12 rounded-2xl h-12 bg-muted/20 border-border/40 focus:bg-background focus:ring-primary/5 transition-all text-sm"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          
-          <div className="flex p-1 bg-muted/20 rounded-2xl border border-border/40 h-12 shadow-inner">
-            {['all', 'PDF', 'EPUB'].map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={cn(
-                  "px-4 rounded-xl text-[10px] font-bold tracking-widest transition-all duration-300",
-                  filter === f 
-                    ? "bg-white shadow-sm text-primary" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {f === 'all' ? t("all") : f}
-              </button>
-            ))}
-          </div>
+  // Split categories for Hybrid Filter
+  const topCategories = categories.slice(0, 3);
+  const otherCategories = categories.slice(3);
+  const isFilterInDropdown = otherCategories.some(c => String(c.id) === String(filter));
+  const activeOtherCategory = otherCategories.find(c => String(c.id) === String(filter));
 
-          {isAdmin && (
-            <Button className="rounded-2xl h-12 px-6 font-bold shadow-xl shadow-primary/20 bg-primary text-white border-none">
-              <FileText size={18} className="mr-2" /> {t("upload")}
-            </Button>
+  const filterOptions = [
+    { id: 'all', label: t("all") },
+    ...topCategories.map(c => ({ id: String(c.id), label: c.name }))
+  ];
+
+  const categoryDropdown = otherCategories.length > 0 && (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <Button 
+          variant="outline" 
+          className={cn(
+            "h-11 px-5 rounded-2xl font-medium text-sm transition-all flex items-center gap-2 border border-border/40",
+            isFilterInDropdown 
+              ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
+              : "bg-white text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           )}
-        </div>
-      </PageHeader>
+        >
+          {isFilterInDropdown ? activeOtherCategory?.name : (locale === 'id' ? "Lainnya" : "More")}
+          <ChevronDown size={16} strokeWidth={2.5} className={cn("transition-transform", isFilterInDropdown ? "rotate-0" : "opacity-50")} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56 p-2">
+        {otherCategories.map((cat) => (
+          <DropdownMenuItem 
+            key={cat.id}
+            onClick={() => { setFilter(String(cat.id)); }}
+            className={cn(
+              "rounded-xl px-4 py-2.5 text-sm font-medium transition-colors",
+              String(filter) === String(cat.id) 
+                ? "bg-primary/10 text-primary" 
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+            )}
+          >
+            {cat.name}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  return (
+    <DashboardPage 
+      headerControls={
+        <UnifiedFilterBar 
+          searchTerm={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={t("search_placeholder")}
+          isLoading={loading}
+          filterOptions={filterOptions}
+          activeFilter={filter}
+          onFilterChange={setFilter}
+          viewMode={viewMode}
+          onViewChange={setViewMode}
+          extraFilters={categoryDropdown}
+        />
+      }
+    >
+
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pt-6 pb-6 pr-1 space-y-8">
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="aspect-[3/4] rounded-[2.5rem] bg-muted animate-pulse"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xxl:grid-cols-5 gap-8">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="aspect-[3.2/4] rounded-[2.2rem] bg-muted animate-pulse"></div>
           ))}
         </div>
       ) : filteredEbooks.length === 0 ? (
-        <div className="py-20 text-center bg-white rounded-[3rem] border border-dashed border-muted-foreground/20">
-          <Book size={48} className="mx-auto text-muted-foreground/30 mb-4" />
-          <h3 className="text-xl font-bold">{t("no_ebooks")}</h3>
-          <p className="text-muted-foreground">{t("no_ebooks_subtitle")}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <EmptyState 
+          icon={Book}
+          title={t("no_ebooks")}
+          description={t("no_ebooks_subtitle")}
+          action={search ? { label: "Reset Filter", onClick: () => setSearch("") } : undefined}
+        />
+      ) : viewMode === 'standard' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xxl:grid-cols-5 gap-8">
           {filteredEbooks.map((ebook) => (
-            <Card key={ebook.id} className="group border-none shadow-sm hover:shadow-2xl transition-all duration-500 bg-white overflow-hidden rounded-[2.5rem] flex flex-col">
-              <div className="aspect-[3/4] relative overflow-hidden bg-muted">
+            <Card key={ebook.id} className="group border border-border/10 shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 bg-white overflow-hidden rounded-[2.2rem] flex flex-col cursor-pointer relative">
+              <div className="aspect-[3.2/4] relative overflow-hidden bg-muted/40">
                 <img 
                   src={ebook.book?.cover_url || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=500&q=80"} 
                   alt="" 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                  <div className="w-full flex gap-2">
-                    <Button className="flex-1 rounded-xl font-bold h-11" onClick={() => router.push(`/${locale}/ebooks/${ebook.id}/viewer`)}>
-                      <Play size={16} className="mr-2" /> {t("read_now")}
+                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] transition-all duration-500 flex items-center justify-center">
+                  <div className="flex flex-col gap-3 px-6 w-full max-w-[200px] scale-90 group-hover:scale-100 transition-transform duration-500 ease-elastic">
+                    <Button className="w-full rounded-xl font-bold h-12 shadow-xl shadow-black/10" onClick={(e) => { e.stopPropagation(); router.push(`/${locale}/ebooks/${ebook.id}/viewer`); }}>
+                      <Play size={18} className="mr-2" /> {t("read_now")}
                     </Button>
-                    <Button variant="outline" className="w-11 h-11 p-0 rounded-xl bg-white/20 border-white/30 text-white backdrop-blur-md">
-                      <Download size={16} />
+                    <Button variant="outline" className="w-full h-12 rounded-xl bg-white/20 border-white/30 text-white backdrop-blur-md">
+                      <Download size={18} className="mr-2" /> Download
                     </Button>
                   </div>
                 </div>
-                <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-bold backdrop-blur-md tracking-widest">
+                <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold shadow-sm border border-border/20">
                   {ebook.file_format}
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="font-bold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                  {ebook.book?.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-2 font-medium">
-                  {ebook.book?.author?.name || t("unknown_author")}
-                </p>
-                <div className="mt-4 flex items-center justify-between text-xs font-bold tracking-widest text-muted-foreground/60">
-                  <span className="flex items-center gap-1.5">
-                    <Clock size={12} /> {ebook.file_size || t("unknown_size")}
-                  </span>
+              <CardContent className="p-4 flex-1 flex flex-col justify-between space-y-4">
+                <div className="space-y-1 h-10">
+                  <h3 className="font-bold text-[13px] leading-[1.3] line-clamp-2 group-hover:text-primary transition-colors text-foreground tracking-tight">
+                    {ebook.book?.title}
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground/50 font-medium italic truncate">
+                    {ebook.book?.author?.name || t("unknown_author")}
+                  </p>
                 </div>
-              </div>
+                
+                <div className="pt-3 border-t border-border/10">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <FileText size={12} />
+                    <span className="text-[10px] font-bold">{ebook.file_size || t("unknown_size")}</span>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
           ))}
         </div>
+      ) : (
+        <BookListStack>
+          {filteredEbooks.map(ebook => (
+            <BookListCard 
+              key={ebook.id}
+              coverUrl={ebook.book?.cover_url}
+              title={ebook.book?.title}
+              author={ebook.book?.author?.name || t("unknown_author")}
+              status={ebook.file_format}
+              metadata={[
+                { label: t("size"), value: ebook.file_size || t("unknown_size"), icon: FileText }
+              ]}
+              action={
+                <div className="flex items-center gap-2">
+                  <Button size="sm" className="rounded-lg h-9 px-4 font-bold" onClick={() => router.push(`/${locale}/ebooks/${ebook.id}/viewer`)}>
+                    <Play size={14} className="mr-1.5" /> {t("read_now")}
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-lg h-9 w-9 p-0">
+                    <Download size={14} />
+                  </Button>
+                </div>
+              }
+            />
+          ))}
+        </BookListStack>
       )}
-    </div>
+      </div>
+    </DashboardPage>
   );
 }

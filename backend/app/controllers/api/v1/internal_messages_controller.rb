@@ -24,23 +24,42 @@ module Api
           
           messages = messages.includes(:sender, :recipient)
         end
+        
+        # Delta Fetching Support (Incremental Updates)
+        if params[:updated_after].present?
+          messages = messages.where('internal_messages.updated_at > ?', params[:updated_after])
+        end
 
-        render json: {
-          messages: messages.limit(100).map { |m|
-            {
-              id: m.id,
-              title: m.title,
-              body: m.body,
-              recipient_type: m.recipient_type,
-              recipient_id: m.recipient_id,
-              recipient_name: m.recipient&.name,
-              sender_name: m.sender&.name,
-              sender_id: m.sender_id,
-              created_at: m.created_at,
-              attachments: m.attachments.map { |a| { url: url_for(a), filename: a.filename.to_s, content_type: a.content_type } }
-            }
+        # 1. Fetch target messages (limited to 100)
+        messages_list = messages.order(created_at: :desc).limit(100).to_a
+        
+        # 2. Bulk preload users manually to avoid N+1
+        user_ids = messages_list.flat_map { |m| [m.sender_id, m.recipient_id] }.compact.uniq
+        users_map = User.where(id: user_ids).index_by(&:id)
+        
+        # 3. Secure mapping ensuring no crashes or empty lists on minor data issues
+        message_data = messages_list.map do |m|
+          sender = users_map[m.sender_id]
+          recipient = users_map[m.recipient_id] if m.recipient_type == 'specific'
+          
+          {
+            id: m.id,
+            title: m.title.presence || "No Title",
+            body: m.body.presence || "",
+            recipient_type: m.recipient_type,
+            recipient_id: m.recipient_id,
+            recipient_name: recipient&.name,
+            recipient_last_seen: recipient&.last_seen_at,
+            sender_name: sender&.name || "Unknown",
+            sender_id: m.sender_id,
+            sender_last_seen: sender&.last_seen_at,
+            created_at: m.created_at,
+            has_attachments: m.attachments.attached?,
+            attachment_count: m.attachments.size
           }
-        }
+        end
+
+        render json: { messages: message_data }
       end
 
       def create
@@ -85,9 +104,6 @@ module Api
               )
           end
 
-          # Perform background cleanup of old read notifications (24h)
-          msg.tenant.notifications.cleanup_old_read.delete_all
-
           atts = msg.attachments.map { |a| { url: url_for(a), filename: a.filename.to_s, content_type: a.content_type } }
           render json: { message: { id: msg.id, title: msg.title, body: msg.body, recipient_type: msg.recipient_type, recipient_id: msg.recipient_id, recipient_name: msg.recipient&.name, sender_name: current_user.name, sender_id: current_user.id, created_at: msg.created_at, attachments: atts } }, status: :created
         else
@@ -97,8 +113,6 @@ module Api
 
       def read_all
         current_user.update!(last_message_read_at: Time.current)
-        # Perform background cleanup of old read notifications (24h)
-        current_user.tenant.notifications.cleanup_old_read.delete_all if current_user.tenant
         
         render json: { success: true, last_message_read_at: current_user.last_message_read_at }
       end

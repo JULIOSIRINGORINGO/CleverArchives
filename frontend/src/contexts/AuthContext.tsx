@@ -102,9 +102,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     
-    document.cookie = `auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     if (cookieDomain) {
       document.cookie = `auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT${cookieDomain}`;
+    }
+    
+    // Clear Persistent SWR Cache
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("clever-cache");
     }
   };
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiService } from "@/services/api";
+import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
   ArrowLeftRight, Search, Clock, AlertCircle, 
   CheckCircle2, User, BookOpen, Calendar,
@@ -22,25 +23,68 @@ export default function ActiveLoansPage() {
   const router = useRouter();
   const dateLocale = locale === 'id' ? id : enUS;
   
-  const [loans, setLoans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { cache } = useSWRConfig();
+  
+  // Try to get initial loans from cache to avoid flicker
+  const initialKey = unstable_serialize(['/loans/active', null, '']);
+  const cachedLoans = cache.get(initialKey)?.data;
+  const initialLoansData = cachedLoans?.data || cachedLoans || [];
+  
+  const [loans, setLoans] = useState<any[]>(Array.isArray(initialLoansData) ? initialLoansData : []);
+  const [loading, setLoading] = useState(!cachedLoans);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await apiService.borrowings.list({ status: 'borrowed' });
-      setLoans(res.data || res || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
+
+  // useSWR for active loans
+  const { mutate: mutateLoans } = useSWR(
+    ['/loans/active', lastSync, search],
+    () => apiService.borrowings.list({ 
+      status: 'borrowed',
+      updated_after: lastSync || '',
+      q: search 
+    }),
+    {
+      refreshInterval: 10000,
+      revalidateOnFocus: true,
+      onSuccess: (newData) => {
+        const data = newData?.data || newData || [];
+        const newItems = Array.isArray(data) ? data : [];
+        if (newItems.length > 0) {
+          setLoans(prev => {
+            const merged = [...prev];
+            newItems.forEach((item: any) => {
+              const idx = merged.findIndex(l => l.id === item.id);
+              if (idx > -1) {
+                // If status changed from borrowed, remove it from this list
+                if (item.status !== 'borrowed') {
+                   merged.splice(idx, 1);
+                } else {
+                   merged[idx] = item;
+                }
+              } else if (item.status === 'borrowed') {
+                merged.unshift(item);
+              }
+            });
+            return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          });
+          setLastSync(new Date().toISOString());
+        }
+        setLoading(false);
+      }
     }
+  );
+
+  const fetchData = async () => {
+    mutateLoans();
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    setLastSync(null);
+    // No-clear: we leave the old data shown until SWR gets a fresh list for the search.
+  }, [search]);
 
   const filteredLoans = loans.filter(loan => {
     const matchesSearch = 

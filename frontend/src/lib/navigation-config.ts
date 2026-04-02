@@ -87,7 +87,7 @@ export const getNavigationGroups = (t: any, role: string, counts: any) => {
       title: t("communications"),
       items: [
         { 
-          name: t("communications_center"),       icon: Megaphone,       href: "/messaging",
+          name: t("communications_center"),       icon: Megaphone,       href: "/messaging/internal",
           description: t("comm_center_desc"),
           badge: unreadCount > 0,
           subItems: [
@@ -145,7 +145,7 @@ export const getNavigationGroups = (t: any, role: string, counts: any) => {
       title: t("communications"),
       items: [
         { 
-          name: t("communications_center"), icon: Megaphone, href: "/messaging",
+          name: t("communications_center"), icon: Megaphone, href: "/messaging/internal",
           description: t("comm_center_desc"),
           badge: unreadCount > 0,
           subItems: [
@@ -194,7 +194,7 @@ export const getNavigationGroups = (t: any, role: string, counts: any) => {
       title: t("communications"),
       items: [
         { 
-          name: t("communications_center"), icon: Megaphone, href: "/messaging",
+          name: t("communications_center"), icon: Megaphone, href: "/messaging/internal",
           description: t("comm_center_desc"),
           badge: unreadCount > 0,
           subItems: [

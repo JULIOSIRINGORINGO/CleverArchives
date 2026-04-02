@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiService } from "@/services/api";
+import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
   Users, Search, Filter, Plus, 
   MoreVertical, Edit2, Trash2, Mail,
@@ -29,8 +30,15 @@ export default function MembersListPage() {
   const router = useRouter();
   const dateLocale = locale === 'id' ? id : enUS;
   
-  const [members, setMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { cache } = useSWRConfig();
+  
+  // Try to get initial members from cache to avoid flicker
+  const initialKey = unstable_serialize(['/members', null, '', 'all']);
+  const cachedMembers = cache.get(initialKey)?.data;
+  const initialMembersData = cachedMembers?.data || cachedMembers?.members || cachedMembers || [];
+  
+  const [members, setMembers] = useState<any[]>(Array.isArray(initialMembersData) ? initialMembersData : []);
+  const [loading, setLoading] = useState(!cachedMembers);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -40,21 +48,46 @@ export default function MembersListPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await apiService.members.list();
-      const data = res.data || res.members || res || [];
-      setMembers(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      setMembers([]);
-    } finally {
-      setLoading(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
+
+  // useSWR for members
+  const { mutate: mutateMembers } = useSWR(
+    ['/members', lastSync, search, statusFilter],
+    () => apiService.members.list({ 
+      updated_after: lastSync || '',
+      q: search 
+    }),
+    {
+      refreshInterval: 10000,
+      revalidateOnFocus: true,
+      onSuccess: (newData) => {
+        const data = newData?.data || newData?.members || newData || [];
+        const newItems = Array.isArray(data) ? data : [];
+        if (newItems.length > 0) {
+          setMembers(prev => {
+            const merged = [...prev];
+            newItems.forEach((item: any) => {
+              const idx = merged.findIndex(m => m.id === item.id);
+              if (idx > -1) merged[idx] = item;
+              else merged.unshift(item);
+            });
+            return merged.sort((a, b) => a.name?.localeCompare(b.name));
+          });
+          setLastSync(new Date().toISOString());
+        }
+        setLoading(false);
+      }
     }
+  );
+
+  const fetchData = async () => {
+    mutateMembers();
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    setLastSync(null);
+    // No-clear: we leave the old data shown until SWR gets a fresh list for the search/filter.
+  }, [search, statusFilter]);
 
   const filteredMembers = Array.isArray(members) ? members.filter(m => {
     const matchesSearch = 

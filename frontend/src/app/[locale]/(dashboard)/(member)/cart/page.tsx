@@ -3,92 +3,86 @@
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useCheckout } from "@/contexts/CheckoutContext";
-import { useRouter, useParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 import { 
-  ShoppingCart, Search, ArrowRight, XCircle, 
-  Loader2, ShoppingBag, Package, AlertCircle, 
-  CheckCircle2, Info
+  Search, BookOpen, Trash2, AlertCircle, 
+  CheckCircle2, Sparkles, ArrowRight, ShoppingBag
 } from "lucide-react";
+
+// Standard UI Components
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { UnifiedSearch } from "@/components/ui/UnifiedSearch";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { BookListCard } from "@/components/books/BookListCard";
+import { WorkspacePanel, WorkspacePanelHeader, WorkspacePanelContent, WorkspacePanelFooter } from "@/components/ui/WorkspacePanel";
+import { Text } from "@/components/ui/Text";
+import { PanelSectionHeader } from "@/components/ui/PanelSectionHeader";
+import { Spinner } from "@/components/ui/Spinner";
+import { useToast } from "@/components/ui/Toast";
 import { apiService } from "@/services/api";
-import { useTranslations } from "next-intl";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function CartPage() {
   const t = useTranslations("Cart");
-  const { item, addItem, clearCart } = useCart();
-  const { addToCheckout, totalItems: checkoutCount, hasDuplicate } = useCheckout();
-  const { locale } = useParams();
+  const locale = useLocale();
   const router = useRouter();
-  
+  const { item, addItem, clearCart } = useCart();
+  const { addToCheckout, hasDuplicate } = useCheckout();
+
+  // States
   const [barcode, setBarcode] = useState("");
   const [searching, setSearching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [movingToCheckout, setMovingToCheckout] = useState(false);
+  const { toast } = useToast();
 
-  const handleSearch = async () => {
+  const handleSelectItem = (copy: any) => {
+    if (copy.status !== 'available') { toast(t("not_available"), "error"); return; }
+    if (item && item.barcode === copy.barcode) { toast(t("already_cart"), "error"); return; }
+    if (hasDuplicate(copy.barcode)) { toast(t("already_checkout"), "error"); return; }
+
+    addItem({
+      id: copy.book.id,
+      title: copy.book.title,
+      author: copy.book.author?.name || "Unknown Author",
+      cover_url: copy.book.cover_url,
+      copy_id: copy.id,
+      barcode: copy.barcode
+    });
+    toast(t("add_success", { title: copy.book.title }), "success");
+    setBarcode("");
+  };
+
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!barcode.trim()) return;
-    
     setSearching(true);
-    setError(null);
-    setSuccessMsg(null);
+    setSearchResults([]);
     try {
       const data = await apiService.books.getByBarcode(barcode);
-      
-      if (data && data.book && data.book_copy) {
-        if (data.book_copy.status !== 'available') {
-          setError(t("not_available"));
-          return;
-        }
+      if (data && data.book) {
+        const copies = await apiService.books.getCopies(data.book.id);
+        const copiesList = Array.isArray(copies) ? copies : (copies.data || []);
+        const enhancedCopies = copiesList.map((c: any) => ({ ...c, book: data.book }));
+        setSearchResults(enhancedCopies);
 
-        if (item && item.barcode === data.book_copy.barcode) {
-          setError(t("already_cart"));
-          return;
-        }
-
-        if (hasDuplicate(data.book_copy.barcode)) {
-          setError(t("already_checkout"));
-          return;
-        }
-
-        try {
-          const borrowRes = await apiService.borrowings.list({ items: '100' });
-          const borrowList = Array.isArray(borrowRes) ? borrowRes : (borrowRes.data || []);
-          const activeStatuses = ['pending', 'borrowed', 'return_pending', 'cancellation_requested'];
-          const alreadyActive = borrowList.some(
-            (b: any) => b.book_copy?.barcode === data.book_copy.barcode && activeStatuses.includes(b.status)
-          );
-          if (alreadyActive) {
-            setError(t("already_active"));
-            return;
-          }
-        } catch (e) {
-          // Silent catch
-        }
-
-        const added = addItem({
-          id: data.book.id,
-          title: data.book.title,
-          author: data.book.author?.name || "Unknown Author",
-          cover_url: data.book.cover_url || data.book.cover_image_url,
-          copy_id: data.book_copy.id,
-          barcode: data.book_copy.barcode
-        });
-
-        if (added) {
-          setBarcode("");
-          setError(null);
+        // Auto-add feature:
+        const currentBarcode = barcode.trim();
+        const exactMatch = enhancedCopies.find((c: any) => c.barcode === currentBarcode && c.status === 'available');
+        if (exactMatch) {
+           handleSelectItem(exactMatch);
+        } else {
+           const firstAvailable = enhancedCopies.find((c: any) => c.status === 'available');
+           if (firstAvailable) handleSelectItem(firstAvailable);
         }
       } else {
-        setError(t("not_found"));
+        toast(t("error_not_found"), "error");
       }
     } catch (err: any) {
-      console.error(err);
-      setError(t("not_found"));
+      toast(t("error_not_found"), "error");
     } finally {
       setSearching(false);
     }
@@ -96,208 +90,162 @@ export default function CartPage() {
 
   const handleMoveToCheckout = () => {
     if (!item) return;
-    setError(null);
     setMovingToCheckout(true);
-
-    const result = addToCheckout({
-      id: item.id,
-      title: item.title,
-      author: item.author,
-      cover_url: item.cover_url,
-      copy_id: item.copy_id,
-      barcode: item.barcode
-    });
-
+    const result = addToCheckout(item);
     if (result.success) {
       clearCart();
-      setSuccessMsg(t("move_success", { title: item.title, barcode: item.barcode }));
-      setTimeout(() => setSuccessMsg(null), 4000);
+      router.push(`/${locale}/checkout`);
     } else {
-      setError(result.error || t("move_error"));
+      toast(result.error || t("move_error"), "error");
     }
     setMovingToCheckout(false);
   };
 
   return (
-    <div className="flex flex-col h-full -mx-6 px-6 animate-in fade-in duration-500 overflow-hidden">
-      <PageHeader
-        title={t("title")}
-        badge={t("preparation")}
-        icon={<ShoppingCart size={24} strokeWidth={2.5} />}
-      >
-        {checkoutCount > 0 && (
-          <button
-            onClick={() => router.push(`/${locale}/checkout`)}
-            className="bg-primary/[0.03] border border-primary/20 hover:border-primary/40 rounded-2xl p-3 flex items-center gap-4 transition-all group shadow-sm hover:shadow-md active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center shadow-inner">
-                <Package size={16} className="text-primary" />
+    <div className="h-[calc(100vh-80px)] overflow-hidden flex flex-col lg:flex-row gap-6 p-6">
+      
+      {/* PANEL 1: Pencarian Eksemplar */}
+      <div className="flex-1 min-w-0 h-full flex flex-col">
+        <WorkspacePanel className="h-full flex flex-col">
+          <WorkspacePanelHeader className="px-8 py-6" showDivider={false}>
+            <div className="flex flex-col gap-5 w-full">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                  <Search size={16} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-sm font-bold text-slate-700">Mulai dengan Kode Buku</h3>
               </div>
-              <div className="text-left">
-                <p className="text-[10px] font-bold text-primary tracking-widest leading-none mb-1">{t("ready")}</p>
-                <p className="text-[10px] font-medium tracking-tight text-muted-foreground/60">{t("books_in_checkout", { count: checkoutCount })}</p>
-              </div>
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <UnifiedSearch 
+                  value={barcode}
+                  onChange={setBarcode}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder={t("barcode_placeholder") || "Contoh: BC-26-1"}
+                  isLoading={searching}
+                  className="flex-1 text-sm h-12"
+                  autoFocus
+                />
+                <Button type="submit" disabled={searching} className="h-12 px-6 rounded-2xl bg-primary text-white font-bold text-xs hover:scale-[1.02]">
+                  Cari
+                </Button>
+              </form>
             </div>
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:translate-x-1 transition-all">
-               <ArrowRight size={16} strokeWidth={2.5} />
-            </div>
-          </button>
-        )}
-      </PageHeader>
+          </WorkspacePanelHeader>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pb-12">
-        <div className="max-w-6xl mx-auto space-y-8">
-          {/* Messages */}
-          <div className="space-y-3">
-            {successMsg && (
-              <div className="bg-emerald-50 text-emerald-600 border border-emerald-100 p-4 rounded-2xl font-bold text-xs text-center shadow-sm flex items-center justify-center gap-3 animate-in slide-in-from-top-2">
-                <CheckCircle2 size={18} /> {successMsg}
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-rose-50 text-rose-600 border border-rose-100 p-4 rounded-2xl font-bold text-xs text-center shadow-sm flex items-center justify-center gap-3 animate-in slide-in-from-top-2">
-                <AlertCircle size={18} /> {error}
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            {/* Left Col: Input Forms */}
-            <div className="space-y-6">
-              <Card className="rounded-[2rem] border border-border/40 shadow-sm bg-card overflow-hidden transition-all hover:shadow-md">
-                <CardContent className="p-8 space-y-4">
-                  <Label htmlFor="barcode" className="text-[10px] font-bold tracking-widest text-muted-foreground ml-1">
-                    {t("start_with_id")}
-                  </Label>
-                  <div className="flex gap-3">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40" size={16} />
-                      <Input 
-                        id="barcode"
-                        placeholder={t("barcode_placeholder")}
-                        value={barcode}
-                        onChange={(e) => setBarcode(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        className="rounded-2xl h-14 pl-12 pr-4 border-border/40 focus:ring-primary/5 focus:bg-muted/5 text-sm transition-all"
-                        disabled={searching || !!item}
+          <WorkspacePanelContent className="px-8 flex-1 overflow-y-auto custom-scrollbar pt-4">
+             <AnimatePresence mode="wait">
+                {searchResults.length > 0 ? (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                    {searchResults.map((copy) => (
+                      <BookListCard 
+                        key={copy.id}
+                        isCompact
+                        title={copy.barcode}
+                        author={copy.book?.title}
+                        status={copy.status}
+                        metadata={[]}
+                        action={
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleSelectItem(copy)}
+                            className="rounded-2xl font-bold gap-3 h-10 px-6 active:scale-95 transition-all text-[10px] uppercase tracking-widest bg-white text-primary border-2 border-primary/10 hover:bg-primary hover:text-white hover:border-primary group"
+                          >
+                            {t("select")} 
+                            <ArrowRight size={14} strokeWidth={3} className="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                          </Button>
+                        }
                       />
-                    </div>
-                    <Button 
-                      onClick={handleSearch} 
-                      disabled={searching || !barcode.trim() || !!item}
-                      className="rounded-2xl h-14 px-8 font-bold gap-2 shadow-xl shadow-primary/20 bg-primary text-white border-none tracking-widest text-xs"
-                    >
-                      {searching ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
-                      {t("search_btn")}
-                    </Button>
-                  </div>
-                  {item && (
-                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-center gap-3 animate-in zoom-in-95">
-                      <Info size={16} className="text-amber-600 shrink-0" />
-                      <p className="text-[10px] text-amber-700 font-bold tracking-widest leading-tight">
-                        {t("cart_full")}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              {/* Rules List */}
-              <div className="bg-muted/[0.03] rounded-[2rem] p-8 border border-dashed border-border/40 space-y-4">
-                <h3 className="text-[10px] font-bold tracking-widest text-muted-foreground flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-muted/10 flex items-center justify-center">
-                    <AlertCircle size={16} className="text-primary" />
-                  </div>
-                  {t("rules_title")}
-                </h3>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((idx) => (
-                    <div key={idx} className="flex gap-4">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                        {idx}
-                      </div>
-                      <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">
-                        {t(`rule_${idx}`)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Col: Current Item Preview */}
-            <div className="space-y-6">
-              {item ? (
-                <Card className="rounded-[2.5rem] border border-primary/20 shadow-[0_20px_50px_rgba(var(--primary),0.1)] bg-card overflow-hidden animate-in fade-in zoom-in-95 duration-500 relative group">
-                  <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
-                  <CardContent className="p-8">
-                    <div className="flex flex-col sm:flex-row gap-8">
-                      <div className="w-full sm:w-32 aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl shrink-0 bg-muted border border-border/20 transform group-hover:scale-105 transition-all duration-500">
-                        {item.cover_url ? (
-                          <img src={item.cover_url} alt={item.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/10 bg-muted/50">
-                            <ShoppingBag size={48} strokeWidth={1} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 flex flex-col justify-center space-y-4">
-                        <div>
-                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 mb-4 animate-pulse">
-                            <CheckCircle2 size={12} />
-                            <span className="text-[9px] font-bold tracking-widest">{t("found_success")}</span>
-                          </div>
-                          <h3 className="text-2xl font-bold tracking-tight leading-tight line-clamp-2 text-foreground">{item.title}</h3>
-                          <p className="text-[10px] text-muted-foreground font-bold tracking-widest mt-2 opacity-60">{item.author}</p>
-                        </div>
-                        <div className="p-4 bg-muted/20 rounded-2xl border border-border/30 w-full flex flex-col gap-1 shadow-inner">
-                          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/40">{t("copy_id_label")}</p>
-                          <p className="text-base font-bold font-mono tracking-tight text-primary">{item.barcode}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
-                      <Button 
-                        variant="ghost" 
-                        className="rounded-2xl h-14 text-[11px] font-bold tracking-widest gap-2 text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all border-none"
-                        onClick={() => { clearCart(); setError(null); }}
-                      >
-                        <XCircle size={18} /> {t("cancel_remove")}
-                      </Button>
-                      <Button 
-                        className="rounded-[1.5rem] h-14 text-[11px] font-bold tracking-widest gap-2 shadow-xl shadow-primary/20 bg-primary text-white border-none transition-all hover:scale-105 active:scale-95"
-                        onClick={handleMoveToCheckout}
-                        disabled={movingToCheckout}
-                      >
-                        {movingToCheckout ? <Loader2 className="animate-spin" size={18} /> : <ArrowRight size={18} strokeWidth={2.5} />}
-                        {t("move_to_checkout")}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="py-24 text-center text-muted-foreground/10 border-2 border-dashed border-border/40 rounded-[2.5rem] bg-muted/[0.02] flex flex-col items-center justify-center animate-in slide-in-from-right-4">
-                  <div className="w-20 h-20 rounded-full bg-muted/10 flex items-center justify-center mb-6">
-                    <ShoppingBag size={32} strokeWidth={1} className="text-muted-foreground/20" />
-                  </div>
-                  <p className="text-[10px] font-bold tracking-widest text-muted-foreground/30">{t("no_items")}</p>
-                  <p className="text-[10px] mt-2 font-medium tracking-tight text-muted-foreground/20">{t("search_first")}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+                    ))}
+                  </motion.div>
+                ) : (
+                  <EmptyState 
+                    icon={BookOpen} 
+                    title={"Masukkan Kode Buku"}
+                    description={"Silakan masukkan barcode pada inputan di atas."}
+                    className="py-12 border-none bg-transparent"
+                  />
+                )}
+             </AnimatePresence>
+          </WorkspacePanelContent>
+        </WorkspacePanel>
       </div>
 
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--primary), 0.1); border-radius: 4px; }
-      `}</style>
+      {/* PANEL 2: Konfirmasi Pinjam */}
+      <div className="flex-[1.2] min-w-0 h-full flex flex-col">
+        <WorkspacePanel className="h-full flex flex-col">
+          <WorkspacePanelHeader className="px-8 py-6" showDivider>
+            <PanelSectionHeader
+              icon={<BookOpen size={16} />}
+              iconVariant="primary"
+              title={t("borrow_confirmation", { fallback: "Konfirmasi Peminjaman" })}
+            />
+          </WorkspacePanelHeader>
+
+          <WorkspacePanelContent className="px-8 py-0 flex-1 flex flex-col justify-center overflow-hidden">
+             {item ? (
+                 <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                   <div className="flex flex-col lg:flex-row gap-10 items-center justify-center w-full max-w-2xl mx-auto">
+                     <div className="w-48 xl:w-56 aspect-[3/4] border-8 border-white rounded-[2.5rem] overflow-hidden shadow-2xl bg-muted shrink-0 relative group">
+                       <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
+                       {item.cover_url ? <img src={item.cover_url} alt="" className="w-full h-full object-cover relative z-0" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground/10 relative z-0"><BookOpen size={64} /></div>}
+                     </div>
+                     <div className="flex-1 space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left w-full">
+                        <div className="space-y-4 flex flex-col items-center lg:items-start">
+                           <StatusBadge status="available" label={t("ready_to_checkout", { fallback: "Ready to Checkout" })} className="text-xs font-bold" />
+                           <Text variant="heading" className="text-3xl xl:text-4xl leading-tight">{item.title}</Text>
+                           <Text variant="caption" className="text-base">{item.author}</Text>
+                        </div>
+                        <div className="px-6 py-4 w-full bg-muted/20 border border-border/40 rounded-2xl inline-flex flex-col items-center lg:items-start justify-center gap-1.5 backdrop-blur-sm">
+                          <Text variant="label">{t("copy_id_label", { fallback: "Copy ID" })}</Text>
+                          <Text variant="heading" className="text-primary font-mono text-xl tracking-widest">{item.barcode}</Text>
+                        </div>
+                     </div>
+                   </div>
+                </motion.div>
+             ) : (
+               <EmptyState icon={ShoppingBag} title="Keranjang Kosong" description="Pilih eksemplar di sisi kiri untuk memulainya." className="py-2 border-none bg-transparent shadow-none" />
+             )}
+          </WorkspacePanelContent>
+
+          <WorkspacePanelFooter className="px-10 py-6" showDivider>
+             {item ? (
+                <div className="flex gap-3 w-full">
+                  <Button 
+                    variant="danger" 
+                    size="xl"
+                    rounded="2xl"
+                    onClick={clearCart} 
+                  >
+                    <Trash2 size={16} /> {t("cancel")}
+                  </Button>
+                  <Button 
+                    variant="primary"
+                    size="xl"
+                    rounded="2xl"
+                    fullWidth
+                    disabled={movingToCheckout}
+                    onClick={handleMoveToCheckout}
+                  >
+                    {movingToCheckout ? <Spinner size="sm" /> : <CheckCircle2 size={18} />}
+                    {t("process_checkout")}
+                  </Button>
+                </div>
+             ) : (
+                <Button 
+                  variant="secondary"
+                  size="xl"
+                  rounded="2xl"
+                  fullWidth
+                  disabled
+                >
+                  <CheckCircle2 size={18} />
+                  {t("process_checkout")}
+                </Button>
+             )}
+          </WorkspacePanelFooter>
+        </WorkspacePanel>
+      </div>
+
     </div>
   );
 }

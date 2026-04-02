@@ -3,51 +3,60 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { 
-  Search, Filter, BookOpen, 
-  ArrowUpRight, Bookmark, AlertCircle,
-  LayoutGrid, List, SlidersHorizontal,
-  ChevronLeft, ChevronRight
+  ArrowUpRight, Bookmark, Clock, BookOpen,
+  LayoutGrid, List
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
 import Link from "next/link";
 import Image from "next/image";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+
+// Koleksi Komponen Utama (Elemen yang Dipanggil)
+import { UnifiedFilterBar } from "@/components/ui/UnifiedFilterBar";
+import { BookListCard } from "@/components/books/BookListCard";
+import { BookListStack } from "@/components/books/BookListStack";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function BookCatalog() {
   const searchParams = useSearchParams();
+  const t = useTranslations("Common"); // Menggunakan kunci dari Common/History sesuai ketersediaan
+  const locale = useLocale();
+  
+  // State Management
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("query") || "");
   const [filter, setFilter] = useState(searchParams.get("filter") || "all");
+  const [viewMode, setViewMode] = useState<'standard' | 'compact'>('standard');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const locale = useLocale();
 
+  // Ambil Preferensi ViewMode
+  useEffect(() => {
+    const saved = localStorage.getItem('catalogViewMode');
+    if (saved === 'standard' || saved === 'compact') setViewMode(saved);
+  }, []);
+
+  // Fetch Data (Murni Data-Driven)
   useEffect(() => {
     const fetchBooks = async () => {
       setLoading(true);
       try {
-        let url = `http://localhost:3001/api/v1/books?page=${page}`;
+        let url = `http://localhost:3001/api/v1/books?page=${page}&items=12`;
         if (search) url += `&query=${search}`;
         if (filter !== 'all') url += `&filter=${filter}`;
 
-        const response = await fetch(url, {
-          headers: {
-            'X-Tenant-Slug': 'stellar'
-          }
-        });
+        const response = await fetch(url, { headers: { 'X-Tenant-Slug': 'stellar' } });
         
-        // Parse pagination headers from Pagy
+        // Pagination logic
         const linkHeader = response.headers.get('Link');
         if (linkHeader) {
           try {
             const pagyData = JSON.parse(linkHeader);
             setTotalPages(pagyData.pages || 1);
-          } catch (e) {
-            console.error("Failed to parse pagy header", e);
-          }
+          } catch (e) {}
         }
 
         const json = await response.json();
@@ -59,158 +68,173 @@ export default function BookCatalog() {
       }
     };
 
-    // Debounce search
-    const timeoutId = setTimeout(() => {
-      fetchBooks();
-    }, 500);
-
+    const timeoutId = setTimeout(fetchBooks, 400);
     return () => clearTimeout(timeoutId);
   }, [search, filter, page]);
 
+  const filterOptions = [
+    { id: 'all', label: locale === 'id' ? "Semua" : "All" },
+    { id: 'physical', label: locale === 'id' ? "Fisik" : "Physical" },
+    { id: 'ebook', label: "Ebook" }
+  ];
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight">Library Catalog</h1>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <Input 
-              placeholder="Search by title, author, or ISBN..." 
-              className="pl-12 rounded-2xl h-12 bg-white/50 border-muted-foreground/20 focus:bg-white transition-colors"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          
-          <div className="flex border border-muted-foreground/20 rounded-2xl overflow-hidden bg-white/50 h-12">
-            {['all', 'physical', 'ebook'].map((f) => (
-              <button
-                key={f}
-                className={`px-6 font-bold text-sm capitalize transition-colors ${
-                  filter === f ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground'
-                }`}
-                onClick={() => { setFilter(f); setPage(1); }}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Header Elemen Kontrol */}
+      <UnifiedFilterBar 
+        searchTerm={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={locale === 'id' ? "Cari judul, penulis, atau ISBN..." : "Search title, author, or ISBN..."}
+        isLoading={loading}
+        filterOptions={filterOptions}
+        activeFilter={filter}
+        onFilterChange={(f) => { setFilter(f); setPage(1); }}
+        viewMode={viewMode}
+        onViewChange={(mode) => {
+          setViewMode(mode);
+          localStorage.setItem('catalogViewMode', mode);
+        }}
+      />
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-[400px] rounded-3xl bg-muted animate-pulse"></div>
-          ))}
-        </div>
+        viewMode === 'standard' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pt-6">
+             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+               <div key={i} className="h-[420px] rounded-xl bg-muted animate-pulse" />
+             ))}
+          </div>
+        ) : (
+          <BookListCard.Skeleton isCompact={viewMode === 'compact'} count={6} />
+        )
       ) : books.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 text-center bg-white/50 rounded-3xl border border-dashed border-muted-foreground/30">
-          <AlertCircle size={48} className="text-muted-foreground mb-4 opacity-50" />
-          <h3 className="text-2xl font-bold">No books found</h3>
-          <p className="text-muted-foreground mt-2">Try adjusting your search or filters to find what you&apos;re looking for.</p>
-        </div>
+        <EmptyState 
+          icon={BookOpen}
+          title={locale === 'id' ? "Buku Tidak Ditemukan" : "No Books Found"}
+          description={locale === 'id' ? "Coba sesuaikan pencarian atau filter Anda." : "Try adjusting your search or filters."}
+        />
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {books.map((book) => (
-              <Card key={book.id} className="group border-none shadow-sm hover:shadow-xl transition-all duration-500 bg-white overflow-hidden rounded-3xl flex flex-col">
-                <div className="aspect-[3/4] relative overflow-hidden bg-muted">
-                  <Image 
-                    src={book.cover_url || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=500&q=80"} 
-                    alt={book.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    <span className="bg-white/90 backdrop-blur-sm text-primary text-xs font-bold px-3 py-1.5 rounded-full tracking-widest shadow-sm">
-                      {book.category?.name || "Uncategorized"}
-                    </span>
-                    {book.ebook && (
-                      <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full tracking-widest shadow-sm w-fit">
-                        Ebook
-                      </span>
-                    )}
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {viewMode === 'standard' ? (
+            /* GRID VIEW (Tampilan Visual) */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pt-4">
+              {books.map((book) => (
+                <Card key={book.id} className="group border-none shadow-sm hover:shadow-xl transition-all duration-500 bg-white overflow-hidden rounded-xl flex flex-col h-full border border-border/10">
+                  <div className="aspect-[3/4] relative overflow-hidden bg-muted">
+                    <Image 
+                      src={book.cover_url || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=500&q=80"} 
+                      alt={book.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                       <StatusBadge 
+                         status={book.available_copies_count > 0 ? "available" : "unavailable"} 
+                         className="scale-90 origin-left"
+                       />
+                       {book.ebook && (
+                         <span className="bg-blue-600 shadow-lg text-white text-[10px] font-bold px-3 py-1 rounded-full w-fit uppercase tracking-wider">
+                           Ebook
+                         </span>
+                       )}
+                    </div>
+                    
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+                      <Link href={`/${locale}/books/${book.id}`}>
+                        <Button className="rounded-full w-12 h-12 p-0 bg-white text-primary hover:scale-110 transition-transform shadow-xl">
+                          <ArrowUpRight size={20} />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                   
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-                    <Link href={`/${locale}?login=true`}>
-                      <Button 
-                        className="rounded-full w-12 h-12 p-0 bg-white text-primary hover:scale-110 transition-transform shadow-xl"
-                        title="Login to Bookmark"
-                      >
-                        <Bookmark size={20} />
-                      </Button>
-                    </Link>
+                  <CardContent className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-bold text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">{book.title}</h3>
+                      <p className="text-xs text-slate-500 mt-2 font-medium italic opacity-80">{book.author?.name || "Unknown Author"}</p>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                         {book.category?.name || "Uncategorized"}
+                       </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            /* LIST VIEW (Tampilan Terpadu / Elemen Riwayat) */
+            <BookListStack viewMode="compact">
+              {books.map((book) => (
+                <BookListCard 
+                  key={book.id}
+                  isCompact={true}
+                  title={book.title}
+                  author={book.author?.name || "Unknown Author"}
+                  status={book.available_copies_count > 0 ? "available" : "unavailable"}
+                  coverUrl={book.cover_url}
+                  metadata={[
+                    { 
+                      label: "Category", 
+                      value: book.category?.name || "Uncategorized", 
+                      icon: Bookmark 
+                    }
+                  ]}
+                  action={
                     <Link href={`/${locale}/books/${book.id}`}>
-                      <Button className="rounded-full w-12 h-12 p-0 bg-primary text-white hover:scale-110 transition-transform shadow-xl hover:bg-primary/90">
-                        <ArrowUpRight size={20} />
+                      <Button 
+                        size="sm" 
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-9 px-4 rounded-xl shadow-lg shadow-indigo-100 flex items-center gap-2 transition-all active:scale-95 text-xs border-none"
+                      >
+                        {locale === 'id' ? "Lihat Detail" : "View Details"} 
+                        <ArrowUpRight size={14} strokeWidth={2.5} />
                       </Button>
                     </Link>
-                  </div>
-                </div>
-                
-                <CardContent className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">{book.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-2 font-medium">{book.author?.name || "Unknown Author"}</p>
-                  </div>
-                  <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                    <span className={`text-xs font-bold tracking-widest px-2.5 py-1 rounded-full ${
-                      book.available_copies_count > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    }`}>
-                      {book.available_copies_count > 0 ? `${book.available_copies_count} Available` : "Unavailable"}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  }
+                />
+              ))}
+            </BookListStack>
+          )}
 
-          {/* Pagination Controls */}
+          {/* Pagination Elemen */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 pt-8">
-              <Button 
+            <div className="flex justify-center items-center gap-2 pt-12 pb-8">
+               <Button 
                 variant="outline" 
+                size="icon"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="rounded-xl w-10 h-10 p-0"
+                className="rounded-xl w-10 h-10 bg-white border-border/40 hover:bg-muted/50 transition-all shadow-sm active:scale-95"
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft size={16} strokeWidth={2.5} />
               </Button>
               
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${
-                      page === p 
-                        ? 'bg-primary text-primary-foreground shadow-md' 
-                        : 'hover:bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+              <div className="text-[10px] font-bold text-muted-foreground/40 leading-none px-4">
+                {page} / {totalPages}
               </div>
 
               <Button 
                 variant="outline" 
+                size="icon"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="rounded-xl w-10 h-10 p-0"
+                className="rounded-xl w-10 h-10 bg-white border-border/40 hover:bg-muted/50 transition-all shadow-sm active:scale-95"
               >
-                <ChevronRight size={18} />
+                 <ChevronRight size={16} strokeWidth={2.5} />
               </Button>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );
+}
+
+// Helper untuk pagination icons yang hilang dari import
+function ChevronLeft({ size, className, strokeWidth }: any) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m15 18-6-6 6-6"/></svg>;
+}
+
+function ChevronRight({ size, className, strokeWidth }: any) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>;
 }

@@ -6,6 +6,7 @@ import { Building2, Users, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import useSWR from "swr";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 interface Stats {
@@ -17,16 +18,13 @@ interface Stats {
 
 export default function SystemOwnerDashboard() {
   const t = useTranslations("Dashboard.system_owner");
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
   const locale = useLocale();
+  const { data: stats, mutate, isValidating } = useSWR('/tenants/stats', apiService.fetcher, {
+    revalidateOnFocus: true,
+    dedupingInterval: 5000,
+  });
 
-  useEffect(() => {
-    apiService.tenants.stats()
-      .then(setStats)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const loading = !stats;
 
   const statCards = stats ? [
     { label: t("total_tenants"),    value: stats.total_tenants,  icon: Building2,    color: "text-blue-600",   bg: "bg-blue-50/50" },
@@ -36,11 +34,14 @@ export default function SystemOwnerDashboard() {
   ] : [];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-[--color-muted-foreground] mt-1">{t("subtitle")}</p>
-      </div>
+    <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
+      <PageHeader
+        title={t("title")}
+        subtitle={t("subtitle")}
+        icon={<Building2 size={24} strokeWidth={2.5} />}
+      />
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-6 pb-6 px-4 md:px-6 space-y-6">
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {loading
@@ -93,6 +94,7 @@ export default function SystemOwnerDashboard() {
           </div>
           <TrendingUp size={18} className="ml-auto text-[--color-muted-foreground] group-hover:text-[--color-primary] transition-colors" />
         </Link>
+      </div>
       </div>
     </div>
   );

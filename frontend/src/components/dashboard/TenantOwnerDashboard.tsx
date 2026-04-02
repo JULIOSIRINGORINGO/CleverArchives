@@ -9,11 +9,14 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { apiService } from "@/services/api";
+import useSWR from "swr";
+import React, { useMemo } from "react";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, BarChart, Bar, 
   PieChart, Cell, Pie, Legend
 } from 'recharts';
+import { PageHeader } from "@/components/layout/PageHeader";
 
 const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f43f5e', '#f97316', '#eab308'];
 
@@ -23,15 +26,13 @@ export default function TenantOwnerDashboard() {
   const locale = useLocale();
   const tenant = user?.tenant;
   
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: statsData, mutate, isValidating } = useSWR('/tenants/stats', apiService.fetcher, {
+    revalidateOnFocus: true,
+    dedupingInterval: 5000,
+  });
 
-  useEffect(() => {
-    apiService.tenants.stats()
-      .then(setStats)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const stats = useMemo(() => statsData || null, [statsData]);
+  const loading = !statsData;
 
   const quickLinks = [
     {
@@ -76,21 +77,15 @@ export default function TenantOwnerDashboard() {
   );
 
   return (
-    <div className="space-y-gr-5 pb-gr-7">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-gr-2xl font-black tracking-tight">
-            {t("tenant_owner.welcome", { name: user?.name?.split(' ')[0] || "" })}
-          </h1>
-          <p className="text-muted-foreground mt-gr-1">
-            {tenant ? tenant.name : "Dashboard Tenant Owner"}
-          </p>
-        </div>
-        <div className="bg-emerald-500/10 text-emerald-600 px-gr-4 py-gr-2 rounded-gr border border-emerald-500/20 flex items-center gap-gr-2 text-gr-sm font-bold">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          {t("tenant_owner.platform_status")}
-        </div>
-      </div>
+    <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
+      <PageHeader
+        title={t("tenant_owner.welcome", { name: user?.name?.split(' ')[0] || "" })}
+        subtitle={tenant ? tenant.name : "Dashboard Tenant Owner"}
+        badge={t("tenant_owner.platform_status")}
+        icon={<Building2 size={24} strokeWidth={2.5} />}
+      />
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-6 pb-6 px-4 md:px-6 space-y-gr-5">
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-gr-5">
@@ -214,6 +209,7 @@ export default function TenantOwnerDashboard() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Modal } from "@/components/ui/Modal";
 import { useTranslations, useLocale } from "next-intl";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { DashboardPage } from "@/components/layout/DashboardPage";
 import { formatDistanceToNow } from "date-fns";
 import { id as idLocale, enUS } from "date-fns/locale";
 
@@ -98,19 +99,16 @@ export default function BroadcastPage() {
   };
 
   return (
-    <div className="space-y-5 pb-8">
-      <PageHeader
-        title={t("title")}
-        badge={t("public_announcement")}
-        icon={<Megaphone size={24} strokeWidth={2.5} />}
-      >
+    <DashboardPage hideHeader={true}>
+      <div className="space-y-5 pb-8">
         {!isMember && (
-          <Button onClick={() => setIsModalOpen(true)} className="rounded-2xl h-11 px-6 font-bold shadow-xl shadow-primary/20 bg-primary text-white border-none gap-2">
-            <Plus size={18} strokeWidth={2.5} />
-            {t("create_btn")}
-          </Button>
+          <div className="flex justify-end">
+            <Button onClick={() => setIsModalOpen(true)} className="rounded-2xl h-11 px-6 font-bold shadow-xl shadow-primary/20 bg-primary text-white border-none gap-2">
+              <Plus size={18} strokeWidth={2.5} />
+              {t("create_btn")}
+            </Button>
+          </div>
         )}
-      </PageHeader>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -397,6 +395,7 @@ export default function BroadcastPage() {
           background: rgba(var(--border), 1);
         }
       `}</style>
-    </div>
+      </div>
+    </DashboardPage>
   );
 }

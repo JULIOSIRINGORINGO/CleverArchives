@@ -13,6 +13,7 @@ import { apiService } from "@/services/api";
 import { Card, CardContent } from "@/components/ui/Card";
 import { format } from "date-fns";
 import { id, enUS } from "date-fns/locale";
+import useSWR from "swr";
 
 import { useApi } from "@/hooks/useApi";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -23,7 +24,12 @@ export default function AdminDashboard() {
   const locale = useLocale();
   const dateLocale = locale === 'id' ? id : enUS;
   
-  const { data, isLoading: loading } = useApi('/dashboard/admin_stats');
+  const { data: dashboardData, mutate, isValidating } = useSWR('/dashboard/admin_stats', apiService.fetcher, {
+    revalidateOnFocus: true,
+    dedupingInterval: 5000,
+  });
+
+  const loading = !dashboardData;
 
   if (loading) return (
     <div className="space-y-gr-5 pb-gr-7 animate-in fade-in duration-300">
@@ -41,9 +47,9 @@ export default function AdminDashboard() {
     </div>
   );
 
-  const stats = data?.stats || {};
-  const recentLoans = data?.recent_borrowings || [];
-  const dueToday = data?.due_today || [];
+  const stats = dashboardData?.stats || {};
+  const recentLoans = dashboardData?.recent_borrowings || [];
+  const dueToday = dashboardData?.due_today || [];
 
   const statCards = [
     { label: "Pinjam Hari Ini", value: stats.borrowed_today, icon: ArrowUpRight, color: "text-blue-600 bg-blue-50" },
@@ -53,13 +59,15 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-gr-5 pb-gr-7">
+    <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
       <PageHeader
         title={t("welcome", { name: user?.name?.split(' ')[0] || "" }) + " 👋"}
         subtitle={format(new Date(), 'EEEE, dd MMMM yyyy', { locale: dateLocale })}
         badge={t("summary")}
         icon={<Users size={24} strokeWidth={2.5} />}
       />
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-6 pb-6 px-4 md:px-6 space-y-gr-5">
 
       {/* Statistics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gr-5">
@@ -165,6 +173,7 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
       </div>
+     </div>
     </div>
   );
 }

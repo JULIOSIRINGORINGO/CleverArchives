@@ -10,6 +10,11 @@ module Api
         end
 
         logs = logs.where(action: params[:action_type]) if params[:action_type].present?
+        
+        if params[:updated_after].present?
+          logs = logs.where('created_at > ?', params[:updated_after])
+        end
+
         if params[:from].present? && params[:to].present?
           logs = logs.by_date_range(Date.parse(params[:from]).beginning_of_day, Date.parse(params[:to]).end_of_day)
         end

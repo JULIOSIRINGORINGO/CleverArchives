@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { apiService } from "@/services/api";
+import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
   ScanLine, User, Database, 
   CheckCircle2, AlertCircle, Loader2,
   ArrowRight, Clock, Check, ChevronDown, ChevronUp, Package, BookOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiService } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useRouter, useParams } from "next/navigation";
@@ -217,27 +218,68 @@ export default function ProcessLoanPage() {
   const router = useRouter();
   const params = useParams();
   const locale = params?.locale || 'en';
+  
+  const { cache } = useSWRConfig();
+  
+  // Try to get initial pending from cache to avoid flicker
+  const initialKey = unstable_serialize(['/loans/pending', null]);
+  const cachedPending = cache.get(initialKey)?.data;
+  const initialPendingData = cachedPending?.data || cachedPending || [];
 
-  const [pendingBorrowings, setPendingBorrowings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pendingBorrowings, setPendingBorrowings] = useState<any[]>(Array.isArray(initialPendingData) ? initialPendingData : []);
+  const [loading, setLoading] = useState(!cachedPending);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const fetchPending = async () => {
-    setLoading(true);
-    try {
-      const data = await apiService.borrowings.list({ status: 'pending' });
-      setPendingBorrowings(Array.isArray(data) ? data : data.data || []);
-    } catch (err) {
-      console.error(err);
-      setError("Gagal mengambil daftar antrean peminjaman.");
-    } finally {
-      setLoading(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
+
+  // useSWR for pending borrowings
+  const { mutate: mutatePending } = useSWR(
+    ['/loans/pending', lastSync],
+    () => apiService.borrowings.list({ 
+      status: 'pending',
+      updated_after: lastSync || ''
+    }),
+    {
+      refreshInterval: 10000,
+      revalidateOnFocus: true,
+      onSuccess: (newData) => {
+        const data = newData?.data || newData || [];
+        const newItems = Array.isArray(data) ? data : [];
+        if (newItems.length > 0) {
+          setPendingBorrowings(prev => {
+            const merged = [...prev];
+            newItems.forEach((item: any) => {
+              const idx = merged.findIndex(l => l.id === item.id);
+              if (idx > -1) {
+                // If status changed from pending, remove it
+                if (item.status !== 'pending') {
+                   merged.splice(idx, 1);
+                } else {
+                   merged[idx] = item;
+                }
+              } else if (item.status === 'pending') {
+                merged.unshift(item);
+              }
+            });
+            return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          });
+          setLastSync(new Date().toISOString());
+        }
+        setLoading(false);
+      }
     }
+  );
+
+  const fetchPending = async () => {
+    mutatePending();
   };
 
-  useEffect(() => { fetchPending(); }, []);
+  useEffect(() => { 
+    setLastSync(null);
+    // No-clear: we leave the old data shown until SWR gets a fresh list.
+  }, []);
 
   const grouped = groupBorrowings(pendingBorrowings);
 

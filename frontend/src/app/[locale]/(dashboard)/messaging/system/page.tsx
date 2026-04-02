@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 import { id as idLocale, enUS } from "date-fns/locale";
 import { formatFriendlyDistance } from "@/lib/date-utils";
 import { useTranslations, useLocale } from "next-intl";
@@ -19,8 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/hooks/useToast";
 import { Modal } from "@/components/ui/Modal";
-import { PageHeader } from "@/components/layout/PageHeader";
-
+import { DashboardPage } from "@/components/layout/DashboardPage";
 
 interface NotificationModalContent {
   id: number;
@@ -49,8 +47,6 @@ export default function SystemCommunicationPage() {
 
   const dateFnsLocale = locale === 'id' ? idLocale : enUS;
 
-  // Split notifications - Only show messages from System Owner in System Alerts
-  // Filter out any "Message Sent" notifications that might be incorrectly categorized as system notifications
   const systemNotifs = notifications.filter(n => 
     n.id > 0 && 
     n.sender_role === 'system_owner' && 
@@ -61,7 +57,6 @@ export default function SystemCommunicationPage() {
   const [sentMessages, setSentMessages] = useState<any[]>([]);
   const [sentLoading, setSentLoading] = useState(false);
 
-  // Compose State
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -73,20 +68,17 @@ export default function SystemCommunicationPage() {
   const [ticketReplies, setTicketReplies] = useState<any[]>([]);
   const [ticketLoading, setTicketLoading] = useState(false);
   
-  // Confirmation Dialog States
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [notifToDelete, setNotifToDelete] = useState<number | null>(null);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   const alertMenuRef = useRef<HTMLDivElement>(null);
-
   const sentMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (alertMenuRef.current && !alertMenuRef.current.contains(e.target as Node)) setAlertMenuOpen(false);
@@ -99,7 +91,6 @@ export default function SystemCommunicationPage() {
   const fetchSentMessages = async () => {
     setSentLoading(true);
     try {
-      // Switched to supportTickets which is what System Owner sees in their Support Inbox
       const res = await apiService.supportTickets.list();
       setSentMessages(res.tickets || []);
     } catch (err) {
@@ -118,7 +109,6 @@ export default function SystemCommunicationPage() {
     if (!title || !body) return;
     setSubmitting(true);
     try {
-      // Switched to supportTickets API
       await apiService.supportTickets.create({ title, body });
       setTitle("");
       setBody("");
@@ -165,7 +155,6 @@ export default function SystemCommunicationPage() {
     toast(t("clear_success"), "success");
   };
 
-
   const handleOpenTicket = async (msg: any) => {
     setSelectedTicket(msg);
     setTicketLoading(true);
@@ -181,19 +170,11 @@ export default function SystemCommunicationPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] space-y-6 pb-8">
-      <PageHeader
-        title={t("title")}
-        badge={t("system_alerts")}
-        icon={<Megaphone size={24} strokeWidth={2.5} />}
-      />
-
+    <DashboardPage hideHeader={true}>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 flex-1 min-h-0">
-        
-        {/* Left Column: System Alerts (3/5) */}
         <div className="lg:col-span-3 flex flex-col min-h-0 bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl shadow-sm overflow-hidden group/col">
           <div className="p-5 border-b border-border/50 flex items-center justify-between bg-muted/10">
-            <h3 className="font-bold text-[11px] flex items-center gap-2 text-muted-foreground">
+            <h3 className="font-bold text-[11px] flex items-center gap-2 text-muted-foreground uppercase">
               <Shield size={16} className="text-indigo-500" /> System Alerts
             </h3>
             <div className="flex items-center gap-1" ref={alertMenuRef}>
@@ -266,21 +247,20 @@ export default function SystemCommunicationPage() {
                     <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5">
                       <div className="flex justify-between items-start pt-0.5">
                         <h4 className={cn(
-                          "truncate text-sm pr-6",
+                          "truncate text-sm pr-6 tracking-tight",
                           !notif.read_at ? "font-bold text-indigo-950" : "font-medium text-foreground"
                         )}>
                           {notif.title}
                         </h4>
-                        <span className="shrink-0 text-xs font-bold text-muted-foreground whitespace-nowrap bg-muted/50 px-2 py-1 rounded-lg border border-border/50 backdrop-blur-sm">
+                        <span className="shrink-0 text-[10px] font-bold text-muted-foreground whitespace-nowrap bg-muted/50 px-2 py-1 rounded-lg border border-border/50 backdrop-blur-sm">
                           {formatFriendlyDistance(new Date(notif.created_at), { addSuffix: true, locale: dateFnsLocale })}
                         </span>
                       </div>
-                      <p className="text-xs line-clamp-2 font-normal text-muted-foreground leading-relaxed">
+                      <p className="text-xs line-clamp-2 font-medium text-muted-foreground leading-relaxed">
                         {notif.body}
                       </p>
                     </div>
                   </div>
-                  {/* Delete Button - clean inline */}
                   <button 
                     onClick={(e) => handleDelete(e, notif.id)}
                     className="absolute top-4 right-4 p-1 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-all opacity-0 group-hover:opacity-100"
@@ -294,33 +274,31 @@ export default function SystemCommunicationPage() {
           </div>
         </div>
 
-        {/* Right Column: Send Message & History (2/5) */}
         <div className="lg:col-span-2 flex flex-col gap-6 overflow-y-auto pr-1">
-          {/* Send Message Card */}
           <div className="bg-card border border-border/50 rounded-3xl shadow-sm p-6">
-            <h3 className="font-bold text-xs flex items-center gap-2 text-muted-foreground mb-4">
+            <h3 className="font-bold text-[11px] flex items-center gap-2 text-muted-foreground mb-4 uppercase">
               <MessageSquare size={16} className="text-primary" /> {t("compose_title")}
             </h3>
             <form onSubmit={handleSendMessage} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground ml-1">{t("compose_subject")}</label>
+                <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">{t("compose_subject")}</label>
                 <input 
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={t("subject_placeholder")}
-                  className="w-full bg-muted/30 border border-border/50 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal"
+                  className="w-full bg-muted/30 border border-border/50 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground ml-1">{t("compose_body")}</label>
+                <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">{t("compose_body")}</label>
                 <textarea 
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   placeholder={t("body_placeholder")}
                   rows={4}
-                  className="w-full bg-muted/30 border border-border/50 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-normal resize-none"
+                  className="w-full bg-muted/30 border border-border/50 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium resize-none shadow-inner"
                   required
                 />
               </div>
@@ -341,10 +319,9 @@ export default function SystemCommunicationPage() {
             </form>
           </div>
 
-          {/* Sent History Card */}
           <div className="flex-1 bg-card/50 border border-border/50 rounded-3xl shadow-sm overflow-hidden flex flex-col min-h-[300px]">
             <div className="p-5 border-b border-border/50 bg-muted/10 flex items-center justify-between">
-              <h3 className="font-bold text-xs flex items-center gap-2 text-muted-foreground">
+              <h3 className="font-bold text-[11px] flex items-center gap-2 text-muted-foreground uppercase">
                 <Clock size={16} className="text-amber-500" /> {t("sent_messages")}
               </h3>
               <div className="flex items-center gap-1">
@@ -416,7 +393,8 @@ export default function SystemCommunicationPage() {
             </div>
           </div>
         </div>
-      </div>      {/* Detail Modal */}
+      </div>
+
       <Modal 
         isOpen={!!selectedNotif} 
         onClose={() => setSelectedNotif(null)}
@@ -473,7 +451,7 @@ export default function SystemCommunicationPage() {
           </div>
         )}
       </Modal>
-      {/* Ticket Detail Modal */}
+
       <Modal 
         isOpen={!!selectedTicket} 
         onClose={() => { setSelectedTicket(null); setTicketReplies([]); }}
@@ -500,7 +478,6 @@ export default function SystemCommunicationPage() {
             </div>
 
             <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar max-h-[60vh]">
-              {/* Ticket info */}
               <div>
                 <h2 className="text-lg font-bold text-foreground mb-2 leading-tight">{selectedTicket.title}</h2>
                 <div className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
@@ -519,12 +496,10 @@ export default function SystemCommunicationPage() {
                 </div>
               </div>
 
-              {/* Original message */}
               <div className="bg-muted/30 p-6 rounded-[2rem] border border-border/40 text-sm font-medium text-foreground leading-relaxed whitespace-pre-wrap shadow-inner">
                 {selectedTicket.body}
               </div>
 
-              {/* Replies section */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold text-muted-foreground flex items-center gap-2 ml-1">
                   <MessageSquare size={14} className="text-primary" /> Balasan ({ticketReplies.length})
@@ -568,7 +543,6 @@ export default function SystemCommunicationPage() {
         )}
       </Modal>
 
-      {/* Confirmation Dialogs */}
       <ConfirmDialog
         isOpen={deleteConfirmOpen}
         onClose={() => { setDeleteConfirmOpen(false); setNotifToDelete(null); }}
@@ -592,21 +566,10 @@ export default function SystemCommunicationPage() {
       />
 
       <style jsx global>{`
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(var(--border), 0.5);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(var(--border), 1);
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--border), 0.5); border-radius: 4px; }
       `}</style>
-    </div>
+    </DashboardPage>
   );
 }

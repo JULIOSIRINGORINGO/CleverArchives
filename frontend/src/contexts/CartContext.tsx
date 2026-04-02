@@ -66,13 +66,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const addItem = useCallback((newItem: CartItem) => {
-    if (item) {
-      alert("Keranjang hanya bisa menampung 1 buku aktif. Silakan kosongkan keranjang terlebih dahulu.");
-      return false;
-    }
     setItem(newItem);
     return true;
-  }, [item]);
+  }, []);
 
   const removeItem = useCallback(() => {
     setItem(null);

@@ -42,6 +42,14 @@ module Api
           borrowings = borrowings.joins(:book_copy).where(book_copies: { barcode: params[:barcode] })
         end
 
+        # Delta Fetching Support (Incremental Updates)
+        if params[:updated_after].present?
+          borrowings = borrowings.where('borrowings.updated_at > ?', params[:updated_after])
+        end
+        if params[:since_id].present?
+          borrowings = borrowings.where('borrowings.id > ?', params[:since_id])
+        end
+
         @pagy, @borrowings = pagy(borrowings.order(created_at: :desc), items: params[:items] || 20)
         
         render json: {

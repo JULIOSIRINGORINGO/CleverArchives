@@ -10,6 +10,8 @@ module Api
             @members = @members.where('name LIKE ? OR email LIKE ? OR member_code LIKE ?', q, q, q)
           end
           
+          @members = @members.where('updated_at > ?', params[:updated_after]) if params[:updated_after].present?
+          
           @pagy, @members = pagy(@members.order(name: :asc), items: params[:items] || 20)
           
           render json: {

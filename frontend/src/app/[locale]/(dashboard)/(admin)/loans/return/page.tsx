@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { apiService } from "@/services/api";
+import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
   ArrowLeftRight, Search, User, BookOpen, 
   CheckCircle2, AlertCircle, Loader2,
@@ -8,7 +10,6 @@ import {
   History, ArrowRight, CornerUpLeft, Check, Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiService } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useRouter, useParams } from "next/navigation";
@@ -23,25 +24,64 @@ export default function ProcessReturnPage() {
   const dateLocale = locale === 'id' ? id : enUS;
   
   const { toast } = useToast();
-  const [returnPendingBorrowings, setReturnPendingBorrowings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { cache } = useSWRConfig();
+  
+  // Try to get initial returns from cache to avoid flicker
+  const initialKey = unstable_serialize(['/loans/return_pending', null]);
+  const cachedReturns = cache.get(initialKey)?.data;
+  const initialReturnsData = cachedReturns?.data || cachedReturns || [];
+
+  const [returnPendingBorrowings, setReturnPendingBorrowings] = useState<any[]>(Array.isArray(initialReturnsData) ? initialReturnsData : []);
+  const [loading, setLoading] = useState(!cachedReturns);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const fetchReturns = async () => {
-    setLoading(true);
-    try {
-      const data = await apiService.borrowings.list({ status: 'return_pending' });
-      setReturnPendingBorrowings(Array.isArray(data) ? data : data.data || []);
-    } catch (err) {
-      console.error(err);
-      toast("Gagal mengambil daftar antrean pengembalian.", "error");
-    } finally {
-      setLoading(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
+
+  // useSWR for return pending borrowings
+  const { mutate: mutateReturns } = useSWR(
+    ['/loans/return_pending', lastSync],
+    () => apiService.borrowings.list({ 
+      status: 'return_pending',
+      updated_after: lastSync || ''
+    }),
+    {
+      refreshInterval: 10000,
+      revalidateOnFocus: true,
+      onSuccess: (newData) => {
+        const data = newData?.data || newData || [];
+        const newItems = Array.isArray(data) ? data : [];
+        if (newItems.length > 0) {
+          setReturnPendingBorrowings(prev => {
+            const merged = [...prev];
+            newItems.forEach((item: any) => {
+              const idx = merged.findIndex(l => l.id === item.id);
+              if (idx > -1) {
+                // If status changed from return_pending, remove it
+                if (item.status !== 'return_pending') {
+                   merged.splice(idx, 1);
+                } else {
+                   merged[idx] = item;
+                }
+              } else if (item.status === 'return_pending') {
+                merged.unshift(item);
+              }
+            });
+            return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          });
+          setLastSync(new Date().toISOString());
+        }
+        setLoading(false);
+      }
     }
+  );
+
+  const fetchReturns = async () => {
+    mutateReturns();
   };
 
   useEffect(() => {
-    fetchReturns();
+    setLastSync(null);
+    // No-clear: we leave the old data shown until SWR gets a fresh list.
   }, []);
 
   const handleConfirmReturn = async (id: string) => {

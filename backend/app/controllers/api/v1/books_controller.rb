@@ -24,6 +24,7 @@ module Api
           ).distinct
         end
 
+        @books = @books.where('books.updated_at > ?', params[:updated_after]) if params[:updated_after].present?
         @books = @books.where(category_id: params[:category_id]) if params[:category_id].present?
         
         if params[:filter].present?

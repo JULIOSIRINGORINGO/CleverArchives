@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_27_151001) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_01_035227) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -134,7 +134,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_27_151001) do
     t.datetime "updated_at", null: false
     t.string "group_id"
     t.index ["book_copy_id"], name: "index_borrowings_on_book_copy_id"
-    t.index ["book_copy_id"], name: "index_borrowings_on_book_copy_id_active", unique: true, where: "((status)::text = ANY ((ARRAY['pending'::character varying, 'borrowed'::character varying, 'return_pending'::character varying, 'cancellation_requested'::character varying])::text[]))"
+    t.index ["book_copy_id"], name: "index_borrowings_on_book_copy_id_active", unique: true, where: "((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('borrowed'::character varying)::text, ('return_pending'::character varying)::text, ('cancellation_requested'::character varying)::text]))"
     t.index ["borrow_date"], name: "index_borrowings_on_borrow_date"
     t.index ["created_at"], name: "index_borrowings_on_created_at"
     t.index ["due_date"], name: "index_borrowings_on_due_date"
@@ -397,6 +397,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_27_151001) do
     t.datetime "last_message_read_at"
     t.datetime "notifications_cleared_at"
     t.datetime "messages_cleared_at"
+    t.datetime "last_seen_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti"
     t.index ["role_id"], name: "index_users_on_role_id"

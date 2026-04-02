@@ -23,7 +23,7 @@
     --color-muted-foreground: #64748B;
     --color-border: #E2E8F0;
     --color-surface: #FFFFFF;
-    --color-background: #F8FAFC;
+    --color-background: #F1F5F9;
     --color-text: #0F172A;
     --color-text-secondary: #475569;
     --color-success: #16A34A;
@@ -88,6 +88,29 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
   }
+}
+
+/* Custom Horizontal Scrollbar */
+.custom-scrollbar-h::-webkit-scrollbar {
+  height: 6px;
+}
+
+.custom-scrollbar-h::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar-h::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.2);
+  border-radius: 20px;
+}
+
+.custom-scrollbar-h::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.4);
+}
+
+.custom-scrollbar-h {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.2) transparent;
 }
 
 @keyframes shimmer {
@@ -159,4 +182,8 @@
     border-radius: 0.75rem !important;
   }
 }
-
+@layer utilities {
+  .font-cursive {
+    font-family: var(--font-caveat), cursive;
+  }
+}

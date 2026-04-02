@@ -2,7 +2,13 @@ class Api::V1::TenantMessagesController < Api::V1::BaseController
   before_action :authenticate_user!
 
   def index
-    @messages = current_user.tenant.tenant_messages.order(created_at: :desc)
+    @messages = current_user.tenant.tenant_messages
+    
+    if params[:updated_after].present?
+      @messages = @messages.where('tenant_messages.updated_at > ?', params[:updated_after])
+    end
+
+    @messages = @messages.order(created_at: :desc)
     render json: { messages: @messages }
   end
 
