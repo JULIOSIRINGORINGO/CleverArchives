@@ -6,6 +6,7 @@
 !/frontend/
 !/README.md
 !/.gitignore
+!/.agents/
 
 # --- Backend Specifics ---
 /backend/node_modules/
