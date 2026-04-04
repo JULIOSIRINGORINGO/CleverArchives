@@ -43,7 +43,7 @@ export function HighlightCard({
 }: HighlightCardProps) {
   return (
     <Card className={cn(
-      "rounded-xl border-none shadow-sm p-6 relative overflow-hidden flex flex-col justify-end min-h-[300px]",
+      "rounded-xl border border-border/40 p-6 relative overflow-hidden flex flex-col justify-end min-h-[300px]",
       backgroundClassName || variantStyles[variant],
       className
     )}>

@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { useTranslations, useLocale } from "next-intl";
 import { format } from "date-fns";
 import { id, enUS } from "date-fns/locale";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/hooks/useToast";
 
@@ -107,9 +107,11 @@ export default function BorrowingDetailPage() {
           </button>
           <h1 className="text-2xl font-black tracking-tight flex items-center gap-2.5">
             Detail Peminjaman
-            <Badge variant={isReturned ? "secondary" : isOverdue ? "destructive" : "default"} className="rounded-md px-2 py-0.5  text-[9px] font-bold tracking-wider">
-              {isReturned ? "Returned" : isOverdue ? "Overdue" : "Active"}
-            </Badge>
+            <StatusBadge 
+              status={isReturned ? "returned" : isOverdue ? "overdue" : "active"} 
+              label={isReturned ? "Returned" : isOverdue ? "Overdue" : "Active"} 
+              className="rounded-md"
+            />
           </h1>
         </div>
         

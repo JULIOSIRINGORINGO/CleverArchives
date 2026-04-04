@@ -17,6 +17,7 @@ interface UnifiedFilterBarProps {
   onViewChange?: (mode: 'standard' | 'compact') => void;
   className?: string;
   extraFilters?: React.ReactNode;
+  searchAddon?: React.ReactNode;
 }
 
 /**
@@ -34,7 +35,8 @@ export function UnifiedFilterBar({
   viewMode,
   onViewChange,
   className,
-  extraFilters
+  extraFilters,
+  searchAddon
 }: UnifiedFilterBarProps) {
   return (
     <div className={cn("flex flex-col md:flex-row items-center gap-6 w-full", className)}>
@@ -44,6 +46,7 @@ export function UnifiedFilterBar({
         onChange={onSearchChange}
         placeholder={searchPlaceholder}
         isLoading={isLoading}
+        addon={searchAddon}
       />
       
       {/* Kontainer Filter & Toggle */}

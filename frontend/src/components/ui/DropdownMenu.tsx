@@ -44,7 +44,7 @@ export const DropdownMenuContent = ({ children, align = "end", className, isOpen
   return (
     <div 
       className={cn(
-        "absolute z-[9999] mt-2 min-w-[8rem] overflow-hidden rounded-xl border border-gray-200 bg-white p-1 text-gray-900 shadow-lg",
+        "absolute z-[100] mt-2 min-w-[12rem] overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-b from-white to-slate-50/50 p-1.5 text-slate-900",
         align === "end" ? "right-0" : "left-0",
         className
       )}
@@ -64,7 +64,7 @@ export const DropdownMenuItem = ({ children, className, onClick, setIsOpen }: an
   return (
     <div
       className={cn(
-        "relative flex cursor-pointer select-none items-center rounded-lg px-3 py-2 text-sm outline-none transition-colors hover:bg-gray-100",
+        "relative flex cursor-pointer select-none items-center gap-3 rounded-xl px-3 py-2.5 text-[11px] font-bold text-slate-700 outline-none transition-colors hover:bg-slate-50 active:bg-slate-100",
         className
       )}
       onClick={(e) => {

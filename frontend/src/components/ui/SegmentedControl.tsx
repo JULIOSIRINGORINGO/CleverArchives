@@ -11,6 +11,7 @@ interface SegmentedControlProps {
   options: SegmentOption[];
   activeId: string;
   onChange: (id: string) => void;
+  fullWidth?: boolean;
   className?: string;
 }
 
@@ -23,11 +24,13 @@ export function SegmentedControl({
   options,
   activeId,
   onChange,
+  fullWidth,
   className,
 }: SegmentedControlProps) {
   return (
     <div className={cn(
       "flex items-center bg-muted/50 p-1 rounded-lg border border-border/50 overflow-x-auto",
+      fullWidth && "w-full",
       className
     )}>
       {options.map((opt) => (

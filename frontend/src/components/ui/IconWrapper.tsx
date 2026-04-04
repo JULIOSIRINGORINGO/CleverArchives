@@ -1,14 +1,46 @@
-"use client";
-
 import * as React from "react";
+import { 
+  Hash, Calendar, Building2, BookOpen, Clock, Check, AlertCircle, X, ChevronRight, ArrowUpRight, Search, Bookmark,
+  Shield, Send, Paperclip
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type IconWrapperVariant = "primary" | "warning" | "danger" | "success" | "muted";
-type IconWrapperSize = "sm" | "md" | "lg";
+/**
+ * Domain-specific icon names to decouple features from the icon library.
+ */
+export const ICON_REGISTRY = {
+  shelf: Hash,
+  year: Calendar,
+  publisher: Building2,
+  isbn: BookOpen,
+  time: Clock,
+  success: Check,
+  error: AlertCircle,
+  close: X,
+  next: ChevronRight,
+  details: ArrowUpRight,
+  search: Search,
+  bookmark: Bookmark,
+  shield: Shield,
+  send: Send,
+  attachment: Paperclip,
+  paperclip: Paperclip,
+} as const;
+
+export type AppIconName = keyof typeof ICON_REGISTRY;
+
+type IconWrapperVariant = "primary" | "warning" | "danger" | "success" | "muted" | "white";
+type IconWrapperSize = "sm" | "md" | "lg" | "xs";
+type IconPreset = "security-note" | "send-message" | "attachment-clip";
 
 interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: IconWrapperVariant;
   size?: IconWrapperSize;
+  icon?: AppIconName;
+  preset?: IconPreset;
+  isGhost?: boolean;
+  opacity?: "20" | "40" | "50" | "60" | "100";
+  color?: "emerald" | "amber" | "destructive" | "primary";
 }
 
 const variantStyles: Record<IconWrapperVariant, string> = {
@@ -17,29 +49,57 @@ const variantStyles: Record<IconWrapperVariant, string> = {
   danger: "bg-destructive/10 text-destructive",
   success: "bg-emerald-50 text-emerald-500",
   muted: "bg-muted text-muted-foreground",
+  white: "bg-white/10 text-white border border-white/10 shadow-sm backdrop-blur-sm",
 };
 
 const sizeStyles: Record<IconWrapperSize, string> = {
+  xs: "w-7 h-7 rounded-lg",
   sm: "w-8 h-8 rounded-lg",
-  md: "w-10 h-10 rounded-xl",
-  lg: "w-14 h-14 rounded-2xl",
+  md: "w-10 h-10 rounded-2xl",
+  lg: "w-14 h-14 rounded-3xl",
+};
+
+const ICON_PRESETS: Record<IconPreset, Partial<IconWrapperProps>> = {
+  "security-note": { icon: "shield", color: "emerald", opacity: "40", isGhost: true },
+  "send-message": { icon: "send", size: "xs", isGhost: true, color: "primary" },
+  "attachment-clip": { icon: "paperclip", opacity: "40", isGhost: true },
 };
 
 const IconWrapper = React.forwardRef<HTMLDivElement, IconWrapperProps>(
-  ({ variant = "primary", size = "md", className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        "flex items-center justify-center shrink-0",
-        variantStyles[variant],
-        sizeStyles[size],
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  )
+  ({ variant = "primary", size = "md", className, children, icon, preset, isGhost, opacity, color, ...props }, ref) => {
+    const presetProps = preset ? ICON_PRESETS[preset] : {};
+    const finalIcon = (icon || presetProps.icon) as AppIconName;
+    const finalSize = (presetProps.size || size) as IconWrapperSize;
+    const finalVariant = (presetProps.variant || variant) as IconWrapperVariant;
+    const finalIsGhost = presetProps.isGhost !== undefined ? presetProps.isGhost : isGhost;
+    const finalOpacity = presetProps.opacity || opacity;
+    const finalColor = presetProps.color || color;
+
+    const Icon = finalIcon ? ICON_REGISTRY[finalIcon] : null;
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "flex items-center justify-center shrink-0",
+          !finalIsGhost && variantStyles[finalVariant],
+          !finalIsGhost && sizeStyles[finalSize],
+          finalOpacity === "20" && "opacity-20",
+          finalOpacity === "40" && "opacity-40",
+          finalOpacity === "50" && "opacity-50",
+          finalOpacity === "60" && "opacity-60",
+          finalColor === "emerald" && "text-emerald-500",
+          finalColor === "amber" && "text-amber-500",
+          finalColor === "destructive" && "text-destructive",
+          finalColor === "primary" && "text-primary",
+          className
+        )}
+        {...props}
+      >
+        {Icon ? <Icon size={finalSize === 'lg' ? 24 : finalSize === 'sm' || finalSize === 'xs' ? 14 : 18} strokeWidth={2.5} /> : children}
+      </div>
+    );
+  }
 );
 IconWrapper.displayName = "IconWrapper";
 

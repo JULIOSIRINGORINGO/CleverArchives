@@ -55,14 +55,27 @@ const CONFIGS: Record<string, { label: string, bg: string, text: string, icon: L
   closed: { label: "status_closed", bg: "bg-emerald-500", text: "text-white", icon: CheckCircle2 },
 };
 
-export function StatusBadge({ status, label, className, showIcon = true }: { status: string, label?: string, className?: string, showIcon?: boolean }) {
+export function StatusBadge({ 
+  status, 
+  label, 
+  className, 
+  showIcon = true
+}: { 
+  status: string, 
+  label?: string, 
+  className?: string, 
+  showIcon?: boolean
+}) {
   const t = useTranslations("Common");
   const key = (status || "unknown").toLowerCase().replace(/\s+/g, '_');
   const config = CONFIGS[key];
 
   if (!config) {
     return (
-      <div className={cn("inline-flex items-center justify-center gap-1.5 px-4 h-7 rounded-full text-[10px] font-bold bg-slate-500 text-white shadow-sm transition-all", className)}>
+      <div className={cn(
+        "inline-flex items-center justify-center gap-1.5 px-4 h-7 rounded-full text-[10px] font-bold shadow-sm transition-all whitespace-nowrap bg-slate-500 text-white",
+        className
+      )}>
         {showIcon && <HelpCircle size={12} strokeWidth={3} />}
         <span className="leading-none">{label || status || "???"}</span>
       </div>
@@ -70,9 +83,15 @@ export function StatusBadge({ status, label, className, showIcon = true }: { sta
   }
 
   const Icon = config.icon;
+
   return (
-    <div className={cn("inline-flex items-center justify-center gap-1.5 px-4 h-7 rounded-full text-[10px] font-bold shadow-sm transition-all border border-black/5", config.bg, config.text, className)}>
-      {showIcon && <Icon size={12} strokeWidth={3} />}
+    <div className={cn(
+      "inline-flex items-center justify-center gap-1.5 px-3 h-7 rounded-full text-xs font-semibold shadow-sm transition-all border border-black/5 whitespace-nowrap shrink-0",
+      config.bg, 
+      config.text,
+      className
+    )}>
+      {showIcon && <Icon size={11} strokeWidth={3} />}
       <span className="leading-none">{label || t(config.label) || key.replace(/_/g, ' ')}</span>
     </div>
   );

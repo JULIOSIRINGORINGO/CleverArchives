@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 
-interface CartItem {
+export interface CartItem {
   id: number;
   title: string;
   author: string;

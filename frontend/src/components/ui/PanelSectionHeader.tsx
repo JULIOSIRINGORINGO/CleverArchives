@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Text } from "@/components/ui/Text";
 import { IconWrapper, IconWrapperVariant } from "@/components/ui/IconWrapper";
+import { Inline } from "@/components/ui/Inline";
 
 interface PanelSectionHeaderProps {
   icon: React.ReactNode;
@@ -25,11 +26,11 @@ export function PanelSectionHeader({
   className,
 }: PanelSectionHeaderProps) {
   return (
-    <div className={cn("flex items-center gap-3", className)}>
+    <Inline spacing="sm" align="center" className={className}>
       <IconWrapper variant={iconVariant} size="sm">
         {icon}
       </IconWrapper>
       <Text variant={titleVariant}>{title}</Text>
-    </div>
+    </Inline>
   );
 }

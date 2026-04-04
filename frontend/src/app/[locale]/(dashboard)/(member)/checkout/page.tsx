@@ -1,44 +1,131 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useCheckout } from "@/contexts/CheckoutContext";
-import { useTranslations, useLocale } from "next-intl";
-import { apiService } from "@/services/api";
+import { useState, useEffect, useMemo, memo, ReactNode } from "react";
+import { 
+  ShoppingBag, Clock, CheckCircle2, Package, 
+  ArrowLeft, X, Trash2, Loader2 
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ShoppingBag, Clock, CheckCircle2, Package, ArrowLeft, X, Trash2 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+
+// Design System
+import { DESIGN } from "@/config/design-system";
+
+// Context & Services
+import { useCheckout } from "@/contexts/CheckoutContext";
+import { apiService } from "@/services/api";
+import { useToast } from "@/components/ui/Toast";
+import { cn } from "@/lib/utils";
+
+// UI Components
 import { Button } from "@/components/ui/Button";
-import { Spinner } from "@/components/ui/Spinner";
 import { WorkspacePanel, WorkspacePanelHeader, WorkspacePanelContent, WorkspacePanelFooter } from "@/components/ui/WorkspacePanel";
 import { BookListCard } from "@/components/books/BookListCard";
-import { useRouter } from "next/navigation";
-import { DashboardPage } from "@/components/layout/DashboardPage";
-import { SplitPanelLayout } from "@/components/layout/SplitPanelLayout";
-import { useToast } from "@/components/ui/Toast";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AlertCard } from "@/components/ui/AlertCard";
-import { PanelSectionHeader } from "@/components/ui/PanelSectionHeader";
+import { Stack } from "@/components/ui/Stack";
+import { Inline } from "@/components/ui/Inline";
+import { Box } from "@/components/ui/Box";
+import { Heading } from "@/components/ui/Heading";
+import { Text } from "@/components/ui/Text";
+import { PageBody } from "@/components/ui/Layout";
+
+// --- SHARED UI MODULES ---
+
+const Header = ({ icon: Icon, title, variant }: { icon: any; title: string, variant: 'primary' | 'warning' }) => (
+  <Inline spacing="md" align="center">
+    <Box className={cn(
+      "w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-sm border border-border/50",
+      variant === 'primary' ? "text-primary" : "text-amber-500"
+    )}>
+      <Icon size={20} strokeWidth={2.5} />
+    </Box>
+    <Heading level="h4" weight="bold">{title}</Heading>
+  </Inline>
+);
+
+const MotionItem = memo(({ children, index }: { children: ReactNode; index: number }) => (
+  <motion.div 
+    layout 
+    initial={{ opacity: 0, y: 5 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    exit={{ opacity: 0, scale: 0.95 }} 
+    transition={{ delay: index * 0.05 }}
+  >
+    {children}
+  </motion.div>
+));
+
+const ListItem = memo(({ title, barcode, status, isLoading, onAction, actionIcon: Icon, actionVariant, t }: any) => (
+  <BookListCard
+    isCompact 
+    title={title || "Buku"} 
+    author={barcode || "Unknown"} 
+    status={status || "available"} 
+    metadata={[]}
+    action={
+      <Button 
+        variant={actionVariant} 
+        size={status === 'available' ? 'sm' : 'icon'} 
+        disabled={isLoading} 
+        onClick={onAction}
+        rounded="xl"
+      >
+        {isLoading ? (
+          <Loader2 className="animate-spin" size={16} />
+        ) : Icon ? (
+          <Icon size={18} strokeWidth={2.5} />
+        ) : (
+          t("submit_btn_simple")
+        )}
+      </Button>
+    }
+  />
+));
+
+const ListRenderer = ({ items, renderItem, emptyIcon: Icon, emptyTitle }: any) => (
+  <AnimatePresence mode="popLayout" initial={false}>
+    <Stack spacing="sm">
+      {items.length > 0 ? (
+        items.map((item: any, i: number) => (
+          <MotionItem key={item.barcode || item.id} index={i}>
+            {renderItem(item)}
+          </MotionItem>
+        ))
+      ) : (
+        <Box className="py-12 bg-white/50 rounded-[2.5rem] border border-dashed border-border/10">
+          <EmptyState icon={Icon} title={emptyTitle} description="" />
+        </Box>
+      )}
+    </Stack>
+  </AnimatePresence>
+);
+
+// --- MAIN PAGE ---
 
 export default function CheckoutPage() {
   const t = useTranslations("Cart");
-  const navT = useTranslations("Navigation");
-  const locale = useLocale();
+  const l = useLocale();
   const router = useRouter();
   const { toast } = useToast();
   const { items: checkoutItems, removeFromCheckout, clearCheckout } = useCheckout();
+  
   const [pending, setPending] = useState<any[]>([]);
   const [loadingId, setLoadingId] = useState<string | number | null>(null);
   const [showWarning, setShowWarning] = useState(true);
 
-  const refresh = async () => {
-    const res = await apiService.borrowings.list({ items: '100' });
-    const list = Array.isArray(res) ? res : (res.data || []);
-    setPending(list.filter((b: any) => ['pending', 'cancellation_requested'].includes(b.status)));
+  const fetch = async () => {
+    try {
+      const res = await apiService.borrowings.list({ items: "100" });
+      setPending((Array.isArray(res) ? res : (res.data || [])).filter((b: any) => ["pending", "cancellation_requested"].includes(b.status)));
+    } catch (e) { console.error(e); }
   };
+  useEffect(() => { fetch(); }, []);
 
-  useEffect(() => { refresh(); }, []);
-
-  const handleAction = async (action: 'single' | 'batch' | 'cancel', data?: any) => {
-    setLoadingId(data?.barcode || data?.id || 'batch');
+  const handle = async (action: 'single' | 'batch' | 'cancel', data?: any) => {
+    const id = data?.barcode || data?.id || 'batch';
+    setLoadingId(id);
     try {
       if (action === 'single') {
         await apiService.borrowings.create({ borrowing: { barcode: data.barcode } });
@@ -53,152 +140,119 @@ export default function CheckoutPage() {
         await apiService.borrowings.cancel(data.id.toString(), { member_id: data.member_id, barcode: data.book_copy?.barcode });
         toast(t("success_cancellation_requested"), "success");
       }
-      refresh();
-    } catch (err: any) {
-      toast(err.message || t("error_failed_item", { barcode: data?.barcode || "batch" }), "error");
-    }
-    setLoadingId(null);
+      fetch();
+    } catch (e: any) { toast(e.message || t("error_failed"), "error"); }
+    finally { setLoadingId(null); }
   };
 
   return (
-    <DashboardPage
-      title={navT("checkout")}
-      subtitle={navT("checkout_desc")}
-      icon={<ShoppingBag size={22} />}
-      noPadding
-      hideScroll
-    >
-      <SplitPanelLayout>
-        {/* Primary Panel: Checkout Items */}
-        <WorkspacePanel fullHeight>
-          <WorkspacePanelHeader showDivider>
-            <PanelSectionHeader
-              icon={<ShoppingBag size={16} />}
-              iconVariant="primary"
-              title={t("ready_to_checkout")}
-            />
-          </WorkspacePanelHeader>
-
-          <WorkspacePanelContent>
-            <AnimatePresence mode="popLayout">
-              {checkoutItems.length > 0 ? checkoutItems.map((item) => (
-                <motion.div
-                  key={item.barcode}
-                  layout
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
+    <Box className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+      <PageBody className="flex-1">
+        
+        {/* PANEL 1: DAFTAR BUKU SIAP CHECKOUT */}
+        <Box className="flex-1 flex flex-col min-w-0 h-full">
+          <Stack spacing="md" className="h-full">
+            <WorkspacePanel className="flex-1 min-h-0">
+              <WorkspacePanelHeader showDivider={false}>
+                <Header icon={ShoppingBag} title={t("ready_to_checkout")} variant="primary" />
+              </WorkspacePanelHeader>
+              <WorkspacePanelContent>
+                <ListRenderer 
+                  items={checkoutItems} 
+                  emptyIcon={Package} 
+                  emptyTitle={t("checkout_empty")} 
+                  renderItem={(item: any) => (
+                    <ListItem 
+                      title={item.title} 
+                      barcode={item.barcode} 
+                      t={t} 
+                      isLoading={loadingId === item.barcode} 
+                      onAction={() => handle('single', item)} 
+                      actionVariant="primary" 
+                    />
+                  )} 
+                />
+              </WorkspacePanelContent>
+              <WorkspacePanelFooter showDivider>
+                <Button 
+                  variant="primary" 
+                  size="xl" 
+                  rounded="2xl" 
+                  fullWidth 
+                  disabled={!checkoutItems.length || !!loadingId} 
+                  onClick={() => handle('batch')}
                 >
-                  <BookListCard
-                    isCompact
-                    title={item.title}
-                    author={item.barcode}
-                    status="available"
-                    metadata={[]}
-                    action={
-                      <>
-                        <Button variant="primary" size="sm" rounded="xl" disabled={!!loadingId} onClick={() => handleAction('single', item)}>
-                          {loadingId === item.barcode ? <Spinner size="xs" /> : t("submit_btn_simple")}
-                        </Button>
-                        <Button variant="danger" size="icon" rounded="xl" onClick={() => removeFromCheckout(item.barcode)}>
-                          <Trash2 size={14} />
-                        </Button>
-                      </>
-                    }
+                  {loadingId === 'batch' ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : (
+                    <CheckCircle2 size={20} />
+                  )} 
+                  {t("process_batch_btn")}
+                </Button>
+              </WorkspacePanelFooter>
+            </WorkspacePanel>
+
+            <Button 
+              variant="outline" 
+              size="xl" 
+              rounded="2xl" 
+              fullWidth 
+              onClick={() => router.push(`/${l}/cart`)}
+            >
+              <ArrowLeft size={20} /> {t("add_from_cart")}
+            </Button>
+          </Stack>
+        </Box>
+
+        {/* PANEL 2: MENUNGGU DISETUJUI */}
+        <Box className="flex-1 flex flex-col min-w-0 h-full">
+          <Stack spacing="md" className="h-full">
+            <WorkspacePanel className="flex-1 min-h-0">
+              <WorkspacePanelHeader showDivider={false}>
+                <Header icon={Clock} title={t("waiting_label")} variant="warning" />
+              </WorkspacePanelHeader>
+              <WorkspacePanelContent>
+                <ListRenderer 
+                  items={pending} 
+                  emptyIcon={Clock} 
+                  emptyTitle={t("no_pending")} 
+                  renderItem={(item: any) => (
+                    <ListItem 
+                      title={item.book_copy?.book?.title} 
+                      barcode={item.book_copy?.barcode} 
+                      status={item.status} 
+                      t={t} 
+                      isLoading={loadingId === item.id} 
+                      onAction={() => handle('cancel', item)} 
+                      actionIcon={X} 
+                      actionVariant="danger" 
+                    />
+                  )} 
+                />
+              </WorkspacePanelContent>
+            </WorkspacePanel>
+
+            <AnimatePresence>
+              {showWarning && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                >
+                  <AlertCard 
+                    variant="info" 
+                    title="Konfirmasi" 
+                    description="Permintaan peminjaman akan diverifikasi oleh sistem sebelum diaktifkan." 
+                    dismissible 
+                    onDismiss={() => setShowWarning(false)} 
                   />
                 </motion.div>
-              )) : (
-                <EmptyState
-                  icon={Package}
-                  title={t("checkout_empty")}
-                  description={navT("checkout_desc")}
-                />
               )}
             </AnimatePresence>
-          </WorkspacePanelContent>
+          </Stack>
+        </Box>
 
-          <WorkspacePanelFooter showDivider>
-            <Button
-              variant="primary"
-              size="xl"
-              rounded="2xl"
-              fullWidth
-              disabled={!checkoutItems.length || !!loadingId}
-              onClick={() => handleAction('batch')}
-            >
-              {loadingId === 'batch' ? <Spinner /> : <CheckCircle2 size={18} />}
-              {t("process_batch_btn")}
-            </Button>
-            <Button
-              variant="outline"
-              size="action"
-              rounded="xl"
-              fullWidth
-              onClick={() => router.push(`/${locale}/cart`)}
-            >
-              <ArrowLeft size={14} />
-              {t("add_from_cart")}
-            </Button>
-          </WorkspacePanelFooter>
-        </WorkspacePanel>
-
-        {/* Secondary Panel: Pending + Warning */}
-        <>
-          <WorkspacePanel fullHeight>
-            <WorkspacePanelHeader showDivider>
-              <PanelSectionHeader
-                icon={<Clock size={14} />}
-                iconVariant="warning"
-                title={t("waiting_label")}
-                titleVariant="label"
-              />
-            </WorkspacePanelHeader>
-
-            <WorkspacePanelContent>
-              {pending.map(b => (
-                <BookListCard
-                  key={b.id}
-                  isCompact
-                  title={b.book_copy?.book?.title}
-                  author={b.book_copy?.barcode}
-                  status={b.status}
-                  metadata={[]}
-                  action={
-                    <Button
-                      variant="danger"
-                      size="icon"
-                      rounded="lg"
-                      disabled={b.status === 'cancellation_requested' || !!loadingId}
-                      onClick={() => handleAction('cancel', b)}
-                    >
-                      {loadingId === b.id ? <Spinner size="xs" /> : <X size={14} />}
-                    </Button>
-                  }
-                />
-              ))}
-              {!pending.length && (
-                <EmptyState
-                  icon={Clock}
-                  title={t("no_pending")}
-                  description=""
-                />
-              )}
-            </WorkspacePanelContent>
-          </WorkspacePanel>
-
-          <AnimatePresence>
-            {showWarning && (
-              <AlertCard
-                variant="info"
-                title={t("confirmation")}
-                description={t("verification_note")}
-                dismissible
-                onDismiss={() => setShowWarning(false)}
-              />
-            )}
-          </AnimatePresence>
-        </>
-      </SplitPanelLayout>
-    </DashboardPage>
+      </PageBody>
+    </Box>
   );
 }

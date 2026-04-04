@@ -12,14 +12,24 @@ interface ModalProps {
   children: ReactNode;
   className?: string;
   closeOnOutsideClick?: boolean;
+  variant?: 'xl' | 'lg' | 'md' | 'sm' | 'flush';
 }
+
+const variantStyles: Record<string, string> = {
+  xl: "max-w-4xl rounded-[2.5rem] p-0 border border-border/20 bg-gradient-to-b from-white to-slate-50/30",
+  lg: "max-w-2xl rounded-[2rem]",
+  md: "max-w-lg rounded-3xl",
+  sm: "max-w-md rounded-2xl",
+  flush: "p-0 rounded-none border-none",
+};
 
 export function Modal({ 
   isOpen, 
   onClose, 
   children, 
   className,
-  closeOnOutsideClick = true 
+  closeOnOutsideClick = true,
+  variant = 'md'
 }: ModalProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -61,8 +71,12 @@ export function Modal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
             className={cn(
-              "relative z-10 w-full bg-white rounded-3xl border border-gray-200 shadow-2xl overflow-hidden",
+              "relative z-10 w-full bg-white overflow-hidden outline-none",
+              variantStyles[variant],
               className
             )}
           >

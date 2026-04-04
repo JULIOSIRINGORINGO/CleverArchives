@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 type DashboardSectionLayout =
   | "stat-grid"     // 1 → 2 → 4 columns
   | "chart-sidebar" // 8/4 split
+  | "book-grid"    // 1 → 2 → 3 → 4 → 5 columns
+  | "modal-grid"   // 2 columns fixed
   | "full";         // single full-width block
 
 interface DashboardSectionProps {
@@ -18,6 +20,8 @@ interface DashboardSectionProps {
 const layoutStyles: Record<DashboardSectionLayout, string> = {
   "stat-grid":     "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5",
   "chart-sidebar": "grid grid-cols-1 md:grid-cols-12 gap-6",
+  "book-grid":    "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-8 gap-y-12",
+  "modal-grid":   "grid grid-cols-2 gap-4",
   "full":          "",
 };
 
