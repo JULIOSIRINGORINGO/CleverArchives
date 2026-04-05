@@ -102,7 +102,7 @@ export const DropdownMenuItem = ({ children, onClick, setIsOpen, color = "defaul
       cursor="pointer"
       rounded="lg"
       color={color}
-      onClick={(e) => {
+      onClick={(e: React.MouseEvent) => {
         e.stopPropagation();
         onClick?.();
         setIsOpen?.(false);

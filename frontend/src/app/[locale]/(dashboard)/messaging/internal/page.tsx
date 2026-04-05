@@ -275,17 +275,10 @@ export default function InternalMessagingPage() {
       <Box 
         variant="workspace"
         height="full" 
-        overflow="hidden" 
-        spacing="gap-5"
-        background="surface"
-        padding="sm"
-        display="flex"
-        direction="col"
-        mdDirection="row"
-        className="bg-slate-50/50"
+        padding="none"
+        background="surface-soft"
       >
-        {/* Sidebar Wrapper (Fixed 320px for better fit) */}
-        <Box height="full" display="flex" direction="col" className="w-full md:w-80 shrink-0">
+
           <ThreadSidebar 
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -304,10 +297,9 @@ export default function InternalMessagingPage() {
             dateFnsLocale={dateFnsLocale}
             translations={t}
           />
-        </Box>
 
-        {/* Content Wrapper (Dynamic flexible width) */}
-        <Box height="full" display="flex" direction="col" className="w-full flex-1 min-w-0">
+
+
           <AnimatePresence mode="wait">
             {activeTab === 'inbox' ? (
               <ChatView 
@@ -349,19 +341,21 @@ export default function InternalMessagingPage() {
               />
             )}
           </AnimatePresence>
-        </Box>
+
       </Box>
 
       <AnimatePresence>
         <Modal 
           isOpen={!!selectedBroadcast} 
           onClose={() => setSelectedBroadcast(null)} 
-          className="max-w-2xl w-full p-0 overflow-hidden"
+          padding="none"
+          overflow="hidden"
+          maxWidth="2xl"
         >
           {selectedBroadcast && (
             <Box display="flex" direction="col" background="surface">
-              <Box padding="xl" border="subtle" background="muted-soft" position="relative" overflow="hidden">
-                <Box position="absolute" className="top-0 right-0" padding="md">
+              <Box padding="xl" border="subtle" background="surface-soft" position="relative" overflow="hidden">
+                <Box position="absolute" top="none" right="none" padding="md">
                   <Button 
                     variant="ghost" 
                     size="icon" 
@@ -377,7 +371,7 @@ export default function InternalMessagingPage() {
                   </Text>
                 </Box>
                 <Box marginBottom="md">
-                  <Text variant="heading" weight="bold" color="black" className="leading-tight">
+                  <Text variant="heading" weight="bold" color="black">
                     {selectedBroadcast.title}
                   </Text>
                 </Box>
@@ -396,8 +390,8 @@ export default function InternalMessagingPage() {
                 </Inline>
               </Box>
               
-              <Box padding="xl" overflow="auto" className="max-h-[50vh] custom-scrollbar">
-                <Text variant="body" color="black" className="whitespace-pre-wrap leading-relaxed">
+              <Box padding="xl" overflow="auto" maxHeight="160px" scrollbar="custom">
+                <Text variant="body" color="black" whiteSpace="pre-wrap">
                   {selectedBroadcast.body}
                 </Text>
                 
@@ -407,28 +401,27 @@ export default function InternalMessagingPage() {
                     <Stack spacing="md">
                       {selectedBroadcast.attachments.map((att: any, i: number) => (
                         <Box 
-                          asChild
                           key={i} 
                           variant="list-row"
                           padding="md"
                           rounded="2xl"
                           cursor="pointer"
+                          as="a"
+                          href={`${process.env.NEXT_PUBLIC_API_URL}${att.url}`} 
+                          target="_blank" 
+                          rel="noreferrer" 
                         >
-                          <a 
-                            href={`${process.env.NEXT_PUBLIC_API_URL}${att.url}`} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                          >
-                            <Inline justify="between" align="center" width="full">
-                             <Inline spacing="lg" align="center">
-                               <Box variant="avatar-icon" width="10" height="10" display="flex" align="center" justify="center">
-                                  <IconWrapper icon="file-text" size="sm" isGhost />
-                               </Box>
-                               <Text variant="label-strong" color="black" className="truncate max-w-[240px]">{att.filename}</Text>
-                             </Inline>
-                             <IconWrapper icon="download" size="sm" isGhost />
+                          <Inline justify="between" align="center" width="full">
+                            <Inline spacing="lg" align="center">
+                              <Box variant="avatar-icon" width="10" height="10" display="flex" align="center" justify="center">
+                                <IconWrapper icon="file-text" size="sm" isGhost />
+                              </Box>
+                              <Text variant="label-strong" color="black" lineClamp="1">
+                                <Box maxWidth="64">{att.filename}</Box>
+                              </Text>
                             </Inline>
-                          </a>
+                            <IconWrapper icon="download" size="sm" isGhost />
+                          </Inline>
                         </Box>
                       ))}
                     </Stack>
@@ -436,8 +429,8 @@ export default function InternalMessagingPage() {
                 )}
               </Box>
               
-              <Box padding="md" background="muted-soft" border="top" display="flex" justify="end">
-                <Button onClick={() => setSelectedBroadcast(null)} variant="outline" rounded="xl" className="px-6">
+              <Box padding="md" background="surface-soft" border="top" display="flex" justify="end">
+                <Button onClick={() => setSelectedBroadcast(null)} variant="outline" rounded="xl">
                    {t("done")}
                 </Button>
               </Box>

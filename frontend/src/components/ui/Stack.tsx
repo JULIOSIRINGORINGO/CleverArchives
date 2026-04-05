@@ -2,6 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { 
+  Box,
   BoxProps, 
   backgrounds, 
   borders, 
@@ -61,44 +62,29 @@ export const Stack = React.forwardRef<HTMLDivElement, StackProps>(({
   isCentered = false,
   centeredMaxWidth = false,
   isClickable = false,
-  maxWidth,
-  background,
-  border,
-  rounded,
-  padding,
-  flex,
-  shrink,
-  asChild = false,
   className, 
   ...props 
 }, ref) => {
-  const Component = asChild ? Slot : "div";
-
   return (
-    <Component 
+    <Box 
       ref={ref}
+      display="flex"
+      direction="col"
+      spacing={
+        props.variant === "form-section-gap" ? "lg" : 
+        props.variant === "form-item-gap" ? "sm" :
+        props.variant === "tight-list-gap" ? "none" :
+        props.variant === "upload-dropzone-content" ? "xs" :
+        props.variant === "footer-button-group" ? "md" :
+        props.variant === "chat-list-skeleton" ? "lg" :
+        spacing
+      }
+      align={isCentered || props.variant === "upload-dropzone-content" || props.variant === "chat-list-skeleton" ? "center" : align}
+      justify={isCentered || props.variant === "upload-dropzone-content" || props.variant === "chat-list-skeleton" ? "center" : justify}
+      centered={centeredMaxWidth || props.variant === "footer-button-group" || props.variant === "chat-list-skeleton"}
+      cursor={(isClickable || props.variant === "upload-dropzone-content") ? "pointer" : undefined}
       className={cn(
-        "flex flex-col",
-        props.variant === "form-section-gap" ? spacingMap["lg"] : 
-        props.variant === "form-item-gap" ? spacingMap["sm"] :
-        props.variant === "tight-list-gap" ? spacingMap["none"] :
-        props.variant === "upload-dropzone-content" ? spacingMap["xs"] :
-        props.variant === "footer-button-group" ? spacingMap["md"] :
-        props.variant === "chat-list-skeleton" ? spacingMap["lg"] :
-        spacingMap[spacing],
-        (isCentered || props.variant === "upload-dropzone-content" || props.variant === "chat-list-skeleton") ? "items-center justify-center" : [alignMap[align], justifyMap[justify]],
-        (centeredMaxWidth || props.variant === "footer-button-group" || props.variant === "chat-list-skeleton") && "mx-auto max-w-full",
-        (isClickable || props.variant === "upload-dropzone-content") && "cursor-pointer",
         props.variant === "chat-list-skeleton" && "h-full animate-pulse justify-end",
-        maxWidth && widths[maxWidth],
-        props.width && widthMap[props.width as keyof typeof widthMap],
-        props.height && heightMap[props.height as keyof typeof heightMap],
-        background && backgrounds[background],
-        border && borders[border],
-        rounded && roundings[rounded],
-        padding && paddings[padding],
-        flex && flexMap[flex],
-        shrink && shrinkMap[shrink],
         className
       )}
       {...props}

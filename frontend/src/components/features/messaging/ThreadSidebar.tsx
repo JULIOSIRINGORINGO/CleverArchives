@@ -100,6 +100,7 @@ export function ThreadSidebar({
     <Stack 
       spacing="md" 
       width="full" 
+      mdWidth="80"
       height="full" 
       shrink="0"
       display={selectedThreadId && activeTab === 'inbox' ? "none" : "flex"}

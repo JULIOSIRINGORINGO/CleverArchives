@@ -12,7 +12,10 @@ interface ModalProps {
   children: ReactNode;
   className?: string;
   closeOnOutsideClick?: boolean;
-  variant?: 'xl' | 'lg' | 'md' | 'sm' | 'flush';
+  variant?: 'xl' | 'lg' | 'md' | 'sm' | 'flush' | 'none';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'max-w-2xl';
+  overflow?: 'hidden' | 'auto' | 'visible';
 }
 
 const variantStyles: Record<string, string> = {
@@ -21,6 +24,7 @@ const variantStyles: Record<string, string> = {
   md: "max-w-lg rounded-3xl",
   sm: "max-w-md rounded-2xl",
   flush: "p-0 rounded-none border-none",
+  none: "",
 };
 
 export function Modal({ 
@@ -29,7 +33,10 @@ export function Modal({
   children, 
   className,
   closeOnOutsideClick = true,
-  variant = 'md'
+  variant = 'md',
+  padding,
+  maxWidth,
+  overflow = 'hidden'
 }: ModalProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -75,8 +82,21 @@ export function Modal({
             aria-modal="true"
             tabIndex={-1}
             className={cn(
-              "relative z-10 w-full bg-white overflow-hidden outline-none",
+              "relative z-10 w-full bg-white outline-none",
               variantStyles[variant],
+              padding === 'none' && "p-0",
+              padding === 'sm' && "p-4",
+              padding === 'md' && "p-6",
+              padding === 'lg' && "p-8",
+              maxWidth === 'sm' && "max-w-sm",
+              maxWidth === "md" && "max-w-md",
+              maxWidth === "lg" && "max-w-lg",
+              maxWidth === "xl" && "max-w-xl",
+              maxWidth === "2xl" && "max-w-2xl",
+              maxWidth === "3xl" && "max-w-3xl",
+              maxWidth === "4xl" && "max-w-4xl",
+              overflow === 'hidden' && "overflow-hidden",
+              overflow === 'auto' && "overflow-auto",
               className
             )}
           >

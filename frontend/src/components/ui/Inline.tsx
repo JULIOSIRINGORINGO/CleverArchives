@@ -2,6 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { 
+  Box,
   BoxProps, 
   backgrounds, 
   borders, 
@@ -64,44 +65,36 @@ export const Inline = React.forwardRef<HTMLDivElement, InlineProps>(({
   isCentered = false,
   isStartCenter = false,
   isClickable = false,
-  maxWidth,
-  background,
-  border,
-  rounded,
-  padding,
-  flex,
-  shrink,
-  asChild = false,
   className, 
   ...props 
 }, ref) => {
-  const Component = asChild ? Slot : "div";
-
   return (
-    <Component 
+    <Box 
       ref={ref}
+      display="flex"
+      direction="row"
+      spacing={
+        props.variant === "form-field-gap" ? "sm" : 
+        props.variant === "chat-bubble-content-gap" ? "md" : 
+        props.variant === "chat-date-separator" ? "md" : 
+        spacing
+      }
+      align={
+        (isCentered || props.variant === "chat-date-separator") ? "center" : 
+        isStartCenter ? "center" : 
+        props.variant === "chat-bubble-content-gap" ? "end" :
+        align
+      }
+      justify={
+        (isCentered || props.variant === "chat-date-separator") ? "center" : 
+        isStartCenter ? "start" : 
+        props.variant === "chat-bubble-content-gap" ? "start" :
+        justify
+      }
+      cursor={isClickable ? "pointer" : undefined}
       className={cn(
-        "flex flex-row",
-        props.variant === "form-field-gap" ? spacingMap["sm"] : 
-        props.variant === "chat-bubble-content-gap" ? spacingMap["md"] : 
-        props.variant === "chat-date-separator" ? spacingMap["md"] : 
-        spacingMap[spacing],
-        (isCentered || props.variant === "chat-date-separator") ? "items-center justify-center" : 
-        isStartCenter ? "items-center justify-start" : 
-        props.variant === "chat-bubble-content-gap" ? "items-end justify-start" :
-        [alignMap[align], justifyMap[justify]],
-        isClickable && "cursor-pointer",
         props.variant === "chat-date-separator" && "p-6",
         wrap ? "flex-wrap" : "flex-nowrap",
-        maxWidth && widths[maxWidth],
-        props.width && widthMap[props.width as keyof typeof widthMap],
-        props.height && heightMap[props.height as keyof typeof heightMap],
-        background && backgrounds[background],
-        border && borders[border],
-        rounded && roundings[rounded],
-        padding && paddings[padding],
-        flex && flexMap[flex],
-        shrink && shrinkMap[shrink],
         className
       )}
       {...props}

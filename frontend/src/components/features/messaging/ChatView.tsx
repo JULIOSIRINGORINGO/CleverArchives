@@ -50,6 +50,8 @@ export function ChatView({
         shadow="sm"
         display="hidden"
         mdDisplay="flex"
+        flex="1"
+        minWidth="0"
       >
         <Stack spacing="lg" align="center" opacity="40" maxWidth="md" centered>
           <IconWrapper
@@ -77,7 +79,7 @@ export function ChatView({
   }
 
   return (
-    <Box variant="fill-remaining">
+    <Box variant="fill-remaining" flex="1" minWidth="0">
       <ChatPanel
         title={selectedThread.partnerName}
         subtitle={subtitle || t("online")}

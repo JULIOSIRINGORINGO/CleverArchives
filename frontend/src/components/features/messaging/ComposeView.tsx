@@ -89,7 +89,15 @@ export function ComposeView({
   };
 
   return (
-    <Box variant="fill-remaining" background="white" rounded="3xl" border="subtle" shadow="sm">
+    <Box 
+      variant="fill-remaining" 
+      background="white" 
+      rounded="3xl" 
+      border="subtle" 
+      shadow="sm"
+      flex="1"
+      minWidth="0"
+    >
       <WorkspacePanelHeader 
         showDivider={true} 
         paddingX="lg" 
