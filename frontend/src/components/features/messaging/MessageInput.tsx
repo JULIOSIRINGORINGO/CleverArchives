@@ -1,10 +1,14 @@
-"use client";
-
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { IconWrapper } from "@/components/ui/IconWrapper";
 import { Button } from "@/components/ui/Button";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { Box } from "@/components/ui/Box";
+import { Inline } from "@/components/ui/Inline";
+import { Text } from "@/components/ui/Text";
+import { Stack } from "@/components/ui/Stack";
+import { Textarea } from "@/components/ui/Textarea";
 
 interface MessageInputProps {
   onSend: (text: string) => void;
@@ -29,7 +33,6 @@ export function MessageInput({
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-expand logic
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -52,38 +55,40 @@ export function MessageInput({
   };
 
   return (
-    <div className={cn(
-      "px-6 py-4 bg-background border-t border-border/40 flex items-center gap-4 transition-all duration-300",
-      className
-    )}>
-      <div className="flex-1 relative group">
-        <textarea 
+    <Box 
+      paddingX="lg" 
+      paddingY="md" 
+      background="surface" 
+      border="top" 
+      display="flex" 
+      align="center" 
+      spacing="md"
+      transition="all"
+    >
+      <Box flex="1" position="relative" shadow="sm" rounded="2xl" overflow="hidden">
+        <Textarea 
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder || t("type_message_placeholder") || "Tulis pesan..."}
-          className="w-full bg-muted/20 border border-border rounded-2xl px-6 py-4 outline-none transition-all resize-none scrollbar-none overflow-hidden text-[13px] leading-relaxed shadow-all-sm font-medium h-[64px]"
-          rows={1}
+          variant="minimal"
           disabled={disabled || loading}
         />
-      </div>
+      </Box>
       <Button 
         onClick={handleSend}
         disabled={!value.trim() || disabled || loading}
+        variant="primary"
         rounded="full"
-        className="h-16 w-16 shrink-0 p-0 flex items-center justify-center shadow-lg shadow-primary/25 text-white transition-all bg-primary border-none hover:shadow-primary/40 hover:brightness-110 active:brightness-95 group"
+        className="w-16 h-16 shrink-0 p-0 shadow-lg border-none flex items-center justify-center transition-all"
       >
         {loading ? (
           <Loader2 className="animate-spin" size={24} />
         ) : (
-          <Send 
-            size={24} 
-            strokeWidth={2.5} 
-            className="transition-transform group-active:translate-x-0.5 group-active:-translate-y-0.5" 
-          />
+          <IconWrapper icon="send" size="lg" isGhost />
         )}
       </Button>
-    </div>
+    </Box>
   );
 }

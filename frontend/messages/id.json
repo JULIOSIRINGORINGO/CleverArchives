@@ -995,7 +995,9 @@
     "select_contact": "Pilih Kontak",
     "you_prefix": "Anda: ",
     "history_table_title": "Riwayat Percakapan",
-    "done": "Selesai"
+    "done": "Selesai",
+    "broadcast_alert": "Pesan Pengumuman",
+    "start_conversation": "Ketik pesan untuk mulai mengobrol."
   },
   "FinancialReport": {
     "title": "Laporan Keuangan",

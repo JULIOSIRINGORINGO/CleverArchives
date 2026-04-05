@@ -1,7 +1,7 @@
 import * as React from "react";
 import { 
   Hash, Calendar, Building2, BookOpen, Clock, Check, AlertCircle, X, ChevronRight, ArrowUpRight, Search, Bookmark,
-  Shield, Send, Paperclip
+  Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,14 +23,24 @@ export const ICON_REGISTRY = {
   bookmark: Bookmark,
   shield: Shield,
   send: Send,
+  mail: Mail,
   attachment: Paperclip,
   paperclip: Paperclip,
+  message: MessageSquare,
+  "file-text": FileText,
+  trash: Trash2,
+  more: MoreVertical,
+  "arrow-left": ArrowLeft,
+  "chevron-left": ChevronLeft,
+  "chevron-right": ChevronRight,
+  calendar: Calendar,
+  download: Download,
 } as const;
 
 export type AppIconName = keyof typeof ICON_REGISTRY;
 
 type IconWrapperVariant = "primary" | "warning" | "danger" | "success" | "muted" | "white";
-type IconWrapperSize = "sm" | "md" | "lg" | "xs";
+type IconWrapperSize = "sm" | "md" | "lg" | "xl" | "xs";
 type IconPreset = "security-note" | "send-message" | "attachment-clip";
 
 interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -57,6 +67,7 @@ const sizeStyles: Record<IconWrapperSize, string> = {
   sm: "w-8 h-8 rounded-lg",
   md: "w-10 h-10 rounded-2xl",
   lg: "w-14 h-14 rounded-3xl",
+  xl: "w-20 h-20 rounded-full",
 };
 
 const ICON_PRESETS: Record<IconPreset, Partial<IconWrapperProps>> = {
@@ -96,7 +107,7 @@ const IconWrapper = React.forwardRef<HTMLDivElement, IconWrapperProps>(
         )}
         {...props}
       >
-        {Icon ? <Icon size={finalSize === 'lg' ? 24 : finalSize === 'sm' || finalSize === 'xs' ? 14 : 18} strokeWidth={2.5} /> : children}
+        {Icon ? <Icon size={finalSize === 'xl' ? 40 : finalSize === 'lg' ? 24 : finalSize === 'sm' || finalSize === 'xs' ? 14 : 18} strokeWidth={finalSize === 'xl' ? 1 : 2.5} /> : children}
       </div>
     );
   }

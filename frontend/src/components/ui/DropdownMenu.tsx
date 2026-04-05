@@ -1,7 +1,16 @@
-"use client";
-
-import * as React from "react"
+import React from "react"
 import { cn } from "@/lib/utils"
+import { Box } from "./Box"
+import { Text as UIText } from "./Text"
+
+interface DropdownMenuContentProps {
+  children: React.ReactNode;
+  align?: "start" | "end" | "center";
+  className?: string;
+  isOpen?: boolean;
+  setIsOpen?: (open: boolean) => void;
+  width?: "44" | "48" | "56" | "64";
+}
 
 export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = React.useState(false)
@@ -38,14 +47,35 @@ export const DropdownMenuTrigger = ({ children, asChild, isOpen, setIsOpen }: an
   )
 }
 
-export const DropdownMenuContent = ({ children, align = "end", className, isOpen, setIsOpen }: any) => {
+export const DropdownMenuContent = ({ 
+  children, 
+  align = "end", 
+  className, 
+  isOpen, 
+  setIsOpen,
+  width = "48" 
+}: DropdownMenuContentProps) => {
   if (!isOpen) return null
 
+  const widthMap = {
+    "44": "w-44",
+    "48": "w-48",
+    "56": "w-56",
+    "64": "w-64"
+  }
+
+  const alignStyles = {
+    start: "left-0",
+    end: "right-0",
+    center: "left-1/2 -translate-x-1/2"
+  }
+
   return (
-    <div 
+    <Box 
+      variant="popover-solid"
       className={cn(
-        "absolute z-[100] mt-2 min-w-[12rem] overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-b from-white to-slate-50/50 p-1.5 text-slate-900",
-        align === "end" ? "right-0" : "left-0",
+        alignStyles[align],
+        widthMap[width],
         className
       )}
     >
@@ -56,24 +86,37 @@ export const DropdownMenuContent = ({ children, align = "end", className, isOpen
         }
         return child
       })}
-    </div>
+    </Box>
   )
 }
 
-export const DropdownMenuItem = ({ children, className, onClick, setIsOpen }: any) => {
+export const DropdownMenuItem = ({ children, onClick, setIsOpen, color = "default" }: any) => {
   return (
-    <div
-      className={cn(
-        "relative flex cursor-pointer select-none items-center gap-3 rounded-xl px-3 py-2.5 text-[11px] font-bold text-slate-700 outline-none transition-colors hover:bg-slate-50 active:bg-slate-100",
-        className
-      )}
+    <Box
+      variant="list-row"
+      paddingX="md"
+      paddingY="sm"
+      display="flex"
+      align="center"
+      spacing="md"
+      cursor="pointer"
+      rounded="lg"
+      color={color}
       onClick={(e) => {
         e.stopPropagation();
         onClick?.();
         setIsOpen?.(false);
       }}
     >
-      {children}
-    </div>
+      {React.Children.map(children, (child) => 
+        typeof child === "string" || typeof child === "number" ? (
+          <UIText variant="subheading" weight="bold" color={color}>
+            {child}
+          </UIText>
+        ) : (
+          child
+        )
+      )}
+    </Box>
   )
 }

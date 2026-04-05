@@ -9,14 +9,16 @@ import {
   paddings, 
   flexMap, 
   shrinkMap,
-  widths
+  widths,
+  widthMap,
+  heightMap
 } from "./Box";
 
 type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface InlineProps extends BoxProps {
   spacing?: Spacing;
-  align?: "start" | "center" | "end" | "stretch";
+  align?: "start" | "center" | "end" | "stretch" | "baseline";
   justify?: "start" | "center" | "end" | "between";
   wrap?: boolean;
   isCentered?: boolean;
@@ -44,6 +46,7 @@ const alignMap = {
   center: "items-center",
   end: "items-end",
   stretch: "items-stretch",
+  baseline: "items-baseline",
 };
 
 const justifyMap = {
@@ -91,6 +94,8 @@ export const Inline = React.forwardRef<HTMLDivElement, InlineProps>(({
         props.variant === "chat-date-separator" && "p-6",
         wrap ? "flex-wrap" : "flex-nowrap",
         maxWidth && widths[maxWidth],
+        props.width && widthMap[props.width as keyof typeof widthMap],
+        props.height && heightMap[props.height as keyof typeof heightMap],
         background && backgrounds[background],
         border && borders[border],
         rounded && roundings[rounded],

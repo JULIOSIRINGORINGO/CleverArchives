@@ -9,7 +9,9 @@ import {
   paddings, 
   flexMap, 
   shrinkMap,
-  widths
+  widths,
+  widthMap,
+  heightMap
 } from "./Box";
 
 type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -89,6 +91,8 @@ export const Stack = React.forwardRef<HTMLDivElement, StackProps>(({
         (isClickable || props.variant === "upload-dropzone-content") && "cursor-pointer",
         props.variant === "chat-list-skeleton" && "h-full animate-pulse justify-end",
         maxWidth && widths[maxWidth],
+        props.width && widthMap[props.width as keyof typeof widthMap],
+        props.height && heightMap[props.height as keyof typeof heightMap],
         background && backgrounds[background],
         border && borders[border],
         rounded && roundings[rounded],

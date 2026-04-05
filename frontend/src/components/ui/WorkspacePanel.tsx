@@ -101,7 +101,8 @@ const WorkspacePanelContent = React.forwardRef<HTMLDivElement, WorkspacePanelCon
       padding={padding}
       variant={variant}
       className={cn(
-        variant !== "none" && "px-8 py-6",
+        variant !== "none" && !padding && "px-8 py-6",
+        padding && (padding in paddings) && paddings[padding as keyof typeof paddings],
         "custom-scrollbar",
         className
       )}

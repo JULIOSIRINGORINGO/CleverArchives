@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowLeft, MoreVertical, Search, Trash2, X, ChevronRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { IconWrapper } from "@/components/ui/IconWrapper";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { cn } from "@/lib/utils";
@@ -13,14 +14,29 @@ import {
   DropdownMenuItem 
 } from "@/components/ui/DropdownMenu";
 import { useTranslations } from "next-intl";
-import { WorkspacePanel, WorkspacePanelHeader, WorkspacePanelContent, WorkspacePanelFooter } from "@/components/ui/WorkspacePanel";
+import { WorkspacePanelHeader, WorkspacePanelContent } from "@/components/ui/WorkspacePanel";
 import { Input } from "@/components/ui/Input";
+import { Box } from "@/components/ui/Box";
+import { Stack } from "@/components/ui/Stack";
+import { Inline } from "@/components/ui/Inline";
+import { Text } from "@/components/ui/Text";
+import { Button } from "@/components/ui/Button";
+
+import { Locale } from "date-fns";
 
 interface Message {
   id: number | string;
+  title?: string;
   body: string;
-  created_at: string;
+  sender_name?: string;
   sender_id: number | string;
+  recipient_type?: string;
+  recipient_name?: string | null;
+  recipient_id?: number | string | null;
+  sender_last_seen?: string | null;
+  recipient_last_seen?: string | null;
+  created_at: string;
+  isOptimistic?: boolean;
 }
 
 interface ChatPanelProps {
@@ -36,17 +52,74 @@ interface ChatPanelProps {
   sending?: boolean;
   placeholder?: string;
   className?: string;
+  dateFnsLocale: Locale;
 }
 
 /**
- * ChatPanel - Specialized container for chat conversations.
- * Includes integrated header, message history, and input field.
- * Supports searching within the active conversation.
+ * Local UI Components for Chat Panel
+ * Encapsulating feature-specific styles to keep Box.tsx clean and maintainable.
  */
+const PanelContainer = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <Box 
+    variant="fill-remaining"
+    border="subtle"
+    rounded="3xl"
+    shadow="sm"
+    position="relative"
+    className={cn("bg-gradient-to-b from-white to-slate-50/30", className)}
+  >
+    {children}
+  </Box>
+);
+
+const Header = ({ children }: { children: React.ReactNode }) => (
+  <WorkspacePanelHeader 
+    paddingX="lg" 
+    paddingY="md" 
+    height="20" 
+    background="white" 
+    display="flex" 
+    align="center" 
+    shrink="0"
+    showDivider={true}
+    className="border-b border-border/50 px-6 py-4"
+  >
+    {children}
+  </WorkspacePanelHeader>
+);
+
+const Footer = ({ children }: { children: React.ReactNode }) => (
+  <Box 
+    padding="md" 
+    background="white" 
+    border="top" 
+    shrink="0"
+    className="border-t border-border/50"
+  >
+    {children}
+  </Box>
+);
+
+const EmptyStateContainer = ({ children }: { children: React.ReactNode }) => (
+  <Box 
+    flex="1" 
+    display="flex" 
+    direction="col" 
+    align="center" 
+    justify="center" 
+    padding="xl" 
+    background="white" 
+    border="subtle" 
+    rounded="3xl" 
+    shadow="sm"
+  >
+    {children}
+  </Box>
+);
+
 export function ChatPanel({
   title,
   subtitle,
-  icon,
   messages,
   currentUserId,
   onSend,
@@ -55,7 +128,8 @@ export function ChatPanel({
   loading = false,
   sending = false,
   placeholder,
-  className
+  className,
+  dateFnsLocale
 }: ChatPanelProps) {
   const t = useTranslations("Messaging");
   const [showSearch, setShowSearch] = useState(false);
@@ -70,8 +144,6 @@ export function ChatPanel({
     searchQuery && m.body.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeMatchId = matches[matchIndex]?.id || null;
-
   const navigateMatch = (dir: "up" | "down") => {
     if (matches.length === 0) return;
     const newIdx = dir === "up" 
@@ -81,118 +153,112 @@ export function ChatPanel({
     document.getElementById(`msg-${matches[newIdx].id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
+  const activeMatchId = matches[matchIndex]?.id || null;
+
   return (
-    <WorkspacePanel 
-      className={cn("flex flex-col h-full border-border/50", className)}
-      isStatic={true}
-    >
+    <PanelContainer className={className}>
       {/* Header */}
-      <WorkspacePanelHeader showDivider={true} className="px-4 py-3 flex items-center justify-between shrink-0 h-16 bg-white">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          {onBack && (
-            <button 
-              onClick={showSearch ? () => { setShowSearch(false); setSearchQuery(""); } : onBack} 
-              className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-colors shrink-0"
-            >
-              <ArrowLeft size={18} />
-            </button>
-          )}
-
-          <AnimatePresence mode="wait">
-            {!showSearch ? (
-              <motion.div 
-                key="chat-info"
-                initial={{ opacity: 0, x: 5 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -5 }}
-                className="flex items-center gap-3 min-w-0"
-              >
-                {icon ? (
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold shadow-none shrink-0">
-                    {icon}
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg shrink-0">
-                    {title[0]}
-                  </div>
+      <Header>
+        <AnimatePresence mode="wait">
+          {!showSearch ? (
+            <Inline key="header" spacing="md" align="center" justify="between" width="full">
+              <Inline spacing="sm" align="center" flex="1">
+                {onBack && (
+                  <Box shrink="0" marginRight="xs">
+                    <Button variant="ghost" size="icon" rounded="xl" onClick={onBack}>
+                      <IconWrapper icon="chevron-left" isGhost />
+                    </Button>
+                  </Box>
                 )}
-                <div className="flex flex-col min-w-0">
-                  <h3 className="font-bold text-foreground text-sm truncate">{title}</h3>
-                  {subtitle && <p className="text-[10px] font-bold text-muted-foreground/40 leading-none mt-0.5">{subtitle}</p>}
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="chat-search"
-                initial={{ opacity: 0, x: -5 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 5 }}
-                className="flex-1 px-1"
-              >
-                <div className="relative">
-                  <Input 
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setMatchIndex(0);
-                    }}
-                    placeholder={t("type_message_placeholder")} 
-                    className="h-10 text-xs pr-20" 
-                  />
-                  {searchQuery && (
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-muted/10 rounded-md">
-                      <span className="text-[9px] font-bold text-muted-foreground px-2">{matchIndex + 1}/{matches.length}</span>
-                      <button onClick={() => navigateMatch("up")} className="p-1 hover:text-primary"><ChevronRight size={14} className="-rotate-90" /></button>
-                      <button onClick={() => navigateMatch("down")} className="p-1 hover:text-primary"><ChevronRight size={14} className="rotate-90" /></button>
-                      <button onClick={() => setSearchQuery("")} className="p-1 hover:text-primary"><X size={12} /></button>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                
+                <Box variant="avatar-icon">
+                  <Text weight="bold" color="primary">{title[0]}</Text>
+                </Box>
 
-        <div className="flex items-center gap-1 shrink-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="p-2.5 hover:bg-muted rounded-xl text-muted-foreground transition-colors outline-none cursor-pointer">
-              <MoreVertical size={18} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 p-1.5 bg-white border border-border shadow-2xl rounded-2xl z-[100] opacity-100">
-              <DropdownMenuItem onClick={() => setShowSearch(!showSearch)} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 text-xs font-bold text-foreground cursor-pointer transition-colors">
-                <Search size={16} className="text-muted-foreground" /> {t("search")}
-              </DropdownMenuItem>
-              {onClearChat && (
-                <DropdownMenuItem onClick={onClearChat} className="flex items-center gap-3 p-3 rounded-xl hover:bg-rose-50 text-xs font-bold text-rose-600 cursor-pointer transition-colors">
-                  <Trash2 size={16} /> {t("clear_chat")}
-                </DropdownMenuItem>
+                <Stack spacing="none" flex="1">
+                  <Text weight="bold" color="black" variant="subheading">{title}</Text>
+                  {subtitle && <Text variant="caption-muted">{subtitle}</Text>}
+                </Stack>
+              </Inline>
+
+              <Box shrink="0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" rounded="xl">
+                      <IconWrapper icon="more" isGhost />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" width="48">
+                    <DropdownMenuItem onClick={() => setShowSearch(true)}>
+                      <IconWrapper icon="search" size="xs" isGhost />
+                      {t("search")}
+                    </DropdownMenuItem>
+                    {onClearChat && (
+                      <DropdownMenuItem onClick={onClearChat} color="danger">
+                        <IconWrapper icon="trash" size="xs" isGhost color="destructive" />
+                        {t("clear_chat")}
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </Box>
+            </Inline>
+          ) : (
+            <Inline key="search" spacing="sm" width="full" align="center">
+              <Box shrink="0" marginRight="xs">
+                <Button variant="ghost" size="icon" rounded="xl" onClick={() => { setShowSearch(false); setSearchQuery(""); }}>
+                  <IconWrapper icon="chevron-left" isGhost />
+                </Button>
+              </Box>
+              <Box flex="1">
+                <Input 
+                  autoFocus
+                  placeholder={t("type_message_placeholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  variant="chat-recipient-search"
+                  rounded="xl"
+                />
+              </Box>
+              {matches.length > 0 && (
+                <Inline spacing="xs" align="center" shrink="0">
+                  <Text variant="caption-muted" color="black" className="mx-1">
+                    {matchIndex + 1} / {matches.length}
+                  </Text>
+                  <Button variant="ghost" size="icon" rounded="xl" onClick={() => navigateMatch("up")}>
+                    <IconWrapper icon="chevron-left" size="xs" isGhost />
+                  </Button>
+                  <Button variant="ghost" size="icon" rounded="xl" onClick={() => navigateMatch("down")}>
+                    <IconWrapper icon="chevron-right" size="xs" isGhost />
+                  </Button>
+                </Inline>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </WorkspacePanelHeader>
+            </Inline>
+          )}
+        </AnimatePresence>
+      </Header>
 
-        {/* Message List */}
-        <WorkspacePanelContent className="px-0 py-0 !overflow-hidden flex flex-col min-h-0">
-          <MessageList 
-            messages={filteredMessages} 
-            currentUserId={currentUserId}
-            loading={loading}
-            activeMatchId={activeMatchId}
+      {/* Message List */}
+      <WorkspacePanelContent padding="none" flex="1" overflow="hidden" className="min-h-0">
+        <MessageList 
+          messages={filteredMessages} 
+          currentUserId={currentUserId}
+          loading={loading}
+          activeMatchId={activeMatchId}
+          dateFnsLocale={dateFnsLocale}
+        />
+      </WorkspacePanelContent>
+
+      {/* Message Input */}
+      {!loading && (
+        <Footer>
+          <MessageInput 
+            onSend={onSend}
+            loading={sending}
+            placeholder={placeholder}
           />
-        </WorkspacePanelContent>
-
-        {/* Message Input */}
-        {!loading && (
-          <WorkspacePanelFooter showDivider={true} className="p-0">
-            <MessageInput 
-              onSend={onSend}
-              loading={sending}
-              placeholder={placeholder}
-            />
-          </WorkspacePanelFooter>
-        )}
-      </WorkspacePanel>
+        </Footer>
+      )}
+    </PanelContainer>
   );
 }

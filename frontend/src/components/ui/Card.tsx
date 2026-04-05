@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type CardVariant = "default" | "soft" | "dashed" | "outline" | "ghost" | "ghost-surface";
+type CardVariant = "default" | "soft" | "dashed" | "outline" | "ghost" | "ghost-surface" | "glow";
 type CardPadding = "none" | "xs" | "sm" | "md" | "lg" | "xl";
 type CardRounding = "none" | "md" | "lg" | "xl" | "2xl" | "3xl";
 
@@ -21,6 +21,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       outline: "bg-transparent border",
       ghost: "bg-transparent",
       "ghost-surface": "bg-transparent border-none p-0",
+      glow: "bg-white/40 backdrop-blur-xl border-primary/5 shadow-2xl shadow-primary/[0.02]",
     };
 
     const paddings: Record<CardPadding, string> = {

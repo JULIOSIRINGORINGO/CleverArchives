@@ -262,11 +262,11 @@ export default function TenantCatalog() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-2xl border border-border/50 shadow-2xl p-1.5 bg-white min-w-[160px]">
-                        <DropdownMenuItem onClick={() => handleEdit(book)} className="gap-3 font-bold text-xs p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors">
+                        <DropdownMenuItem onClick={() => handleEdit(book)}>
                           <Edit2 size={14} className="text-blue-500" /> 
                           <span>Edit Detail Buku</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(book.id)} className="gap-3 font-bold text-xs p-3 rounded-xl cursor-pointer text-rose-600 focus:text-rose-600 focus:bg-rose-50 transition-colors">
+                        <DropdownMenuItem onClick={() => handleDelete(book.id)} color="danger">
                           <Trash2 size={14} className="text-rose-500" /> 
                           <span>Hapus Permanen</span>
                         </DropdownMenuItem>

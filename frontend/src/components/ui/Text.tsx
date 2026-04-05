@@ -14,8 +14,8 @@ type TextVariant =
   | "label-muted"
   | "label-strong"
   | "button-label"
-  | "chat-body"
-  | "chat-timestamp"
+  | "body-compact"
+  | "micro-strong"
   | "list-title"
   | "list-subtitle"
   | "list-metadata"
@@ -34,26 +34,39 @@ interface TextProps extends React.HTMLAttributes<HTMLElement> {
   lineClamp?: "1" | "2" | "none";
   italic?: boolean;
   selectNone?: boolean;
-  color?: "white" | "black" | "primary" | "muted" | "default";
+  color?: "white" | "black" | "primary" | "muted" | "default" | "danger";
+  textAlign?: "left" | "center" | "right";
 }
 
 const variantStyles: Record<TextVariant, string> = {
   heading: "text-lg",
   subheading: "text-sm",
   body: "text-base",
-  "body-strong": "text-base font-bold",
+  "body-strong": "text-base",
   caption: "text-[10px]",
-  "caption-muted": "text-[10px] font-bold italic opacity-60",
+  "caption-muted": "text-[10px] italic opacity-60",
   label: "text-[10px]",
   "label-muted": "text-[10px] opacity-60",
-  "label-strong": "text-[10px] font-bold",
-  "button-label": "text-sm font-bold text-white",
-  "chat-body": "text-[13px] leading-relaxed",
-  "chat-timestamp": "text-[9px] font-black",
-  "list-title": "font-bold text-[13px] truncate transition-colors",
-  "list-subtitle": "font-medium text-[11px] truncate opacity-60",
-  "list-metadata": "text-[10px] font-bold text-muted-foreground/60 italic",
+  "label-strong": "text-[10px]",
+  "button-label": "text-sm text-white",
+  "body-compact": "text-[13px] leading-relaxed",
+  "micro-strong": "text-[9px]",
+  "list-title": "text-[13px] truncate transition-colors",
+  "list-subtitle": "text-[11px] truncate opacity-60",
+  "list-metadata": "text-[10px] text-muted-foreground/60 italic",
   muted: "text-xs",
+};
+
+const variantDefaultWeights: Partial<Record<TextVariant, TextProps["weight"]>> = {
+  heading: "bold",
+  subheading: "semibold",
+  "body-strong": "bold",
+  "caption-muted": "bold",
+  "label-strong": "bold",
+  "button-label": "bold",
+  "micro-strong": "black",
+  "list-title": "bold",
+  "list-metadata": "bold",
 };
 
 const trackingStyles: Record<TextTracking, string> = {
@@ -83,8 +96,8 @@ const defaultTag: Record<TextVariant, TextProps["as"]> = {
   "label-muted": "span",
   "label-strong": "span",
   "button-label": "span",
-  "chat-body": "p",
-  "chat-timestamp": "span",
+  "body-compact": "p",
+  "micro-strong": "span",
   "list-title": "h4",
   "list-subtitle": "p",
   "list-metadata": "span",
@@ -99,7 +112,7 @@ const Text = React.forwardRef<HTMLElement, TextProps>(
     children, 
     uppercase, 
     tracking = "none", 
-    weight = "medium",
+    weight,
     opacity,
     lineClamp,
     italic,
@@ -107,6 +120,8 @@ const Text = React.forwardRef<HTMLElement, TextProps>(
     ...props 
   }, ref) => {
     const Tag = as || defaultTag[variant] || "span";
+    const finalWeight = weight || variantDefaultWeights[variant] || "normal";
+    
     return React.createElement(
       Tag,
       {
@@ -114,7 +129,7 @@ const Text = React.forwardRef<HTMLElement, TextProps>(
         className: cn(
           variantStyles[variant], 
           trackingStyles[tracking],
-          weightStyles[weight],
+          weightStyles[finalWeight],
           uppercase && "uppercase",
           variant === "muted" && "text-muted-foreground/60",
           variant === "label" && "text-muted-foreground",
@@ -133,6 +148,10 @@ const Text = React.forwardRef<HTMLElement, TextProps>(
           props.color === "black" && "text-black",
           props.color === "primary" && "text-primary",
           props.color === "muted" && "text-muted-foreground",
+          props.color === "danger" && "text-red-500",
+          props.textAlign === "left" && "text-left",
+          props.textAlign === "center" && "text-center",
+          props.textAlign === "right" && "text-right",
           className
         ),
         ...props,
