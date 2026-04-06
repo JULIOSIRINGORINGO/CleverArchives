@@ -40,8 +40,8 @@ export const SearchAesthetics = ({
     <WorkspacePanelHeader showDivider={false}>
       <Stack spacing="lg" maxWidth="full">
         <Inline spacing="md" align="center">
-          <Box background="primary-soft" rounded="xl" className="w-12 h-12 flex items-center justify-center text-primary">
-            <IconWrapper icon="search" size="md" />
+          <Box background="primary" rounded="xl" className="w-10 h-10 flex items-center justify-center text-white shadow-sm shadow-primary/20">
+            <IconWrapper icon="search" size="xs" color="white" isGhost />
           </Box>
           <Heading level="h4" weight="bold">{t("search_title")}</Heading>
         </Inline>
@@ -51,6 +51,7 @@ export const SearchAesthetics = ({
               <UnifiedSearch
                 value={barcode}
                 onChange={setBarcode}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
                 placeholder={t("barcode_placeholder")}
                 isLoading={searching}
                 className="h-12"
@@ -127,11 +128,12 @@ export const ConfirmationAesthetics = ({
 }: any) => (
   <Stack spacing="none" className="h-full">
     <WorkspacePanelHeader showDivider>
-      <PanelSectionHeader
-        icon={<IconWrapper icon="isbn" size="md" />}
-        iconVariant="primary"
-        title={t("borrow_confirmation")}
-      />
+      <Inline spacing="sm" align="center">
+        <Box background="primary" rounded="xl" className="w-10 h-10 flex items-center justify-center text-white shadow-sm shadow-primary/20">
+          <IconWrapper icon="isbn" size="xs" color="white" isGhost />
+        </Box>
+        <Text variant="subheading">{t("borrow_confirmation")}</Text>
+      </Inline>
     </WorkspacePanelHeader>
 
     <WorkspacePanelContent>

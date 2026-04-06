@@ -15,7 +15,7 @@ export default function CartPage() {
   } = useCartDomain();
 
   return (
-    <DashboardPage hideHeader>
+    <DashboardPage hideHeader hideScroll>
       <DashboardSection layout="full" spaced>
         <CartMainView
           searchProps={searchProps}
