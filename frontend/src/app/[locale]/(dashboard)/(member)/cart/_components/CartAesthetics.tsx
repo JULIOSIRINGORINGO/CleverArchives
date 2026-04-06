@@ -44,7 +44,7 @@ export const SearchAesthetics = ({
             <IconWrapper variant="primary-solid" icon="search" className="w-10 h-10" />
             <Heading level="h4" weight="bold">{t("search_title")}</Heading>
           </Inline>
-          <form onSubmit={handleSearch}>
+          <Box as="form" onSubmit={handleSearch}>
             <Inline spacing="sm" align="center" maxWidth="full">
               <Box flex="1">
                 <UnifiedSearch
@@ -67,7 +67,7 @@ export const SearchAesthetics = ({
                 {t("search_button")}
               </Button>
             </Inline>
-          </form>
+          </Box>
         </Stack>
       </WorkspacePanelHeader>
 
@@ -149,7 +149,7 @@ export const ConfirmationAesthetics = ({
                 >
                   <Box position="absolute" className="inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                   {item.cover_url ? (
-                    <img src={item.cover_url} alt="" className="w-full h-full object-cover" />
+                    <Box as="img" src={item.cover_url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <Box className="w-full h-full flex items-center justify-center text-muted-foreground/10">
                       <IconWrapper icon="isbn" size="xl" opacity="20" />
