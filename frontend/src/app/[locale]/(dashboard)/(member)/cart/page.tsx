@@ -16,7 +16,7 @@ export default function CartPage() {
 
   return (
     <DashboardPage hideHeader>
-      <DashboardSection layout="full" spaced className="h-full">
+      <DashboardSection layout="full" spaced>
         <CartMainView
           searchProps={searchProps}
           confirmationProps={confirmationProps}
