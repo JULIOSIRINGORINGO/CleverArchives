@@ -2,7 +2,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { 
-  Box,
   BoxProps, 
   backgrounds, 
   borders, 
@@ -62,29 +61,41 @@ export const Stack = React.forwardRef<HTMLDivElement, StackProps>(({
   isCentered = false,
   centeredMaxWidth = false,
   isClickable = false,
+  maxWidth,
+  background,
+  border,
+  rounded,
+  padding,
+  flex,
+  shrink,
+  mdDisplay,
+  mdDirection,
+  asChild = false,
   className, 
   ...props 
 }, ref) => {
+  const Component = asChild ? Slot : "div";
+
   return (
-    <Box 
+    <Component 
       ref={ref}
-      display="flex"
-      direction="col"
-      spacing={
-        props.variant === "form-section-gap" ? "lg" : 
-        props.variant === "form-item-gap" ? "sm" :
-        props.variant === "tight-list-gap" ? "none" :
-        props.variant === "upload-dropzone-content" ? "xs" :
-        props.variant === "footer-button-group" ? "md" :
-        props.variant === "chat-list-skeleton" ? "lg" :
-        spacing
-      }
-      align={isCentered || props.variant === "upload-dropzone-content" || props.variant === "chat-list-skeleton" ? "center" : align}
-      justify={isCentered || props.variant === "upload-dropzone-content" || props.variant === "chat-list-skeleton" ? "center" : justify}
-      centered={centeredMaxWidth || props.variant === "footer-button-group" || props.variant === "chat-list-skeleton"}
-      cursor={(isClickable || props.variant === "upload-dropzone-content") ? "pointer" : undefined}
       className={cn(
-        props.variant === "chat-list-skeleton" && "h-full animate-pulse justify-end",
+        "flex flex-col", // Baseline
+        spacingMap[spacing],
+        isCentered ? "items-center justify-center" : cn(alignMap[align], justifyMap[justify]),
+        centeredMaxWidth && "mx-auto max-w-full",
+        isClickable && "cursor-pointer",
+        mdDisplay && (mdDisplay === "hidden" || mdDisplay === "none" ? "md:hidden" : `md:${mdDisplay}`),
+        mdDirection && `md:flex-${mdDirection}`,
+        maxWidth && widths[maxWidth],
+        props.width && widthMap[props.width as keyof typeof widthMap],
+        props.height && heightMap[props.height as keyof typeof heightMap],
+        background && backgrounds[background],
+        border && borders[border],
+        rounded && roundings[rounded],
+        padding && paddings[padding],
+        flex && flexMap[flex],
+        shrink && shrinkMap[shrink],
         className
       )}
       {...props}

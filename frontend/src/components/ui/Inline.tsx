@@ -2,7 +2,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { 
-  Box,
   BoxProps, 
   backgrounds, 
   borders, 
@@ -17,7 +16,7 @@ import {
 
 type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-export interface InlineProps extends BoxProps {
+export interface InlineProps extends Omit<BoxProps, "wrap"> {
   spacing?: Spacing;
   align?: "start" | "center" | "end" | "stretch" | "baseline";
   justify?: "start" | "center" | "end" | "between";
@@ -65,36 +64,43 @@ export const Inline = React.forwardRef<HTMLDivElement, InlineProps>(({
   isCentered = false,
   isStartCenter = false,
   isClickable = false,
+  maxWidth,
+  background,
+  border,
+  rounded,
+  padding,
+  flex,
+  shrink,
+  mdDisplay,
+  mdDirection,
+  asChild = false,
   className, 
   ...props 
 }, ref) => {
+  const Component = asChild ? Slot : "div";
+
   return (
-    <Box 
+    <Component 
       ref={ref}
-      display="flex"
-      direction="row"
-      spacing={
-        props.variant === "form-field-gap" ? "sm" : 
-        props.variant === "chat-bubble-content-gap" ? "md" : 
-        props.variant === "chat-date-separator" ? "md" : 
-        spacing
-      }
-      align={
-        (isCentered || props.variant === "chat-date-separator") ? "center" : 
-        isStartCenter ? "center" : 
-        props.variant === "chat-bubble-content-gap" ? "end" :
-        align
-      }
-      justify={
-        (isCentered || props.variant === "chat-date-separator") ? "center" : 
-        isStartCenter ? "start" : 
-        props.variant === "chat-bubble-content-gap" ? "start" :
-        justify
-      }
-      cursor={isClickable ? "pointer" : undefined}
       className={cn(
-        props.variant === "chat-date-separator" && "p-6",
+        "flex flex-row", // Hardcoded baseline
+        spacingMap[spacing],
+        isCentered ? "items-center justify-center" : 
+        isStartCenter ? "items-center justify-start" : 
+        cn(alignMap[align], justifyMap[justify]), // Explicitly group alignment
+        isClickable && "cursor-pointer",
         wrap ? "flex-wrap" : "flex-nowrap",
+        mdDisplay && (mdDisplay === "hidden" || mdDisplay === "none" ? "md:hidden" : `md:${mdDisplay}`),
+        mdDirection && `md:flex-${mdDirection}`,
+        maxWidth && widths[maxWidth],
+        props.width && widthMap[props.width as keyof typeof widthMap],
+        props.height && heightMap[props.height as keyof typeof heightMap],
+        background && backgrounds[background],
+        border && borders[border],
+        rounded && roundings[rounded],
+        padding && paddings[padding],
+        flex && flexMap[flex],
+        shrink && shrinkMap[shrink],
         className
       )}
       {...props}

@@ -3,27 +3,20 @@ import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 
 type BoxAspect = "square" | "portrait" | "landscape" | "video" | "book";
-type BoxMaxWidth = "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "64" | "full" | "button-group" | "bubble-sm" | "bubble-md";
+type BoxMaxWidth = "xs" | "sm" | "md" | "lg" | "xl" | "3xl" | "full" | "button-group" | "bubble-sm" | "bubble-md";
 type BoxPosition = "relative" | "absolute" | "static" | "fixed" | "sticky";
 type BoxBackground = "surface" | "surface-soft" | "primary" | "primary-soft" | "muted-soft" | "white" | "transparent" | "error-soft" | "danger";
 
 export type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-export interface BoxProps extends React.HTMLAttributes<HTMLElement> {
-  [key: string]: any;
+export interface BoxProps extends Omit<React.AllHTMLAttributes<HTMLElement>, 'as'> {
+  as?: React.ElementType;
   aspect?: BoxAspect;
   maxWidth?: BoxMaxWidth;
   maxHeight?: "none" | "160px" | "64px";
   overflow?: "hidden" | "visible" | "auto" | "none";
   position?: BoxPosition;
-  top?: "none" | "0";
-  right?: "none" | "0";
-  bottom?: "none" | "0";
-  left?: "none" | "0";
-  inset?: "0" | "top-right";
-  zIndex?: "0" | "10" | "20" | "30" | "40" | "50" | "auto";
   background?: BoxBackground;
-  as?: React.ElementType;
   border?: "none" | "subtle" | "primary" | "dashed" | "top" | "all";
   rounded?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full";
   padding?: Spacing;
@@ -45,21 +38,21 @@ export interface BoxProps extends React.HTMLAttributes<HTMLElement> {
   shrink?: "0" | "1";
   asChild?: boolean;
   textAlign?: "left" | "center" | "right";
+  mdWidth?: "80" | "full";
+  mdDisplay?: "flex" | "hidden" | "none" | "block";
+  mdDirection?: "row" | "col" | "row-reverse" | "col-reverse";
   transition?: "all" | "none";
   whiteSpace?: "normal" | "pre-wrap" | "nowrap";
   centered?: boolean;
-  width?: "full" | "10" | "11" | "12" | "14" | "16" | "20" | "32" | "40" | "44" | "48" | "56" | "64" | "80" | "96" | "px" | BoxMaxWidth;
-  mdWidth?: "full" | "80" | "96" | "auto";
-  height?: "full" | "auto" | "screen" | "10" | "11" | "12" | "14" | "16" | "20" | "32" | "40" | "44" | "48" | "56" | "64" | "80" | "96" | "20px" | "px";
+  width?: "full" | "auto" | "10" | "11" | "12" | "14" | "16" | "20" | "80" | "96" | "px" | BoxMaxWidth;
+  height?: "full" | "auto" | "screen" | "10" | "11" | "12" | "14" | "16" | "20" | "32" | "40" | "44" | "48" | "56" | "64" | "80" | "96" | "20px" | "16" | "20" | "px";
   cursor?: "pointer";
   scrollbar?: "custom" | "none";
   display?: "flex" | "inline-flex" | "block" | "inline-block" | "grid" | "none" | "hidden";
   gridCols?: "1" | "2" | "3" | "4" | "6" | "12";
   mdGridCols?: "1" | "2" | "3" | "4" | "6" | "12";
-  mdDisplay?: "flex" | "none" | "block" | "hidden";
   lgDisplay?: "flex" | "none" | "block" | "hidden";
   direction?: "row" | "col" | "row-reverse" | "col-reverse";
-  mdDirection?: "row" | "col" | "row-reverse" | "col-reverse";
   lgDirection?: "row" | "col" | "row-reverse" | "col-reverse";
   align?: "start" | "center" | "end" | "baseline" | "stretch";
   justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
@@ -100,8 +93,7 @@ export interface BoxProps extends React.HTMLAttributes<HTMLElement> {
     | "list-row-active"
     | "avatar-icon"
     | "input-adornment-left"
-    | "status-dot"
-    | "chat-list-skeleton";
+    | "status-dot";
   isFirst?: boolean;
   hoverEffect?: "scale";
   animation?: "pulse" | "spin" | "none";
@@ -131,9 +123,7 @@ export const widths = {
   md: "max-w-[400px]",
   lg: "max-w-[600px]",
   xl: "max-w-[800px]",
-  "2xl": "max-w-2xl",
   "3xl": "max-w-3xl",
-  "64": "max-w-64",
   full: "w-full",
   "bubble-sm": "max-w-[85%] sm:max-w-[75%]",
   "bubble-md": "max-w-[90%] sm:max-w-[75%]",
@@ -149,14 +139,6 @@ export const heightMap = {
   "14": "h-14",
   "16": "h-16",
   "20": "h-20",
-  "32": "h-32",
-  "40": "h-40",
-  "44": "h-44",
-  "48": "h-48",
-  "56": "h-56",
-  "64": "h-64",
-  "80": "h-80",
-  "96": "h-96",
   px: "h-px",
 };
 
@@ -168,14 +150,6 @@ export const widthMap = {
   "14": "w-14",
   "16": "w-16",
   "20": "w-20",
-  "32": "w-32",
-  "40": "w-40",
-  "44": "w-44",
-  "48": "w-48",
-  "56": "w-56",
-  "64": "w-64",
-  "80": "w-80",
-  "96": "w-96",
   px: "w-px",
 };
 
@@ -356,7 +330,6 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
   maxHeight,
   centered,
   width,
-  mdWidth,
   height,
   cursor,
   scrollbar,
@@ -374,56 +347,46 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
   gap,
   shadow,
   flexShrink,
-  as: Component = "div",
-  top,
-  right,
-  bottom,
-  left,
-  inset,
-  zIndex,
+  variant = "none",
   isFirst = false,
   hoverEffect,
   asChild = false,
   opacity,
+  as: ComponentType = "div",
+  mdWidth,
   className, 
-  variant = "none",
   ...props 
 }, ref) => {
-  const FinalComponent = asChild ? Slot : Component;
+  const Component = asChild ? Slot : ComponentType;
 
   return (
-    <FinalComponent 
+    <Component 
       ref={ref}
       className={cn(
         position,
-        aspect && aspects[aspect as keyof typeof aspects],
-        maxWidth && widths[maxWidth as keyof typeof widths],
+        aspect && aspects[aspect],
+        maxWidth && widths[maxWidth],
         background && backgrounds[background as keyof typeof backgrounds],
         border && borders[border as keyof typeof borders],
-        rounded && roundings[rounded as keyof typeof roundings],
-        padding && paddings[padding as keyof typeof paddings],
-        paddingX && paddingsX[paddingX as keyof typeof paddingsX],
-        paddingY && paddingsY[paddingY as keyof typeof paddingsY],
-        paddingTop && paddingsTop[paddingTop as keyof typeof paddingsTop],
-        paddingBottom && paddingsBottom[paddingBottom as keyof typeof paddingsBottom],
-        margin && margins[margin as keyof typeof margins],
-        marginTop && marginsTop[marginTop as keyof typeof marginsTop],
-        marginBottom && marginsBottom[marginBottom as keyof typeof marginsBottom],
-        marginLeft && marginsLeft[marginLeft as keyof typeof marginsLeft],
-        marginRight && marginsRight[marginRight as keyof typeof marginsRight],
+        rounded && roundings[rounded],
+        padding && paddings[padding],
+        paddingX && paddingsX[paddingX],
+        paddingY && paddingsY[paddingY],
+        paddingTop && paddingsTop[paddingTop],
+        paddingBottom && paddingsBottom[paddingBottom],
+        margin && margins[margin],
+        marginTop && marginsTop[marginTop],
+        marginBottom && marginsBottom[marginBottom],
+        marginLeft && marginsLeft[marginLeft],
+        marginRight && marginsRight[marginRight],
         minWidth === "0" && "min-w-0",
         minWidth === "full" && "min-w-full",
         minWidth === "auto" && "min-w-auto",
         minHeight === "0" && "min-h-0",
         minHeight === "full" && "min-h-full",
-        width && widthMap[width as keyof typeof widthMap],
-        mdWidth === "full" && "md:w-full",
-        mdWidth === "80" && "md:w-80",
-        mdWidth === "96" && "md:w-96",
-        mdWidth === "auto" && "md:w-auto",
-        height && heightMap[height as keyof typeof heightMap],
-        flex && flexMap[flex as keyof typeof flexMap],
-        shrink && shrinkMap[shrink as keyof typeof shrinkMap],
+        minHeight === "auto" && "min-h-auto",
+        flex && flexMap[flex],
+        shrink && shrinkMap[shrink],
         alignSelf === "start" && "self-start",
         alignSelf === "center" && "self-center",
         alignSelf === "end" && "self-end",
@@ -437,40 +400,9 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
         maxHeight === "160px" && "max-h-[160px]",
         maxHeight === "64px" && "max-h-[64px]",
         centered && "mx-auto",
-        display && display,
-        mdDisplay && `md:${mdDisplay}`,
-        lgDisplay && `lg:${lgDisplay}`,
-        direction === "row" && "flex-row",
-        direction === "col" && "flex-col",
-        direction === "row-reverse" && "flex-row-reverse",
-        direction === "col-reverse" && "flex-col-reverse",
-        mdDirection === "row" && "md:flex-row",
-        mdDirection === "col" && "md:flex-col",
-        mdDirection === "row-reverse" && "md:flex-row-reverse",
-        mdDirection === "col-reverse" && "md:flex-col-reverse",
-        lgDirection === "row" && "lg:flex-row",
-        lgDirection === "col" && "lg:flex-col",
-        lgDirection === "row-reverse" && "lg:flex-row-reverse",
-        lgDirection === "col-reverse" && "lg:flex-col-reverse",
-        align === "start" && "items-start",
-        align === "center" && "items-center",
-        align === "end" && "items-end",
-        align === "baseline" && "items-baseline",
-        align === "stretch" && "items-stretch",
-        justify === "start" && "justify-start",
-        justify === "center" && "justify-center",
-        justify === "end" && "justify-end",
-        justify === "between" && "justify-between",
-        justify === "around" && "justify-around",
-        justify === "evenly" && "justify-evenly",
-        spacing && (spacingMap as Record<string, string>)[spacing as string],
-        gap && (spacingMap as Record<string, string>)[gap as string],
-        opacity && `opacity-${opacity}`,
-        shadow && (shadows as Record<string, string>)[shadow as string],
-        flexShrink && `shrink-${flexShrink}`,
+        width && widthMap[width as keyof typeof widthMap],
+        height && heightMap[height as keyof typeof heightMap],
         cursor === "pointer" && "cursor-pointer",
-        scrollbar === "custom" && "custom-scrollbar",
-        scrollbar === "none" && "scrollbar-none",
         scrollbar === "custom" && "custom-scrollbar",
         scrollbar === "none" && "scrollbar-none",
         display === "flex" && "flex",
@@ -478,6 +410,12 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
         display === "block" && "block",
         display === "inline-block" && "inline-block",
         display === "grid" && "grid",
+        mdDisplay === "flex" && "md:flex",
+        mdDisplay === "hidden" && "md:hidden",
+        mdDisplay === "none" && "md:hidden",
+        width === "80" && "w-80",
+        mdWidth === "80" && "md:w-80",
+        mdWidth === "full" && "md:w-full",
         gridCols === "1" && "grid-cols-1",
         gridCols === "2" && "grid-cols-2",
         gridCols === "3" && "grid-cols-3",
@@ -505,23 +443,32 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
         animation === "pulse" && "animate-pulse",
         animation === "spin" && "animate-spin",
         scrollMarginTop === "20" && "scroll-mt-20",
-        top === "none" && "top-0",
-        top === "0" && "top-0",
-        right === "none" && "right-0",
-        right === "0" && "right-0",
-        bottom === "none" && "bottom-0",
-        bottom === "0" && "bottom-0",
-        left === "none" && "left-0",
-        left === "0" && "left-0",
-        inset === "0" && "inset-0",
-        inset === "top-right" && "top-0 right-0",
-        zIndex === "0" && "z-0",
-        zIndex === "10" && "z-10",
-        zIndex === "20" && "z-20",
-        zIndex === "30" && "z-30",
-        zIndex === "40" && "z-40",
-        zIndex === "50" && "z-50",
-        zIndex === "auto" && "z-auto",
+        direction === "row" && "flex-row",
+        direction === "col" && "flex-col",
+        direction === "row-reverse" && "flex-row-reverse",
+        direction === "col-reverse" && "flex-col-reverse",
+        mdDirection === "row" && "md:flex-row",
+        mdDirection === "col" && "md:flex-col",
+        mdDirection === "row-reverse" && "md:flex-row-reverse",
+        mdDirection === "col-reverse" && "md:flex-col-reverse",
+        lgDirection === "row" && "lg:flex-row",
+        lgDirection === "col" && "lg:flex-col",
+        lgDirection === "row-reverse" && "lg:flex-row-reverse",
+        lgDirection === "col-reverse" && "lg:flex-col-reverse",
+        align === "start" && "items-start",
+        align === "center" && "items-center",
+        align === "end" && "items-end",
+        align === "baseline" && "items-baseline",
+        align === "stretch" && "items-stretch",
+        justify === "start" && "justify-start",
+        justify === "center" && "justify-center",
+        justify === "end" && "justify-end",
+        justify === "between" && "justify-between",
+        justify === "around" && "justify-around",
+        justify === "evenly" && "justify-evenly",
+        spacing && spacingMap[spacing],
+        shadow && shadows[shadow],
+        flexShrink && shrinkMap[flexShrink],
         variant === "interactive" && "hover:bg-muted/10 transition-colors",
         variant === "icon-wrapper" && "flex items-center justify-center transition-transform",
         variant === "field-group" && "bg-muted/5 border border-border/50 rounded-xl overflow-hidden transition-all focus-within:bg-background focus-within:ring-1 focus-within:ring-primary/20",

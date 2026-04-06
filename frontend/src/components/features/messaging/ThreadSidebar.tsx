@@ -100,7 +100,6 @@ export function ThreadSidebar({
     <Stack 
       spacing="md" 
       width="full" 
-      mdWidth="80"
       height="full" 
       shrink="0"
       display={selectedThreadId && activeTab === 'inbox' ? "none" : "flex"}
@@ -141,7 +140,7 @@ export function ThreadSidebar({
         </Box>
       </Box>
 
-      <Box variant="fill-remaining" background="white" rounded="2xl" border="subtle" shadow="sm">
+      <Box variant="fill-remaining" direction="col" background="white" rounded="2xl" border="subtle" shadow="sm">
         <Header>
           <AnimatePresence mode="wait">
             {!showInboxSearch ? (
