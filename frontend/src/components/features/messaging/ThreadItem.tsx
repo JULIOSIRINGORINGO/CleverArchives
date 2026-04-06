@@ -4,6 +4,7 @@ import React from "react";
 import { Box } from "@/components/ui/Box";
 import { Stack } from "@/components/ui/Stack";
 import { Inline } from "@/components/ui/Inline";
+import { ListRow, AvatarIcon, StatusDot } from "./_components/MessagingAesthetics";
 import { Text } from "@/components/ui/Text";
 import { formatFriendlyDistance } from "@/lib/date-utils";
 import { Locale } from "date-fns";
@@ -49,12 +50,8 @@ export function ThreadItem({
   youPrefix
 }: ThreadItemProps) {
   return (
-    <Box
-      variant={isSelected ? "list-row-active" : "list-row"}
-      padding="sm"
-      rounded="xl"
-      cursor="pointer"
-      transition="all"
+    <ListRow
+      active={isSelected}
       onClick={onClick}
     >
       <Box display="flex" align="center" spacing="md" width="full" minWidth="0">
@@ -62,13 +59,13 @@ export function ThreadItem({
           position="relative"
           shrink="0"
         >
-          <Box variant="avatar-icon">
+          <AvatarIcon>
             <Text weight="bold" color="primary">
               {thread.partnerName[0]}
             </Text>
-          </Box>
+          </AvatarIcon>
           {/* Status Dot */}
-          <Box variant="status-dot" />
+          <StatusDot />
         </Box>
 
         <Box flex="1" overflow="hidden" minWidth="0" display="flex" direction="col" justify="center">
@@ -105,6 +102,6 @@ export function ThreadItem({
           </Text>
         </Box>
       </Box>
-    </Box>
+    </ListRow>
   );
 }

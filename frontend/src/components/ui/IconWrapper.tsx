@@ -1,7 +1,7 @@
 import * as React from "react";
 import { 
   Hash, Calendar, Building2, BookOpen, Clock, Check, AlertCircle, X, ChevronRight, ArrowUpRight, Search, Bookmark,
-  Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download, CheckCheck, Bell
+  Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download, CheckCheck, Bell, Plus, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +37,8 @@ export const ICON_REGISTRY = {
   download: Download,
   "check-all": CheckCheck,
   notification: Bell,
+  plus: Plus,
+  loader: Loader2,
 } as const;
 
 export type AppIconName = keyof typeof ICON_REGISTRY;
@@ -52,7 +54,7 @@ interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   preset?: IconPreset;
   isGhost?: boolean;
   opacity?: "20" | "40" | "50" | "60" | "100";
-  color?: "emerald" | "amber" | "destructive" | "primary";
+  color?: "emerald" | "amber" | "destructive" | "primary" | "white";
 }
 
 const variantStyles: Record<IconWrapperVariant, string> = {
@@ -95,7 +97,8 @@ const IconWrapper = React.forwardRef<HTMLDivElement, IconWrapperProps>(
         ref={ref}
         className={cn(
           "flex items-center justify-center shrink-0",
-          !finalIsGhost && variantStyles[finalVariant],
+          finalColor === "white" && "text-white",
+        !finalIsGhost && variantStyles[finalVariant],
           !finalIsGhost && sizeStyles[finalSize],
           finalOpacity === "20" && "opacity-20",
           finalOpacity === "40" && "opacity-40",

@@ -1,20 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
-import { 
-  BoxProps, 
-  backgrounds, 
-  borders, 
-  roundings, 
-  paddings, 
-  flexMap, 
-  shrinkMap,
-  widths,
-  widthMap,
-  heightMap
-} from "./Box";
-
-type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+import { Box, BoxProps, Spacing } from "./Box";
 
 export interface StackProps extends BoxProps {
   spacing?: Spacing;
@@ -30,15 +17,6 @@ export interface StackProps extends BoxProps {
   rounded?: BoxProps["rounded"];
   padding?: BoxProps["padding"];
 }
-
-const spacingMap: Record<Spacing, string> = {
-  none: "gap-0",
-  xs: "gap-1",
-  sm: "gap-2",
-  md: "gap-4",
-  lg: "gap-6",
-  xl: "gap-8",
-};
 
 const alignMap = {
   start: "items-start",
@@ -74,30 +52,27 @@ export const Stack = React.forwardRef<HTMLDivElement, StackProps>(({
   className, 
   ...props 
 }, ref) => {
-  const Component = asChild ? Slot : "div";
-
   return (
-    <Component 
+    <Box 
       ref={ref}
-      className={cn(
-        "flex flex-col", // Baseline
-        spacingMap[spacing],
-        isCentered ? "items-center justify-center" : cn(alignMap[align], justifyMap[justify]),
-        centeredMaxWidth && "mx-auto max-w-full",
-        isClickable && "cursor-pointer",
-        mdDisplay && (mdDisplay === "hidden" || mdDisplay === "none" ? "md:hidden" : `md:${mdDisplay}`),
-        mdDirection && `md:flex-${mdDirection}`,
-        maxWidth && widths[maxWidth],
-        props.width && widthMap[props.width as keyof typeof widthMap],
-        props.height && heightMap[props.height as keyof typeof heightMap],
-        background && backgrounds[background],
-        border && borders[border],
-        rounded && roundings[rounded],
-        padding && paddings[padding],
-        flex && flexMap[flex],
-        shrink && shrinkMap[shrink],
-        className
-      )}
+      as={asChild ? Slot : "div"}
+      display="flex"
+      direction="col"
+      gap={spacing}
+      align={isCentered ? "center" : align}
+      justify={isCentered ? "center" : justify}
+      centered={centeredMaxWidth}
+      cursor={isClickable ? "pointer" : undefined}
+      mdDisplay={mdDisplay}
+      mdDirection={mdDirection}
+      maxWidth={maxWidth}
+      background={background}
+      border={border}
+      rounded={rounded}
+      padding={padding}
+      flex={flex}
+      shrink={shrink}
+      className={className}
       {...props}
     />
   );

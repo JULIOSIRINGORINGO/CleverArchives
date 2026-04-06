@@ -10,6 +10,7 @@ import { IconWrapper } from "@/components/ui/IconWrapper";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { AnimatePresence } from "framer-motion";
+import { AvatarIcon, ListRow } from "@/components/features/messaging/_components/MessagingAesthetics";
 
 interface MessagingModalsProps {
   selectedBroadcast: any;
@@ -67,9 +68,9 @@ export function MessagingModals({
                 </Box>
                 <Inline spacing="lg" align="center">
                   <Inline spacing="md" align="center">
-                    <Box variant="avatar-icon" width="10" height="10" display="flex" align="center" justify="center">
+                    <AvatarIcon width="10" height="10">
                       <Text variant="label-strong">{selectedBroadcast.sender_name?.[0]}</Text>
-                    </Box>
+                    </AvatarIcon>
                     <Text variant="label-strong" color="muted">{selectedBroadcast.sender_name}</Text>
                   </Inline>
                   <Text variant="caption-muted" opacity="40">•</Text>
@@ -90,13 +91,11 @@ export function MessagingModals({
                     <Text variant="label-strong" color="muted">{t("attachment")}</Text>
                     <Stack spacing="md">
                       {selectedBroadcast.attachments.map((att: any, i: number) => (
-                        <Box 
+                        <ListRow 
                           asChild
                           key={i} 
-                          variant="list-row"
                           padding="md"
                           rounded="2xl"
-                          cursor="pointer"
                         >
                           <Box 
                             as="a"
@@ -107,15 +106,15 @@ export function MessagingModals({
                           >
                             <Inline justify="between" align="center" width="full">
                              <Inline spacing="lg" align="center">
-                               <Box variant="avatar-icon" width="10" height="10" display="flex" align="center" justify="center">
+                               <AvatarIcon width="10" height="10">
                                   <IconWrapper icon="file-text" size="sm" isGhost />
-                               </Box>
+                               </AvatarIcon>
                                <Text variant="label-strong" color="black" className="truncate max-w-[240px]">{att.filename}</Text>
                              </Inline>
                              <IconWrapper icon="download" size="sm" isGhost />
                             </Inline>
                           </Box>
-                        </Box>
+                        </ListRow>
                       ))}
                     </Stack>
                   </Box>

@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { Box } from "@/components/ui/Box";
 import { Inline } from "@/components/ui/Inline";
 import { Text as UIText } from "@/components/ui/Text";
+import { BubbleContainer, BubblePaper } from "./_components/MessagingAesthetics";
 
 interface ChatBubbleProps {
   message: {
@@ -33,32 +34,8 @@ export function ChatBubble({
   const isMe = String(message.sender_id) === String(currentUserId);
 
   return (
-    <Box
-      id={`msg-${message.id}`}
-      display="flex"
-      width="full"
-      justify={isMe ? "end" : "start"}
-      marginBottom="xs"
-      scrollMarginTop="20"
-    >
-      <Box
-        maxWidth="bubble-md"
-        background={isMe ? "primary" : "white"}
-        color={isMe ? "white" : "black"}
-        border={isMe ? "none" : "subtle"}
-        shadow="sm"
-        opacity={isOptimistic ? "60" : "100"}
-        marginLeft={isMe ? "xl" : "none"}
-        marginRight={isMe ? "none" : "xl"}
-        paddingTop="xs"
-        paddingBottom="xs"
-        paddingX="md"
-        className={cn(
-          isMe 
-            ? "rounded-tl-[20px] rounded-br-[20px] rounded-tr-[4px] rounded-bl-[4px] shadow-primary/10" 
-            : "rounded-tl-[20px] rounded-br-[20px] rounded-tr-[4px] rounded-bl-[4px] border-border/50"
-        )}
-      >
+    <BubbleContainer id={`msg-${message.id}`} isMe={isMe}>
+      <BubblePaper isMe={isMe} isOptimistic={isOptimistic}>
         <motion.div
           initial={isOptimistic || !isMe ? { opacity: 0, scale: 0.95, y: 5 } : false}
           animate={{
@@ -89,7 +66,7 @@ export function ChatBubble({
             </Box>
           </Inline>
         </motion.div>
-      </Box>
-    </Box>
+      </BubblePaper>
+    </BubbleContainer>
   );
 }

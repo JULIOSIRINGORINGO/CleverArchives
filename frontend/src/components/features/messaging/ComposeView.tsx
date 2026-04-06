@@ -15,6 +15,7 @@ import { WorkspacePanelHeader, WorkspacePanelContent } from "@/components/ui/Wor
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { apiService } from "@/services/api";
+import { PillGroup, PillItem, SearchResultsOverlay, UploadDropzone, AvatarIcon, ListRow, SearchInputBox } from "./_components/MessagingAesthetics";
 
 interface ComposeViewProps {
   currentUser: any;
@@ -98,13 +99,13 @@ export function ComposeView({
         display="flex" 
         align="center" 
         shrink="0"
-        className="border-b border-border/50 px-6 py-4"
+        border="bottom"
       >
         <Inline spacing="md" align="center">
-          <Box variant="avatar-icon">
-            <IconWrapper icon="send" size="sm" isGhost />
-          </Box>
-          <Text weight="bold" color="black">
+          <AvatarIcon background="primary" color="white">
+            <IconWrapper icon="plus" size="sm" isGhost color="white" />
+          </AvatarIcon>
+          <Text variant="heading" weight="bold" color="black">
             {t("compose_title")}
           </Text>
         </Inline>
@@ -118,49 +119,38 @@ export function ComposeView({
           direction="col"
           height="full"
         >
-          <Box maxWidth="xl" centered width="full" flex="1" display="flex" direction="col" minHeight="0">
+          <Box width="full" flex="1" display="flex" direction="col" minHeight="0">
               <Box 
                 display="grid" 
                 gridCols="1" 
                 mdGridCols="2" 
                 spacing="lg" 
-                align="start" 
+                align="stretch" 
                 flex="1" 
                 minHeight="0"
+                height="full"
               >
                 <Stack spacing="md" flex="1">
                   <Stack spacing="xs">
                     <Text variant="subheading" weight="medium" color="black">
                       {t("recipient_type")}
                     </Text>
-                    <Box variant="pill-group" gridCols={isMember ? "1" : "2"}>
+                    <PillGroup className={isMember ? "grid-cols-1" : "grid-cols-2"}>
                       {!isMember && (
-                        <Box 
-                          variant="pill-item"
-                          background={recipientType === 'all' ? "primary" : "transparent"}
-                          shadow={recipientType === 'all' ? "lg" : "none"}
+                        <PillItem 
+                          active={recipientType === 'all'}
                           onClick={() => { setRecipientType('all'); setRecipientId(null); }}
-                          cursor="pointer"
-                          className={cn(
-                            recipientType === 'all' ? "text-white shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                          )}
                         >
                           <Text variant="label-strong">{t("recipient_member")}</Text>
-                        </Box>
+                        </PillItem>
                       )}
-                      <Box 
-                        variant="pill-item"
-                        background={recipientType === 'specific' ? "primary" : "transparent"}
-                        shadow={recipientType === 'specific' ? "lg" : "none"}
+                      <PillItem 
+                        active={recipientType === 'specific'}
                         onClick={() => setRecipientType('specific')} 
-                        cursor="pointer"
-                        className={cn(
-                          recipientType === 'specific' ? "text-white shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                        )}
                       >
                         <Text variant="label-strong">{t("recipient_individual")}</Text>
-                      </Box>
-                    </Box>
+                      </PillItem>
+                    </PillGroup>
                   </Stack>
 
                   {recipientType === 'specific' && (
@@ -168,10 +158,8 @@ export function ComposeView({
                       <Text variant="subheading" weight="medium" color="black">
                         {t("search_contacts")}
                       </Text>
-                      <Box position="relative">
-                        <Box variant="input-adornment-left">
-                          <IconWrapper icon="search" size="xs" isGhost />
-                        </Box>
+                      <SearchInputBox>
+                        <IconWrapper icon="search" size="xs" isGhost />
                         <Input 
                           type="text" 
                           value={userSearchQuery} 
@@ -180,42 +168,37 @@ export function ComposeView({
                           rounded="xl"
                           className="pl-10"
                         />
-                      </Box>
+                      </SearchInputBox>
                       <AnimatePresence>
                         {userSearchResults.length > 0 && userSearchQuery.length >= 2 && (
-                          <Box 
-                            asChild
-                            variant="search-results-overlay"
-                          >
+                          <SearchResultsOverlay>
                             <motion.div
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: 10 }}
                             >
                               {userSearchResults.map(u => (
-                                <Box 
+                                <ListRow 
                                   key={u.id}
                                   display="flex"
                                   align="center"
                                   spacing="md"
                                   padding="md"
                                   border="top"
-                                  cursor="pointer"
                                   onClick={() => { setRecipientId(u.id); setUserSearchQuery(u.name); setUserSearchResults([]); }}
-                                  variant="list-row"
                                   width="full"
                                 >
-                                  <Box variant="avatar-icon" width="10" height="10" display="flex" align="center" justify="center">
+                                  <AvatarIcon width="10" height="10">
                                     <Text weight="bold" variant="subheading">{u.name[0]}</Text>
-                                  </Box>
+                                  </AvatarIcon>
                                   <Stack spacing="none" align="start" flex="1">
                                     <Text variant="list-title" color="black">{u.name}</Text>
                                     <Text variant="list-subtitle">{u.role?.name || "Member"}</Text>
                                   </Stack>
-                                </Box>
+                                </ListRow>
                               ))}
                             </motion.div>
-                          </Box>
+                          </SearchResultsOverlay>
                         )}
                       </AnimatePresence>
                     </Stack>
@@ -228,15 +211,8 @@ export function ComposeView({
                     <Label 
                       asChild 
                     >
-                      <Box 
-                        variant="upload-dropzone" 
+                      <UploadDropzone 
                         padding="md"
-                        cursor="pointer"
-                        display="flex"
-                        direction="col"
-                        align="center"
-                        justify="center"
-                        width="full"
                       >
                         <Box marginBottom="xs" opacity="40">
                           <IconWrapper icon="paperclip" isGhost />
@@ -250,7 +226,7 @@ export function ComposeView({
                           isHidden 
                           onChange={(e) => setAttachments([...attachments, ...Array.from(e.target.files || [])])} 
                         />
-                      </Box>
+                      </UploadDropzone>
                     </Label>
                     {attachments.length > 0 && (
                       <Inline spacing="xs" wrap marginTop="sm">
@@ -280,13 +256,13 @@ export function ComposeView({
                     <Text variant="subheading" weight="medium" color="black">
                       {t("body")}
                     </Text>
-                    <Box flex="1" minHeight="0">
+                    <Box flex="1" minHeight="0" display="flex" direction="col" height="full">
                       <Textarea 
                         value={body} 
                         onChange={(e) => setBody(e.target.value)} 
                         placeholder={t("body_placeholder")} 
                         required
-                        className="h-full resize-none"
+                        className="flex-1 min-h-0 resize-none"
                       />
                     </Box>
                   </Stack>

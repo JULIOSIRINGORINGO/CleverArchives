@@ -9,6 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { id as idLocale, enUS } from "date-fns/locale";
+import { formatFriendlyDistance } from "@/lib/date-utils";
 
 export interface Attachment {
   url: string;
@@ -144,30 +145,37 @@ export function useMessagingData() {
 
   const conversationThreads = useMemo(() => {
     const threads: Record<number, ConversationThread> = {};
-    messages.forEach(msg => {
-      if (msg.recipient_type !== 'specific') return;
+    
+    // Only process private/specific messages for this view
+    const privateMessages = messages.filter(m => m.recipient_type === 'specific' || !m.recipient_type);
+
+    privateMessages.forEach(msg => {
       const partnerId = Number(msg.sender_id === user?.id ? msg.recipient_id : msg.sender_id);
       const possibleName = msg.sender_id === user?.id ? msg.recipient_name : msg.sender_name;
-      if (!partnerId) return;
+      
+      if (!partnerId) return; // Skip if no clear partner (shouldn't happen with 'specific')
 
-      if (!threads[partnerId]) {
-        threads[partnerId] = { 
-          partnerId, 
-          partnerName: possibleName || "User", 
+      const threadKey = partnerId;
+      const threadName = possibleName || t("user");
+
+      if (!threads[threadKey]) {
+        threads[threadKey] = { 
+          partnerId: threadKey, 
+          partnerName: threadName, 
           lastMessage: msg, 
           messages: [],
           lastSeen: (msg.sender_id === user?.id ? msg.recipient_last_seen : msg.sender_last_seen) || undefined
         };
-      } else if (possibleName && possibleName !== "User" && threads[partnerId].partnerName === "User") {
-        threads[partnerId].partnerName = possibleName;
+      } else if (possibleName && possibleName !== "User" && threads[threadKey].partnerName === "User") {
+        threads[threadKey].partnerName = possibleName;
       }
-      threads[partnerId].messages.push(msg);
+      threads[threadKey].messages.push(msg);
       
-      if (new Date(msg.created_at) > new Date(threads[partnerId].lastMessage.created_at)) {
-        threads[partnerId].lastMessage = msg;
-        if (possibleName && possibleName !== "User") threads[partnerId].partnerName = possibleName;
+      if (new Date(msg.created_at) > new Date(threads[threadKey].lastMessage.created_at)) {
+        threads[threadKey].lastMessage = msg;
+        if (possibleName && possibleName !== "User") threads[threadKey].partnerName = possibleName;
         const newLastSeen = msg.sender_id === user?.id ? msg.recipient_last_seen : msg.sender_last_seen;
-        if (newLastSeen) threads[partnerId].lastSeen = newLastSeen;
+        if (newLastSeen) threads[threadKey].lastSeen = newLastSeen;
       }
     });
 
@@ -178,7 +186,7 @@ export function useMessagingData() {
     return Object.values(threads).sort((a, b) => 
       new Date(b.lastMessage.created_at).getTime() - new Date(a.lastMessage.created_at).getTime()
     );
-  }, [messages, user]);
+  }, [messages, user, t]);
 
   useEffect(() => {
     if (conversationThreads.length > 0) {
@@ -211,13 +219,38 @@ export function useMessagingData() {
   };
 
   const confirmClearAllMessages = async () => {
+    console.log("Starting clear all messages...");
     try {
       await apiService.messages.clearAll();
+      console.log("Clear all messages success");
       fetchMessages();
       setSelectedThread(null);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error("Clear all error:", err); 
+      toast(t("clear_error"), "error");
+    }
     setClearConfirmOpen(false);
   };
+
+  const activeThreadMessages = useMemo(() => {
+    if (!selectedThread) return [];
+    
+    // Use the messages already grouped in the thread for performance
+    const thread = conversationThreads.find(t => t.partnerId === selectedThread.partnerId);
+    return thread ? thread.messages : [];
+  }, [conversationThreads, selectedThread]);
+
+  const partnerStatus = useMemo(() => {
+    if (!selectedThread) return { isOnline: false, text: "" };
+    
+    const lastSeenAt = (selectedThread.lastSeen ? new Date(selectedThread.lastSeen) : null) || 
+                       new Date(selectedThread.lastMessage.created_at);
+    
+    const isOnline = (new Date().getTime() - lastSeenAt.getTime()) < 5 * 60 * 1000;
+    const text = isOnline ? t("online") : `${t("last_seen")} ${formatFriendlyDistance(lastSeenAt, { addSuffix: true, locale: dateFnsLocale })}`;
+    
+    return { isOnline, text };
+  }, [selectedThread, t, dateFnsLocale]);
 
   return {
     user,
@@ -235,6 +268,8 @@ export function useMessagingData() {
     sendingReply,
     dateFnsLocale,
     conversationThreads,
+    activeThreadMessages,
+    partnerStatus,
     messages,
     t,
     fetchMessages,

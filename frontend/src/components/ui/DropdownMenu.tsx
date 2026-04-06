@@ -72,8 +72,9 @@ export const DropdownMenuContent = ({
 
   return (
     <Box 
-      variant="popover-solid"
+      position="absolute"
       className={cn(
+        "top-full z-100 mt-2 rounded-2xl border border-border bg-white p-2 shadow-2xl backdrop-blur-xl",
         alignStyles[align],
         widthMap[width],
         className

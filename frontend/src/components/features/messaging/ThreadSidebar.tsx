@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreadItem } from "./ThreadItem";
 import { Locale } from "date-fns";
+import { PillGroup, PillItem, AvatarIcon } from "./_components/MessagingAesthetics";
 
 interface Message {
   id: number | string;
@@ -71,7 +72,7 @@ const Header = ({ children }: { children: React.ReactNode }) => (
     align="center" 
     shrink="0"
     showDivider={true}
-    className="border-b border-border/50 px-6 py-4"
+    border="bottom"
   >
     {children}
   </WorkspacePanelHeader>
@@ -105,50 +106,39 @@ export function ThreadSidebar({
       display={selectedThreadId && activeTab === 'inbox' ? "none" : "flex"}
       mdDisplay="flex"
     >
-      <Box spacing="none">
-        <Box variant="pill-group">
-          <Box 
-            variant="pill-item"
-            background={activeTab === 'inbox' ? "primary" : "transparent"}
-            shadow={activeTab === 'inbox' ? "lg" : "none"}
+      <Box width="full" padding="none">
+        <PillGroup width="full">
+          <PillItem 
+            active={activeTab === 'inbox'}
             onClick={() => setActiveTab('inbox')}
-            cursor="pointer"
-            className={cn(
-              activeTab === 'inbox' ? "text-white shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-            )}
           >
-            <Inline spacing="xs" align="center" className="whitespace-nowrap">
-              <IconWrapper icon="mail" size="xs" isGhost />
-              {t("tab_inbox")}
-            </Inline>
-          </Box>
-          <Box 
-            variant="pill-item"
-            background={activeTab === 'compose' ? "primary" : "transparent"}
-            shadow={activeTab === 'compose' ? "lg" : "none"}
+            <IconWrapper icon="mail" size="xs" isGhost />
+            {t("tab_inbox")}
+          </PillItem>
+          <PillItem 
+            active={activeTab === 'compose'}
             onClick={() => setActiveTab('compose')}
-            cursor="pointer"
-            className={cn(
-              activeTab === 'compose' ? "text-white shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-            )}
           >
-            <Inline spacing="xs" align="center" className="whitespace-nowrap">
-              <IconWrapper icon="send" size="xs" isGhost />
-              {t("tab_compose")}
-            </Inline>
-          </Box>
-        </Box>
+            <IconWrapper icon="plus" size="xs" isGhost />
+            {t("tab_compose")}
+          </PillItem>
+        </PillGroup>
       </Box>
 
-      <Box variant="fill-remaining" direction="col" background="white" rounded="2xl" border="subtle" shadow="sm">
+      <Box width="full" flex="1" display="flex" direction="col" minHeight="0" background="white" rounded="3xl" border="subtle" shadow="sm" overflow="hidden">
         <Header>
           <AnimatePresence mode="wait">
             {!showInboxSearch ? (
               <Inline key="title" justify="between" align="center" width="full">
                 <Box flex="1">
-                  <Text weight="bold" color="black">
-                    {t("tab_inbox")}
-                  </Text>
+                  <Inline spacing="md" align="center">
+                    <AvatarIcon background="primary" color="white">
+                      <IconWrapper icon="mail" size="sm" isGhost color="white" />
+                    </AvatarIcon>
+                    <Text variant="heading" weight="bold" color="black">
+                      {t("inbox_title")}
+                    </Text>
+                  </Inline>
                 </Box>
                 
                 <DropdownMenu>

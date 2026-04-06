@@ -949,6 +949,7 @@
     "communication_center": "Communication Center",
     "subtitle": "Internal communication between staff and announcements for members.",
     "tab_inbox": "Inbox",
+    "inbox_title": "Inbox",
     "tab_compose": "New Message",
     "recent_messages": "Conversation List",
     "mark_all_read": "Mark All as Read",

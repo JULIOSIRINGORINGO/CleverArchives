@@ -181,9 +181,9 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     try {
       if (id > 0) {
         await apiService.notifications.delete(id);
-      } else {
-        await apiService.messages.delete(Math.abs(id));
       }
+      // For message-type items (negative IDs), we only delete locally from state
+      // NEVER call apiService.messages.delete() here as it deletes the actual data
       setNotifications(prev => prev.filter(n => n.id !== id));
       // Local check if it was unread
       const removed = notifications.find(n => n.id === id);
@@ -197,10 +197,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const clearAllNotifications = async () => {
     try {
-      await Promise.all([
-        apiService.notifications.clearAll(),
-        apiService.messages.clearAll()
-      ]);
+      await apiService.notifications.clearAll();
+      // REMOVED: apiService.messages.clearAll() as it incorrectly hides message history
       setNotifications([]);
       setUnreadCount(0);
     } catch (err) {

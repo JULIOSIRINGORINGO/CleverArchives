@@ -9,6 +9,7 @@ import { Inline } from "@/components/ui/Inline";
 import { Text } from "@/components/ui/Text";
 import { Stack } from "@/components/ui/Stack";
 import { Textarea } from "@/components/ui/Textarea";
+import { SendButton } from "./_components/MessagingAesthetics";
 
 interface MessageInputProps {
   onSend: (text: string) => void;
@@ -76,19 +77,17 @@ export function MessageInput({
           disabled={disabled || loading}
         />
       </Box>
-      <Button 
+      <SendButton 
         onClick={handleSend}
         disabled={!value.trim() || disabled || loading}
-        variant="primary"
-        rounded="full"
-        className="w-16 h-16 shrink-0 p-0 shadow-lg border-none flex items-center justify-center transition-all"
+        loading={loading}
       >
         {loading ? (
-          <Loader2 className="animate-spin" size={24} />
+          <IconWrapper icon="loader" size="lg" isGhost className="animate-spin" />
         ) : (
-          <IconWrapper icon="send" size="lg" isGhost />
+          <IconWrapper icon="send" size="lg" isGhost color="white" />
         )}
-      </Button>
+      </SendButton>
     </Box>
   );
 }

@@ -1,70 +1,25 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { cn } from "@/lib/utils"
+import { Box, BoxProps } from "./Box"
 
-type CardVariant = "default" | "soft" | "dashed" | "outline" | "ghost" | "ghost-surface" | "glow";
-type CardPadding = "none" | "xs" | "sm" | "md" | "lg" | "xl";
-type CardRounding = "none" | "md" | "lg" | "xl" | "2xl" | "3xl";
-
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: CardVariant;
-  padding?: CardPadding;
-  rounded?: CardRounding;
-  border?: "none" | "soft" | "bold";
-}
+interface CardProps extends BoxProps {}
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = "default", padding = "md", rounded = "xl", border = "soft", ...props }, ref) => {
-    const variants: Record<CardVariant, string> = {
-      default: "bg-[--color-surface]",
-      soft: "bg-[--color-muted]/50",
-      dashed: "bg-[--color-muted]/30 border-dashed border-2",
-      outline: "bg-transparent border",
-      ghost: "bg-transparent",
-      "ghost-surface": "bg-transparent border-none p-0",
-      glow: "bg-white/40 backdrop-blur-xl border-primary/5 shadow-2xl shadow-primary/[0.02]",
-    };
-
-    const paddings: Record<CardPadding, string> = {
-      none: "p-0",
-      xs: "p-2",
-      sm: "p-3",
-      md: "p-4",
-      lg: "p-6",
-      xl: "p-8",
-    };
-
-    const rounding: Record<CardRounding, string> = {
-      none: "rounded-none",
-      md: "rounded-md",
-      lg: "rounded-lg",
-      xl: "rounded-xl",
-      "2xl": "rounded-2xl",
-      "3xl": "rounded-3xl",
-    };
-
-    const borderStyles = {
-      none: "border-0",
-      soft: "border border-border/5",
-      bold: "border border-border",
-    };
-
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          "transition-all duration-300 overflow-hidden",
-          variants[variant],
-          paddings[padding],
-          rounding[rounded],
-          borderStyles[border],
-          className
-        )}
-        {...props}
-      />
-    );
-  }
-);
-Card.displayName = "Card";
+  ({ className, background, border, rounded, shadow, padding, maxWidth, ...props }, ref) => (
+    <Box
+      ref={ref}
+      background={background || "white"}
+      border={border || "all"}
+      rounded={rounded || "3xl"}
+      shadow={shadow || "sm"}
+      padding={padding}
+      maxWidth={maxWidth}
+      className={cn("overflow-hidden", className)}
+      {...props}
+    />
+  )
+)
+Card.displayName = "Card"
 
 const CardTitle = React.forwardRef<
   HTMLParagraphElement,
@@ -72,11 +27,14 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn("text-2xl font-semibold leading-none tracking-tight", className)}
+    className={cn(
+      "text-2xl font-semibold leading-none tracking-tight",
+      className
+    )}
     {...props}
   />
-));
-CardTitle.displayName = "CardTitle";
+))
+CardTitle.displayName = "CardTitle"
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -87,31 +45,31 @@ const CardDescription = React.forwardRef<
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
-));
-CardDescription.displayName = "CardDescription";
+))
+CardDescription.displayName = "CardDescription"
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
-));
-CardHeader.displayName = "CardHeader";
+))
+CardHeader.displayName = "CardHeader"
 
 const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-));
-CardContent.displayName = "CardContent";
+))
+CardContent.displayName = "CardContent"
 
 const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
-));
-CardFooter.displayName = "CardFooter";
+))
+CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

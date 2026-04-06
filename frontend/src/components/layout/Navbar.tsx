@@ -33,7 +33,7 @@ const NavHeader = ({ children, ...props }: any) => (
     display="flex"
     align="center"
     justify="between"
-    paddingX="lg"
+    paddingX="md"
     position="sticky"
     className="top-0 z-[101] border-b border-border shadow-sm shrink-0"
     {...props}
@@ -60,7 +60,7 @@ const SubtitleText = ({ children }: { children: React.ReactNode }) => (
     weight="medium"
     color="muted"
     opacity="80"
-    className="truncate text-[13px] mt-[-10px]"
+    className="truncate text-[13px]"
   >
     {children}
   </Text>
@@ -158,7 +158,7 @@ const Navbar = () => {
             exit={{ opacity: 0, x: 10 }}
             transition={{ duration: 0.2 }}
           >
-            <Stack gap="none">
+            <Stack gap="xs">
               <TitleText>{displayTitle}</TitleText>
               <SubtitleText>{displaySubtitle}</SubtitleText>
             </Stack>

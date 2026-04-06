@@ -1,33 +1,25 @@
-"use client";
-
 import * as React from "react";
+import { Box, BoxProps, Spacing } from "./Box";
 import { cn } from "@/lib/utils";
 
-interface OverlayProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "gradient" | "solid" | "transparent" | "blur";
-  padding?: "none" | "sm" | "md" | "lg" | "xl";
-  position?: "absolute" | "fixed" | "relative";
+interface OverlayProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'color'> {
+  variant?: "glass" | "solid" | "transparent" | "blur" | "gradient";
+  padding?: Spacing;
+  position?: BoxProps["position"];
   center?: boolean;
 }
-
-const variantStyles = {
-  gradient: "bg-gradient-to-t from-black/80 via-black/20 to-transparent",
-  solid: "bg-black/40",
-  transparent: "bg-transparent",
-  blur: "backdrop-blur-[8px] bg-primary/10",
-};
-
-const paddings = {
-  none: "p-0",
-  sm: "p-4",
-  md: "p-6",
-  lg: "p-8",
-  xl: "p-12",
-};
 
 interface OverlayAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   position?: "top-right" | "top-left" | "bottom-right" | "bottom-left" | "center";
 }
+
+const variantStyles = {
+  glass: "bg-white/10 backdrop-blur-[2px] border border-white/20",
+  solid: "bg-background",
+  transparent: "bg-transparent",
+  blur: "backdrop-blur-[8px] bg-primary/10",
+  gradient: "bg-gradient-to-t from-black/80 via-black/20 to-transparent",
+};
 
 const areaPositions = {
   "top-right": "absolute top-4 right-4 z-20",
@@ -39,19 +31,19 @@ const areaPositions = {
 
 const OverlayRoot = ({ 
   variant = "transparent", 
-  padding = "none", 
+  padding, 
   position = "absolute",
   center = false,
   className, 
   ...props 
 }: OverlayProps) => {
   return (
-    <div 
+    <Box 
+      position={position}
+      padding={padding}
       className={cn(
-        position,
         "inset-0 z-10",
-        variantStyles[variant],
-        paddings[padding],
+        variantStyles[variant as keyof typeof variantStyles],
         center && "flex items-center justify-center text-center",
         className
       )}

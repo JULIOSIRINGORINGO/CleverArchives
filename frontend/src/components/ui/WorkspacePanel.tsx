@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { motion, HTMLMotionProps } from "framer-motion"
-import { Box, BoxProps, backgrounds, borders, roundings, shadows, paddings, flexMap, shrinkMap, widths } from "./Box";
+import { Box, BoxProps } from "./Box";
 import { cn } from "@/lib/utils";
 
 type WorkspacePanelProps = Omit<HTMLMotionProps<"div">, "transition"> & Omit<BoxProps, keyof React.HTMLAttributes<HTMLDivElement> | "transition"> & {
@@ -17,45 +17,48 @@ const WorkspacePanel = React.forwardRef<HTMLDivElement, WorkspacePanelProps>(
     className, isStatic = false, fullHeight = false, children, 
     flex, flexShrink, background, border, rounded, shadow, padding, width, overflow, position, ...props 
   }, ref) => {
-    const containerClasses = cn(
-      "bg-white border border-border/40 flex flex-col min-h-0",
-      !rounded && "rounded-[2.5rem]",
-      !overflow && "overflow-hidden",
-      overflow === "hidden" && "overflow-hidden",
-      overflow === "auto" && "overflow-auto",
-      fullHeight && "h-full flex-1",
-      flex && flex in flexMap && flexMap[flex as keyof typeof flexMap],
-      flexShrink !== undefined && flexShrink.toString() in shrinkMap && shrinkMap[flexShrink.toString() as keyof typeof shrinkMap],
-      background && background in backgrounds && backgrounds[background as keyof typeof backgrounds],
-      border && border in borders && borders[border as keyof typeof borders],
-      rounded && rounded in roundings && roundings[rounded as keyof typeof roundings],
-      shadow && shadow in shadows && shadows[shadow as keyof typeof shadows],
-      padding && padding in paddings && paddings[padding as keyof typeof paddings],
-      width && width in widths && widths[width as keyof typeof widths],
-      position,
-      className
+    // The main container as a Box to leverage its internal class logic
+    const PanelContainer = (
+      <Box
+        ref={ref}
+        flex={flex}
+        flexShrink={flexShrink}
+        background={background}
+        border={border}
+        rounded={rounded || "3xl"} // Default to 3xl if not provided
+        shadow={shadow}
+        padding={padding}
+        width={width}
+        overflow={overflow || "hidden"}
+        position={position}
+        display="flex"
+        direction="col"
+        minHeight="0"
+        className={cn(
+          "bg-white border-border/40",
+          fullHeight && "h-full flex-1",
+          className
+        )}
+      >
+        {children}
+      </Box>
     );
 
     if (!isStatic) {
       return (
         <motion.div
-          ref={ref}
           initial={props.initial || { opacity: 0, y: 10 }}
           animate={props.animate || { opacity: 1, y: 0 }}
           transition={props.transition || { duration: 0.4, ease: "circOut" }}
-          className={containerClasses}
+          className={fullHeight ? "h-full flex-1 flex flex-col" : "flex flex-col"}
           {...(props as any)}
         >
-          {children}
+          {PanelContainer}
         </motion.div>
       )
     }
 
-    return (
-      <div ref={ref} className={containerClasses} {...(props as any)}>
-        {children}
-      </div>
-    )
+    return PanelContainer;
   }
 )
 WorkspacePanel.displayName = "WorkspacePanel"
@@ -65,21 +68,17 @@ interface WorkspacePanelHeaderProps extends BoxProps {
 }
 
 const WorkspacePanelHeader = React.forwardRef<HTMLDivElement, WorkspacePanelHeaderProps>(
-  ({ className, showDivider = true, background, border, rounded, shadow, padding, flex, flexShrink, width, overflow, position, ...props }, ref) => (
+  ({ className, showDivider = true, ...props }, ref) => (
     <Box
       ref={ref}
-      background={background}
-      border={border}
-      rounded={rounded}
-      shadow={shadow}
-      padding={padding}
-      flex={flex}
-      flexShrink={flexShrink}
-      width={width}
-      overflow={overflow}
-      position={position}
+      display="flex"
+      align="center"
+      justify="between"
+      shrink="0"
+      paddingX="lg"
+      paddingY="md"
       className={cn(
-        "px-8 py-6 flex items-center justify-between shrink-0",
+        "px-8 py-6",
         showDivider && "border-b border-border/20",
         className
       )}
@@ -92,18 +91,16 @@ WorkspacePanelHeader.displayName = "WorkspacePanelHeader"
 interface WorkspacePanelContentProps extends BoxProps {}
 
 const WorkspacePanelContent = React.forwardRef<HTMLDivElement, WorkspacePanelContentProps>(
-  ({ className, background, flex = "1", overflow = "auto", padding, variant, ...props }, ref) => (
+  ({ className, padding, variant, ...props }, ref) => (
     <Box
       ref={ref}
-      flex={flex}
-      overflow={overflow}
-      background={background}
+      flex="1"
+      overflow="auto"
       padding={padding}
       variant={variant}
       className={cn(
-        variant !== "none" && !padding && "px-8 py-6",
-        padding && (padding in paddings) && paddings[padding as keyof typeof paddings],
-        "custom-scrollbar",
+        variant !== "none" && !padding && "px-4 py-2",
+        "custom-scrollbar transition-all",
         className
       )}
       {...props}
@@ -117,23 +114,13 @@ interface WorkspacePanelFooterProps extends BoxProps {
 }
 
 const WorkspacePanelFooter = React.forwardRef<HTMLDivElement, WorkspacePanelFooterProps>(
-  ({ className, showDivider = true, background, border, rounded, shadow, padding, flex, flexShrink, width, overflow, position, variant, ...props }, ref) => (
+  ({ className, showDivider = true, variant, ...props }, ref) => (
     <Box
       ref={ref}
-      background={background}
-      border={border}
-      rounded={rounded}
-      shadow={shadow}
-      padding={padding}
-      flex={flex}
-      flexShrink={flexShrink}
-      width={width}
-      overflow={overflow}
-      position={position}
+      shrink="0"
       variant={variant}
       className={cn(
         variant !== "none" && "px-8 py-6",
-        "shrink-0",
         showDivider && "border-t border-border/20",
         className
       )}

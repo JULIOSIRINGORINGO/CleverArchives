@@ -108,7 +108,8 @@ export function MessageList({
       direction="col"
       padding="lg"
       background="white"
-      overflow="auto"
+      overflowY="auto"
+      overflowX="hidden"
       height="full"
       scrollbar="custom"
     >

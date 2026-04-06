@@ -1,20 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
-import { 
-  BoxProps, 
-  backgrounds, 
-  borders, 
-  roundings, 
-  paddings, 
-  flexMap, 
-  shrinkMap,
-  widths,
-  widthMap,
-  heightMap
-} from "./Box";
-
-type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+import { Box, BoxProps, Spacing } from "./Box";
 
 export interface InlineProps extends Omit<BoxProps, "wrap"> {
   spacing?: Spacing;
@@ -31,30 +18,6 @@ export interface InlineProps extends Omit<BoxProps, "wrap"> {
   rounded?: BoxProps["rounded"];
   padding?: BoxProps["padding"];
 }
-
-const spacingMap: Record<Spacing, string> = {
-  none: "gap-0",
-  xs: "gap-2",
-  sm: "gap-3",
-  md: "gap-4",
-  lg: "gap-6",
-  xl: "gap-8",
-};
-
-const alignMap = {
-  start: "items-start",
-  center: "items-center",
-  end: "items-end",
-  stretch: "items-stretch",
-  baseline: "items-baseline",
-};
-
-const justifyMap = {
-  start: "justify-start",
-  center: "justify-center",
-  end: "justify-end",
-  between: "justify-between",
-};
 
 export const Inline = React.forwardRef<HTMLDivElement, InlineProps>(({ 
   spacing = "md", 
@@ -77,30 +40,28 @@ export const Inline = React.forwardRef<HTMLDivElement, InlineProps>(({
   className, 
   ...props 
 }, ref) => {
-  const Component = asChild ? Slot : "div";
-
   return (
-    <Component 
+    <Box 
       ref={ref}
+      as={asChild ? Slot : "div"}
+      display="flex"
+      direction="row"
+      gap={spacing}
+      align={isCentered || isStartCenter ? "center" : align}
+      justify={isCentered ? "center" : (isStartCenter ? "start" : justify)}
+      whiteSpace={wrap ? "normal" : "nowrap"}
+      cursor={isClickable ? "pointer" : undefined}
+      mdDisplay={mdDisplay}
+      mdDirection={mdDirection}
+      maxWidth={maxWidth}
+      background={background}
+      border={border}
+      rounded={rounded}
+      padding={padding}
+      flex={flex}
+      shrink={shrink}
       className={cn(
-        "flex flex-row", // Hardcoded baseline
-        spacingMap[spacing],
-        isCentered ? "items-center justify-center" : 
-        isStartCenter ? "items-center justify-start" : 
-        cn(alignMap[align], justifyMap[justify]), // Explicitly group alignment
-        isClickable && "cursor-pointer",
         wrap ? "flex-wrap" : "flex-nowrap",
-        mdDisplay && (mdDisplay === "hidden" || mdDisplay === "none" ? "md:hidden" : `md:${mdDisplay}`),
-        mdDirection && `md:flex-${mdDirection}`,
-        maxWidth && widths[maxWidth],
-        props.width && widthMap[props.width as keyof typeof widthMap],
-        props.height && heightMap[props.height as keyof typeof heightMap],
-        background && backgrounds[background],
-        border && borders[border],
-        rounded && roundings[rounded],
-        padding && paddings[padding],
-        flex && flexMap[flex],
-        shrink && shrinkMap[shrink],
         className
       )}
       {...props}
