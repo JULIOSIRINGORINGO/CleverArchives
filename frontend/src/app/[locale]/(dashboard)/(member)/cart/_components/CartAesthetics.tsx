@@ -63,7 +63,6 @@ export const SearchAesthetics = ({
                 rounded="2xl"
                 type="submit"
                 disabled={searching}
-                className="shadow-sm shadow-primary/20 active:scale-95 transition-all"
               >
                 {t("search_button")}
               </Button>
@@ -90,7 +89,6 @@ export const SearchAesthetics = ({
                         size="sm"
                         rounded="xl"
                         onClick={() => handleSelectItem(copy)}
-                        className="group/btn"
                       >
                         <Inline spacing="xs" align="center">
                           {t("select")}
@@ -206,7 +204,6 @@ export const ConfirmationAesthetics = ({
             variant="danger"
             size="action"
             rounded="2xl"
-            className="px-8 shadow-sm shadow-red-100"
             onClick={clearCart}
             disabled={!item}
           >
