@@ -47,7 +47,7 @@ export const CartMainView = ({ searchProps, confirmationProps, alertProps }: Car
                   exit={{ opacity: 0, height: 0, marginTop: 0 }}
                 >
                   <AlertCard
-                    variant="info"
+                    variant="primary"
                     title={alertProps.t("alert_title")}
                     description={alertProps.t("alert_description")}
                     dismissible

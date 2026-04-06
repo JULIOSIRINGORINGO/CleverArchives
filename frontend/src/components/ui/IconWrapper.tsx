@@ -51,7 +51,7 @@ export const ICON_REGISTRY = {
 
 export type AppIconName = keyof typeof ICON_REGISTRY;
 
-type IconWrapperVariant = "primary" | "warning" | "danger" | "success" | "muted" | "white";
+type IconWrapperVariant = "primary" | "warning" | "danger" | "success" | "muted" | "white" | "primary-solid";
 type IconWrapperSize = "sm" | "md" | "lg" | "xl" | "xs";
 type IconPreset = "security-note" | "send-message" | "attachment-clip";
 
@@ -67,6 +67,7 @@ interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const variantStyles: Record<IconWrapperVariant, string> = {
   primary: "bg-[--color-primary]/10 text-[--color-primary]",
+  "primary-solid": "bg-[--color-primary] text-white shadow-sm shadow-primary/20",
   warning: "bg-[--color-warning]/10 text-[--color-warning]",
   danger: "bg-[--color-danger]/10 text-[--color-danger]",
   success: "bg-[--color-success]/10 text-[--color-success]",

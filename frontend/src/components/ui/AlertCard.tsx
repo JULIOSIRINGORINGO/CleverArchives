@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Text } from "@/components/ui/Text";
 import { IconWrapper } from "@/components/ui/IconWrapper";
 
-type AlertCardVariant = "warning" | "info" | "danger";
+type AlertCardVariant = "warning" | "info" | "danger" | "primary";
 
 interface AlertCardProps {
   variant?: AlertCardVariant;
@@ -20,9 +20,14 @@ interface AlertCardProps {
 
 const variantConfig: Record<AlertCardVariant, {
   icon: React.ElementType;
-  iconVariant: "warning" | "primary" | "danger";
+  iconVariant: "warning" | "primary" | "danger" | "white" | "primary-solid";
   containerClass: string;
 }> = {
+  primary: {
+    icon: Info,
+    iconVariant: "primary-solid",
+    containerClass: "bg-white border-primary/20 shadow-lg shadow-primary/5",
+  },
   warning: {
     icon: AlertTriangle,
     iconVariant: "warning",
@@ -30,7 +35,7 @@ const variantConfig: Record<AlertCardVariant, {
   },
   info: {
     icon: Info,
-    iconVariant: "muted" as any,
+    iconVariant: "primary",
     containerClass: "bg-muted/30 border-border/50",
   },
   danger: {
