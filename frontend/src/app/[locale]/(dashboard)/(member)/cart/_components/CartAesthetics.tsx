@@ -98,6 +98,8 @@ export const SearchAesthetics = ({
                         <IconWrapper
                           icon="arrow-right"
                           size="xs"
+                          color="white"
+                          isGhost
                           opacity="40"
                           className="group-hover/btn:translate-x-1 group-hover/btn:opacity-100 transition-all"
                         />
@@ -210,7 +212,7 @@ export const ConfirmationAesthetics = ({
           disabled={!item}
         >
           <Inline spacing="sm" align="center">
-            <IconWrapper icon="trash" size="xs" />
+            <IconWrapper icon="trash" size="xs" color="white" isGhost />
             {t("cancel")}
           </Inline>
         </Button>
