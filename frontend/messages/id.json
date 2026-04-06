@@ -575,9 +575,10 @@
     "single_borrowing": "Peminjaman Tunggal",
     "books_unit": "Buku",
     "status_request": "Menunggu Konfirmasi",
-    "status_returning": "Sedang Dikembalikan",
+    "status_returning": "Menunggu Kembali",
     "status_borrowed": "Buku Sedang Dipinjam",
-    "status_overdue": "Lewat Jatuh Tempo"
+    "status_overdue": "Lewat Jatuh Tempo",
+    "batch_label": "Kolektif"
   },
   "Common": {
     "status_borrowed": "Sedang Dipinjam",

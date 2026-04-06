@@ -573,9 +573,10 @@
     "single_borrowing": "Single Borrowing",
     "books_unit": "Books",
     "status_request": "Awaiting Confirmation",
-    "status_returning": "Currently Returning",
+    "status_returning": "Return Pending",
     "status_borrowed": "Currently Borrowing",
-    "status_overdue": "Past Due Date"
+    "status_overdue": "Past Due Date",
+    "batch_label": "Batch"
   },
   "Common": {
     "status_borrowed": "Borrowed",

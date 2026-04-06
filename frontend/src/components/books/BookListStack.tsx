@@ -24,7 +24,7 @@ export function BookListStack({
 
   return (
     <div 
-      className={cn("flex flex-col w-full pt-1 pb-1", className)}
+      className={cn("flex flex-col w-full py-0.5", className)}
       style={{ gap: finalGap }}
     >
       {children}

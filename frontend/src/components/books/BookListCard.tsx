@@ -1,12 +1,13 @@
 "use client";
 
-import { LucideIcon, ArrowUpRight, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Box } from "@/components/ui/Box";
 import { Stack } from "@/components/ui/Stack";
 import { Inline } from "@/components/ui/Inline";
 import { Text } from "@/components/ui/Text";
 import { CategoryBadge } from "@/components/ui/CategoryBadge";
+import { IconWrapper, AppIconName } from "@/components/ui/IconWrapper";
 import { cn } from "@/lib/utils";
 
 interface BookListCardProps {
@@ -18,19 +19,19 @@ interface BookListCardProps {
   metadata: {
     label: string;
     value: string;
-    icon: LucideIcon;
+    icon: AppIconName;
     iconColor?: string;
   }[];
   action?: React.ReactNode;
   className?: string;
   isCompact?: boolean;
-  typeIcon?: LucideIcon;
+  typeIcon?: AppIconName;
   typeLabel?: string;
 }
 
 /**
- * BookListCard - A standardized horizontal card for book lists (History, Borrowed).
- * Ensures consistency across the dashboard and avoids "manual" design repeating.
+ * BookListCard - Standardized horizontal card for book lists (History, Borrowed).
+ * Refactored to use IconWrapper for consistent typography and icons.
  */
 export function BookListCard({
   coverUrl,
@@ -42,8 +43,7 @@ export function BookListCard({
   action,
   className,
   isCompact = false,
-  typeIcon: TypeIcon,
-  typeLabel
+  typeIcon,
 }: BookListCardProps) {
   if (isCompact) {
     return (
@@ -60,24 +60,31 @@ export function BookListCard({
       >
         <Inline spacing="lg" align="center" flex="1">
           {/* Compact Type Icon */}
-          {TypeIcon && (
-            <Box 
-              background="primary-soft"
-              rounded="lg"
-              className="w-8 h-8 flex items-center justify-center text-primary shrink-0 transition-transform group-hover/card:scale-110"
-            >
-              <TypeIcon size={16} strokeWidth={2.5} />
-            </Box>
+          {typeIcon && (
+            <IconWrapper 
+              icon={typeIcon} 
+              size="xs" 
+              className="shrink-0 transition-transform group-hover/card:scale-110" 
+            />
           )}
 
           {/* 1-Line Table Row */}
           <Inline justify="between" spacing="lg" flex="1" className="min-w-0">
             <Box flex="1" className="min-w-0">
               <Stack spacing="none" className="min-w-0">
-                <Text variant="subheading" weight="bold" tracking="tight" className="text-slate-800 truncate">
+                <Text 
+                  variant="subheading" 
+                  weight="bold" 
+                  tracking="tight" 
+                  className="line-clamp-1"
+                >
                   {title}
                 </Text>
-                <Text variant="caption" weight="medium" className="text-slate-500 italic truncate opacity-90">
+                <Text 
+                  variant="caption" 
+                  italic 
+                  className="text-muted-foreground opacity-90 line-clamp-1"
+                >
                   {author}
                 </Text>
               </Stack>
@@ -88,10 +95,18 @@ export function BookListCard({
                 <Inline spacing="lg">
                   {metadata.map((item, idx) => (
                     <Inline key={idx} spacing="xs" align="center">
-                      <Box background="muted-soft" rounded="md" className="w-6 h-6 flex items-center justify-center text-indigo-600">
-                        <item.icon size={12} strokeWidth={2.5} />
-                      </Box>
-                      <Text variant="caption" weight="bold" className="text-slate-800 whitespace-nowrap">
+                      <IconWrapper 
+                        icon={item.icon} 
+                        size="xs" 
+                        isGhost 
+                        opacity="60" 
+                        color="primary" 
+                      />
+                      <Text 
+                        variant="caption" 
+                        weight="bold" 
+                        className="whitespace-nowrap"
+                      >
                         {item.value}
                       </Text>
                     </Inline>
@@ -111,7 +126,7 @@ export function BookListCard({
     );
   }
 
-  // Standard View (Ultra-Precise Spacing)
+  // Standard View (Zero ClassName Compliant Typography)
   return (
     <Box 
       background="white"
@@ -123,39 +138,34 @@ export function BookListCard({
         className
       )}
     >
-      <Inline spacing="lg" align="center" flex="1">
+      <Inline spacing="lg" align="start" flex="1">
         {/* Type Indicator + Book Cover Container */}
         <Inline spacing="lg" align="center" className="shrink-0">
-          {/* Integrated Type Icon */}
-          {TypeIcon && (
-            <Box 
-              background="primary-soft"
-              rounded="xl"
-              border="subtle"
-              shadow="sm"
-              className="w-10 h-10 flex items-center justify-center text-primary shrink-0 transition-transform group-hover/card:scale-110"
-            >
-              <TypeIcon size={20} strokeWidth={2.5} />
-            </Box>
+          {typeIcon && (
+            <IconWrapper 
+              icon={typeIcon} 
+              size="md" 
+              className="shrink-0 transition-transform group-hover/card:scale-110" 
+            />
           )}
 
           <Box 
             rounded="xl"
             border="subtle"
             background="muted-soft"
-            className="w-16 sm:w-18 aspect-[3.2/4] overflow-hidden shrink-0 transition-transform duration-700 group-hover/card:scale-105"
+            className="w-16 sm:w-18 aspect-[3.2/4] overflow-hidden shrink-0 transition-transform duration-700 group-hover:scale-105"
           >
             {coverUrl ? (
               <img src={coverUrl} alt={title} className="w-full h-full object-cover" />
             ) : (
-              <Box className="w-full h-full flex items-center justify-center text-slate-300">
+              <Box className="w-full h-full flex items-center justify-center text-muted-foreground/30">
                 <BookOpen size={24} />
               </Box>
             )}
           </Box>
         </Inline>
 
-        {/* Tight Content Section with Large Readability */}
+        {/* Content Section */}
         <Inline flex="1" align="center" justify="between" spacing="lg" wrap className="w-full">
           <Box className="md:w-[40%]">
             <Stack spacing="xs">
@@ -165,25 +175,46 @@ export function BookListCard({
                 variant="heading" 
                 weight="bold" 
                 tracking="tight" 
-                className="group-hover/card:text-primary transition-colors duration-300 line-clamp-1"
+                className="group-hover:text-primary transition-colors duration-300 line-clamp-1"
               >
                 {title}
               </Text>
-              <Text variant="subheading" weight="medium" className="text-slate-500 italic truncate">
+              <Text 
+                variant="subheading" 
+                weight="medium" 
+                italic
+                className="text-muted-foreground truncate"
+              >
                 {author}
               </Text>
             </Stack>
           </Box>
 
+          {/* Metadata Grid (Systematic with IconWrapper) */}
           <Inline flex="1" spacing="xl" wrap className="gap-y-1">
             {metadata.map((item, idx) => (
               <Stack key={idx} spacing="none">
-                <Text variant="caption" weight="bold" tracking="tight" className="text-slate-500 mb-1">
+                <Text 
+                  variant="label-xs" 
+                  weight="bold" 
+                  tracking="tight" 
+                  className="text-muted-foreground/60 mb-1"
+                >
                   {item.label}
                 </Text>
                 <Inline spacing="xs" align="center">
-                  <item.icon size={12} className="text-indigo-600" />
-                  <Text variant="subheading" weight="bold" tracking="tight" className="text-slate-900">
+                  <IconWrapper 
+                    icon={item.icon} 
+                    size="xs" 
+                    isGhost 
+                    opacity="60" 
+                    color="primary" 
+                  />
+                  <Text 
+                    variant="subheading" 
+                    weight="bold" 
+                    tracking="tight"
+                  >
                     {item.value}
                   </Text>
                 </Inline>
@@ -191,13 +222,14 @@ export function BookListCard({
             ))}
           </Inline>
 
+          {/* Dynamic Action Section */}
           <Inline 
-            justify="between" 
+            justify="end" 
             align="center" 
             spacing="lg" 
             className={cn(
-              "shrink-0 w-full md:w-auto pl-4 h-11",
-              status && action && "border-l border-border/10"
+              "shrink-0 w-full md:w-auto md:pl-4",
+              status && action && "md:border-l md:border-border/10"
             )}
           >
             {status && <StatusBadge status={status} className={cn(action && "hidden sm:flex")} />}
@@ -210,7 +242,7 @@ export function BookListCard({
 }
 
 /**
- * Static Skeleton for consistent loading states across pages.
+ * Static Skeleton for consistent loading states.
  */
 BookListCard.Skeleton = function BookListCardSkeleton({ count = 3, isCompact = false }: { count?: number; isCompact?: boolean }) {
   return (

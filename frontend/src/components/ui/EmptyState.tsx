@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { DESIGN } from "@/config/design-system";
+import { IconWrapper, AppIconName, ICON_REGISTRY } from "@/components/ui/IconWrapper";
 
+/**
+ * EmptyStateProps - Updated to support both LucideIcon and systemic AppIconName.
+ */
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon: LucideIcon | AppIconName;
   title: string;
   description: string;
   className?: string;
@@ -21,21 +25,30 @@ interface EmptyStateProps {
 /**
  * EmptyState - A premium, centered 'No Results' component.
  * Used consistently across the dashboard for search/filter empty states.
+ * Refactored to support systemic IconWrapper registry names.
  */
 export function EmptyState({ 
-  icon: Icon, 
+  icon, 
   title, 
   description, 
   className,
   action 
 }: EmptyStateProps) {
+  // Determine if icon is a registry name or a component
+  const isRegistryIcon = typeof icon === 'string';
+  const IconComponent = isRegistryIcon ? ICON_REGISTRY[icon as AppIconName] : icon;
+
   return (
     <div className={cn(
       "flex flex-col items-center justify-center py-10 md:py-16 px-6 text-center gap-4 animate-in zoom-in duration-500 bg-card/5 rounded-[2rem] border border-dashed border-border/20 w-full",
       className
     )}>
       <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-muted/5 flex items-center justify-center shadow-inner group-hover:rotate-12 transition-transform duration-700">
-        <Icon size={DESIGN.STYLING.EMPTY_ICON || 24} strokeWidth={1.5} className="text-muted-foreground/30" />
+        {isRegistryIcon ? (
+          <IconWrapper icon={icon as AppIconName} size="md" isGhost variant="muted" opacity="50" />
+        ) : IconComponent ? (
+          <IconComponent size={DESIGN.STYLING.EMPTY_ICON || 24} strokeWidth={1.5} className="text-muted-foreground/30" />
+        ) : null}
       </div>
       
       <div className="space-y-1">
