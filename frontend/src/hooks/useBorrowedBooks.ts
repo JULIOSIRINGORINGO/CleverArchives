@@ -24,7 +24,7 @@ export function useBorrowedBooks() {
   const [borrowingsData, setBorrowingsData] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "pending" | "overdue">("all");
-  const [viewMode, setInnerViewMode] = useState<'standard' | 'compact'>('standard');
+  const [viewMode, setInnerViewMode] = useState<'standard' | 'compact'>('compact');
 
   // Persistence Tier
   const setViewMode = useCallback((mode: 'standard' | 'compact') => {

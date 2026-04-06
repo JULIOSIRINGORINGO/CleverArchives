@@ -77,11 +77,11 @@ export default function MemberCatalog() {
             ))}
           </DashboardSection>
         ) : (
-          <BookListStack viewMode="compact">
+          <BookListStack viewMode={viewMode}>
             {books.map((book: any) => (
               <BookListCard 
                 key={book.id}
-                isCompact={true}
+                isCompact={viewMode === 'compact'}
                 title={book.title}
                 author={book.author?.name || t("unknown_author")}
                 category={book.category?.name || t("uncategorized")}

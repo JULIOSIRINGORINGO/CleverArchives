@@ -20,7 +20,7 @@ export function BookListStack({
   gap 
 }: BookListStackProps) {
   // Gunakan gap eksplisit jika ada, jika tidak otomatis berdasarkan viewMode
-  const finalGap = gap || (viewMode === 'compact' ? "4px" : "12px");
+  const finalGap = gap || (viewMode === 'compact' ? "4px" : "6px");
 
   return (
     <div 

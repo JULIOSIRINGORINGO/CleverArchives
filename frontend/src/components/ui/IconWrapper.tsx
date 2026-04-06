@@ -1,7 +1,8 @@
 import * as React from "react";
 import { 
   Hash, Calendar, Building2, BookOpen, Clock, Check, AlertCircle, X, ChevronRight, ArrowUpRight, Search, Bookmark,
-  Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download, CheckCheck, Bell, Plus, Loader2, Layers, User, RotateCcw
+  Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download, CheckCheck, Bell, Plus, Loader2, Layers, User, RotateCcw,
+  History, CheckCircle2, ArrowRight, Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,10 @@ export const ICON_REGISTRY = {
   layers: Layers,
   user: User,
   rotate: RotateCcw,
+  history: History,
+  "check-circle": CheckCircle2,
+  "arrow-right": ArrowRight,
+  sparkles: Sparkles,
 } as const;
 
 export type AppIconName = keyof typeof ICON_REGISTRY;
