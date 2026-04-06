@@ -475,7 +475,7 @@
     "alert_title": "Confirmation",
     "alert_description": "Borrowing requests will be verified by the system before being activated.",
     "search_title": "Start with Book Code",
-    "barcode_placeholder": "Example: BC-26-1",
+    "barcode_placeholder": "Search for books by unique code or barcode...",
     "search_button": "Search",
     "empty_search": "Please Enter Book Code",
     "empty_cart": "Cart is Empty",

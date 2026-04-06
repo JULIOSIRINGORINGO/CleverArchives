@@ -475,7 +475,7 @@
     "alert_title": "Konfirmasi",
     "alert_description": "Permintaan peminjaman akan diverifikasi oleh sistem sebelum diaktifkan.",
     "search_title": "Mulai dengan Kode Buku",
-    "barcode_placeholder": "Contoh: BC-26-1",
+    "barcode_placeholder": "Cari buku berdasarkan kode unik atau barcode...",
     "search_button": "Cari",
     "empty_search": "Masukkan Kode Buku",
     "empty_cart": "Keranjang Kosong",
