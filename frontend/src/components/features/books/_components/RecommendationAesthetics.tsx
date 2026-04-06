@@ -160,3 +160,42 @@ export const RecommendationEmptyState = ({ children }: { children: React.ReactNo
     {children}
   </Box>
 );
+
+// 12. Specialized Image & Placeholder Wrappers
+export const RecommendationImage = ({ src, alt }: { src: string, alt: string }) => (
+  <Box 
+    as="img"
+    src={src}
+    alt={alt}
+    width="full"
+    height="full"
+    className="object-cover"
+  />
+);
+
+export const RecommendationPlaceholder = ({ children }: { children: React.ReactNode }) => (
+  <Box 
+    width="full" 
+    height="full" 
+    display="flex" 
+    align="center" 
+    justify="center" 
+    opacity="10"
+    className="bg-black/5"
+  >
+    {children}
+  </Box>
+);
+
+// 13. Advanced Skeleton Wrappers (Zero ClassName)
+export const RecommendationSkeletonCover = () => (
+  <Box aspect="portrait" rounded="xl" marginBottom="md" className="bg-slate-100 animate-pulse" />
+);
+
+export const RecommendationSkeletonTitle = () => (
+  <Box height="6" rounded="md" marginBottom="sm" className="bg-slate-100 animate-pulse w-3/4" />
+);
+
+export const RecommendationSkeletonAuthor = () => (
+  <Box height="6" rounded="md" className="bg-slate-100/60 animate-pulse w-1/2" />
+);

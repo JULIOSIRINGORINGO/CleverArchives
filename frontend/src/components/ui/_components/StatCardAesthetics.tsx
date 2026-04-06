@@ -102,3 +102,62 @@ export const StatTrend = ({ children, active = false }: { children: React.ReactN
     </Box>
   </Box>
 );
+
+// 6. Refined Internal Components
+export const StatTitleText = ({ children }: { children: React.ReactNode }) => (
+  <Box paddingBottom="xs">
+    <Box as="h3" className="text-xl font-black text-white tracking-tight capitalize drop-shadow-sm select-none">
+      {children}
+    </Box>
+  </Box>
+);
+
+export const StatValueText = ({ children }: { children: React.ReactNode }) => (
+  <Box className="flex items-baseline gap-1.5">
+    <Box as="span" className="text-8xl font-black text-white tabular-nums drop-shadow-2xl select-none leading-none">
+      {children}
+    </Box>
+  </Box>
+);
+
+export const StatTargetText = ({ children }: { children: React.ReactNode }) => (
+  <Box as="span" className="text-2xl font-black text-white/40 select-none">
+    {children}
+  </Box>
+);
+
+export const StatProgressText = ({ children }: { children: React.ReactNode }) => (
+  <Box as="span" className="text-xs font-black text-white/80 tracking-wider">
+    {children}
+  </Box>
+);
+
+export const StatTargetLabel = ({ children }: { children: React.ReactNode }) => (
+  <Box as="span" className="text-[10px] font-black text-white/60 tracking-wider">
+    {children}
+  </Box>
+);
+
+export const StatLiveIndicator = () => (
+  <Box 
+    width="2" 
+    height="2" 
+    rounded="full" 
+    className="bg-white animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]" 
+  />
+);
+
+export const StatTrendText = ({ children }: { children: React.ReactNode }) => (
+  <Box 
+    as="span" 
+    className="uppercase font-black text-white tracking-widest text-[11px] drop-shadow-md"
+  >
+    {children}
+  </Box>
+);
+
+export const StatActionIcon = ({ children }: { children: React.ReactNode }) => (
+  <Box className="group-hover:translate-x-1 transition-transform opacity-60 text-white">
+    {children}
+  </Box>
+);

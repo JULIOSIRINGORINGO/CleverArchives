@@ -70,7 +70,7 @@ export const HighlightIconBox = ({ children }: { children: React.ReactNode }) =>
     align="center"
     justify="center"
     marginBottom="md"
-    className="bg-white/20 backdrop-blur-md border-white/20"
+    className="bg-white/20 backdrop-blur-md border-white/20 text-white"
   >
     {children}
   </Box>

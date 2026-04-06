@@ -9,7 +9,15 @@ import {
   ProgressBarIndicator, 
   StatLabel, 
   StatTrend,
-  StatCardVariant 
+  StatCardVariant,
+  StatTitleText,
+  StatValueText,
+  StatTargetText,
+  StatProgressText,
+  StatTargetLabel,
+  StatLiveIndicator,
+  StatTrendText,
+  StatActionIcon
 } from "./_components/StatCardAesthetics";
 import { Box } from "@/components/ui/Box";
 import { Text } from "@/components/ui/Text";
@@ -66,15 +74,7 @@ export function StatCard({
         {/* Top row: Title + Icon */}
         <Box display="flex" align="start" justify="between" width="full">
           <Box flex="1" minWidth="0">
-            <Text 
-              variant="heading" 
-              weight="black" 
-              color="white" 
-              opacity="100" 
-              className="text-xl tracking-tight capitalize drop-shadow-sm"
-            >
-              {title}
-            </Text>
+            <StatTitleText>{title}</StatTitleText>
           </Box>
           <StatIconBox>
             <Icon size={20} strokeWidth={2.5} />
@@ -87,24 +87,9 @@ export function StatCard({
             <Skeleton className="h-20 w-32 bg-white/20 rounded-xl" />
           ) : (
             <Box display="flex" align="baseline" gap="xs">
-              <Text 
-                variant="heading" 
-                weight="black" 
-                color="white" 
-                className="text-8xl tabular-nums drop-shadow-2xl select-none"
-              >
-                {value}
-              </Text>
+              <StatValueText>{value}</StatValueText>
               {isGoal && target && (
-                <Text 
-                  variant="body-strong" 
-                  weight="black" 
-                  color="white" 
-                  opacity="40" 
-                  className="text-2xl"
-                >
-                  / {target}
-                </Text>
+                <StatTargetText>/ {target}</StatTargetText>
               )}
             </Box>
           )}
@@ -115,12 +100,12 @@ export function StatCard({
           {isGoal ? (
             <Box spacing="none">
               <Box display="flex" justify="between" marginBottom="xs">
-                <Text variant="label" weight="black" color="white" opacity="80" className="text-xs tracking-wider">
+                <StatProgressText>
                   {Math.round(progress || 0)}% {completedLabel}
-                </Text>
-                <Text variant="label" weight="black" color="white" opacity="60" className="text-[10px] tracking-wider">
+                </StatProgressText>
+                <StatTargetLabel>
                   {targetLabel}: {target}
-                </Text>
+                </StatTargetLabel>
               </Box>
               <ProgressBarRoot>
                 <ProgressBarIndicator progress={progress || 0} />
@@ -129,20 +114,12 @@ export function StatCard({
           ) : (
             <Box display="flex" align="center" justify="between" width="full">
               <Box display="flex" align="center" gap="sm">
-                <Box width="2" height="2" rounded="full" background="white" opacity="100" className="animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                <Text 
-                  variant="body-strong" 
-                  weight="black" 
-                  color="white" 
-                  opacity="100" 
-                  className="uppercase tracking-widest text-[11px] drop-shadow-md"
-                >
-                  {trend}
-                </Text>
+                <StatLiveIndicator />
+                <StatTrendText>{trend}</StatTrendText>
               </Box>
-              <Box className="group-hover:translate-x-1 transition-transform opacity-60">
-                <ArrowUpRight size={16} strokeWidth={3} className="text-white" />
-              </Box>
+              <StatActionIcon>
+                <ArrowUpRight size={16} strokeWidth={3} />
+              </StatActionIcon>
             </Box>
           )}
         </Box>

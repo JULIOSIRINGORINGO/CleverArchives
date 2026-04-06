@@ -21,8 +21,6 @@ import { Box } from "@/components/ui/Box";
 // Feature Components
 import { RecommendationCarousel } from "@/components/features/books/RecommendationCarousel";
 import { DigitalCollectionCard } from "@/components/dashboard/DigitalCollectionCard";
-import { Moon, Bell } from "lucide-react";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 /**
  * MemberDashboard — Main orchestration layer for the member profile view.

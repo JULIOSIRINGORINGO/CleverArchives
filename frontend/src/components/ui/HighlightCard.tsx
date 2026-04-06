@@ -34,7 +34,7 @@ export function HighlightCard({
   return (
     <HighlightCardRoot variant={variant}>
       <HighlightIconBox>
-        <Icon size={20} className="text-white" />
+        <Icon size={20} />
       </HighlightIconBox>
       
       <HighlightTitle>

@@ -16,9 +16,14 @@ import {
   BookInfoBox,
   RecommendationItemWrapper,
   RecommendationSkeletonItem,
+  RecommendationSkeletonCover,
+  RecommendationSkeletonTitle,
+  RecommendationSkeletonAuthor,
   RecommendationEmptyState,
   BookTitleText,
-  BookAuthorText
+  BookAuthorText,
+  RecommendationImage,
+  RecommendationPlaceholder
 } from "./_components/RecommendationAesthetics";
 
 interface Book {
@@ -73,9 +78,9 @@ export function RecommendationCarousel({
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => (
             <RecommendationSkeletonItem key={i}>
-              <Skeleton className="aspect-[3/4] rounded-xl mb-3" />
-              <Skeleton className="h-5 w-3/4 mb-1.5" />
-              <Skeleton className="h-3 w-1/2" />
+              <RecommendationSkeletonCover />
+              <RecommendationSkeletonTitle />
+              <RecommendationSkeletonAuthor />
             </RecommendationSkeletonItem>
           ))
         ) : books.length > 0 ? (
@@ -85,15 +90,14 @@ export function RecommendationCarousel({
                 <BookItemRoot>
                   <BookCoverBox overlayText={t("read_now", { fallback: "Read Now" })}>
                     {book.cover_url ? (
-                      <img
+                      <RecommendationImage 
                         src={book.cover_url}
                         alt={book.title}
-                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <Box width="full" height="full" display="flex" align="center" justify="center" opacity="10">
-                        <BookOpen size={48} className="text-black" />
-                      </Box>
+                      <RecommendationPlaceholder>
+                        <BookOpen size={48} />
+                      </RecommendationPlaceholder>
                     )}
                   </BookCoverBox>
 
