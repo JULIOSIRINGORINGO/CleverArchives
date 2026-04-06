@@ -26,13 +26,15 @@ export interface BoxProps extends Omit<React.AllHTMLAttributes<HTMLElement>, 'as
   paddingY?: Spacing;
   paddingTop?: Spacing;
   paddingBottom?: Spacing;
+  paddingLeft?: Spacing;
+  paddingRight?: Spacing;
   margin?: Spacing;
   marginTop?: Spacing | "auto";
   marginBottom?: Spacing | "auto";
   marginLeft?: Spacing | "auto";
   marginRight?: Spacing | "auto";
   minWidth?: "0" | "full" | "auto";
-  minHeight?: "0" | "full" | "auto";
+   minHeight?: "0" | "full" | "auto" | "32" | "40" | "60";
   spacing?: Spacing | "gap-5";
   alignSelf?: "start" | "center" | "end" | "stretch";
   flex?: "none" | "1" | "1.5" | "auto" | "initial";
@@ -43,10 +45,12 @@ export interface BoxProps extends Omit<React.AllHTMLAttributes<HTMLElement>, 'as
   mdWidth?: "80" | "full";
   mdDisplay?: "flex" | "hidden" | "none" | "block";
   mdDirection?: "row" | "col" | "row-reverse" | "col-reverse";
+  mdAlign?: "start" | "center" | "end" | "baseline" | "stretch";
+  mdJustify?: "start" | "center" | "end" | "between" | "around" | "evenly";
   transition?: "all" | "none";
   whiteSpace?: "normal" | "pre-wrap" | "nowrap";
   centered?: boolean;
-  width?: "full" | "auto" | "2" | "6" | "10" | "11" | "12" | "14" | "16" | "20" | "80" | "96" | "px" | BoxMaxWidth;
+  width?: "full" | "auto" | "2" | "6" | "10" | "11" | "12" | "14" | "16" | "20" | "32" | "40" | "80" | "96" | "px" | BoxMaxWidth;
   height?: "full" | "auto" | "screen" | "2" | "6" | "10" | "11" | "12" | "14" | "16" | "20" | "32" | "40" | "44" | "48" | "56" | "64" | "80" | "96" | "20px" | "px";
   cursor?: "pointer";
   scrollbar?: "custom" | "none";
@@ -59,9 +63,10 @@ export interface BoxProps extends Omit<React.AllHTMLAttributes<HTMLElement>, 'as
   align?: "start" | "center" | "end" | "baseline" | "stretch";
   justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
   gap?: "xs" | "sm" | "md" | "lg" | "xl" | "none";
-  opacity?: "40" | "50" | "60" | "80" | "100";
+  opacity?: "10" | "40" | "50" | "60" | "80" | "100";
   shadow?: "none" | "sm" | "md" | "lg" | "xl";
   flexShrink?: "0" | "1";
+  zIndex?: "0" | "10" | "20" | "30" | "40" | "50" | "100" | "auto";
   variant?: "none" | "interactive" | "icon-wrapper" | "surface-panel" | "centered-max" | "workspace" | "ghost-surface" | "fill-remaining";
   isFirst?: boolean;
   hoverEffect?: "scale";
@@ -126,6 +131,8 @@ export const widthMap = {
   "14": "w-14",
   "16": "w-16",
   "20": "w-20",
+  "32": "w-32",
+  "40": "w-40",
   "80": "w-80",
   "96": "w-96",
   px: "w-px",
@@ -170,6 +177,8 @@ const SPACING_MAP: Record<string, Record<string, string>> = {
   py: { none: "py-0", xs: "py-2", sm: "py-3", md: "py-4", lg: "py-6", xl: "py-8" },
   pt: { none: "pt-0", xs: "pt-2", sm: "pt-3", md: "pt-4", lg: "pt-6", xl: "pt-8" },
   pb: { none: "pb-0", xs: "pb-2", sm: "pb-3", md: "pb-4", lg: "pb-6", xl: "pb-8" },
+  pl: { none: "pl-0", xs: "pl-2", sm: "pl-3", md: "pl-4", lg: "pl-6", xl: "pl-8" },
+  pr: { none: "pr-0", xs: "pr-2", sm: "pr-3", md: "pr-4", lg: "pr-6", xl: "pr-8" },
   m:  { none: "m-0", xs: "m-2", sm: "m-3", md: "m-4", lg: "m-6", xl: "m-8" },
   mt: { none: "mt-0", xs: "mt-2", sm: "mt-3", md: "mt-4", lg: "mt-6", xl: "mt-8", auto: "mt-auto" },
   mb: { none: "mb-0", xs: "mb-2", sm: "mb-3", md: "mb-4", lg: "mb-6", xl: "mb-8", auto: "mb-auto" },
@@ -206,6 +215,8 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
   paddingY,
   paddingTop,
   paddingBottom,
+  paddingLeft,
+  paddingRight,
   margin,
   marginTop,
   marginBottom,
@@ -241,6 +252,7 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
   gap,
   shadow,
   flexShrink,
+  zIndex,
   variant = "none",
   isFirst = false,
   hoverEffect,
@@ -248,6 +260,8 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
   opacity,
   as: ComponentType = "div",
   mdWidth,
+  mdAlign,
+  mdJustify,
   className, 
   ...props 
 }, ref) => {
@@ -268,6 +282,8 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
         paddingY && SPACING_MAP.py[paddingY],
         paddingTop && SPACING_MAP.pt[paddingTop],
         paddingBottom && SPACING_MAP.pb[paddingBottom],
+        paddingLeft && SPACING_MAP.pl[paddingLeft],
+        paddingRight && SPACING_MAP.pr[paddingRight],
         margin && SPACING_MAP.m[margin],
         marginTop && SPACING_MAP.mt[marginTop],
         marginBottom && SPACING_MAP.mb[marginBottom],
@@ -279,6 +295,9 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
         minHeight === "0" && "min-h-0",
         minHeight === "full" && "min-h-full",
         minHeight === "auto" && "min-h-auto",
+        minHeight === "32" && "min-h-32",
+        minHeight === "40" && "min-h-40",
+        minHeight === "60" && "min-h-60",
         flex && flexMap[flex],
         shrink && shrinkMap[shrink],
         alignSelf && `self-${alignSelf}`,
@@ -319,10 +338,13 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
         lgDirection && `lg:flex-${lgDirection}`,
         align && `items-${align}`,
         justify && `justify-${justify === "between" ? "between" : justify === "around" ? "around" : justify === "evenly" ? "evenly" : justify}`,
+        mdAlign && `md:items-${mdAlign}`,
+        mdJustify && `md:justify-${mdJustify === "between" ? "between" : mdJustify === "around" ? "around" : mdJustify === "evenly" ? "evenly" : mdJustify}`,
         spacing && SPACING_MAP.g[spacing],
         gap && SPACING_MAP.g[gap],
         shadow && shadows[shadow],
         flexShrink && shrinkMap[flexShrink],
+        zIndex && `z-${zIndex}`,
         variant === "interactive" && "hover:bg-muted/10 transition-colors",
         variant === "icon-wrapper" && "flex items-center justify-center transition-transform",
         variant === "surface-panel" && "flex-1 bg-white relative w-full overflow-hidden",

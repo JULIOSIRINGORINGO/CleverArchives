@@ -61,7 +61,9 @@ const DropdownContainer = motion(React.forwardRef<HTMLDivElement, any>(({ childr
 DropdownContainer.displayName = "DropdownContainer";
 
 
-const NotificationDropdown = () => {
+import { SegmentButton } from '@/components/ui/_components/SegmentedControlAesthetics';
+
+const NotificationDropdown = ({ isSegmented }: { isSegmented?: boolean }) => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearAllNotifications } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
@@ -103,25 +105,44 @@ const NotificationDropdown = () => {
 
   return (
     <Box position="relative" ref={dropdownRef}>
-      {/* Navbar Trigger Button: Zero ClassName in Return */}
-      <Box
-        as="button"
-        onClick={() => setIsOpen(!isOpen)}
-        display="flex"
-        align="center"
-        justify="center"
-        padding="xs"
-        variant="interactive"
-        title={t('title')}
-      >
-        <motion.div animate={{ scale: isOpen ? 1.1 : 1 }}>
-          <Box color={isOpen ? "primary" : "muted"}>
-            <Bell size={20} strokeWidth={2} />
+      {/* Navbar Trigger Button: Polymorphic based on isSegmented */}
+      {isSegmented ? (
+        <SegmentButton 
+          isActive={isOpen} 
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <Box position="relative">
+            <Bell size={15} strokeWidth={2.5} />
+            {unreadCount > 0 && (
+              <Box 
+                position="absolute" 
+                className="top-[-8px] right-[-8px] bg-red-500 text-white text-[8px] px-1 rounded-full border border-white min-w-[14px] h-[14px] flex items-center justify-center font-bold"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Box>
+            )}
           </Box>
-        </motion.div>
+        </SegmentButton>
+      ) : (
+        <Box
+          as="button"
+          onClick={() => setIsOpen(!isOpen)}
+          display="flex"
+          align="center"
+          justify="center"
+          padding="xs"
+          variant="interactive"
+          title={t('title')}
+        >
+          <motion.div animate={{ scale: isOpen ? 1.1 : 1 }}>
+            <Box color={isOpen ? "primary" : "muted"}>
+              <Bell size={20} strokeWidth={2} />
+            </Box>
+          </motion.div>
 
-        {unreadCount > 0 && <BadgeContainer>{unreadCount > 9 ? '9+' : unreadCount}</BadgeContainer>}
-      </Box>
+          {unreadCount > 0 && <BadgeContainer>{unreadCount > 9 ? '9+' : unreadCount}</BadgeContainer>}
+        </Box>
+      )}
 
       <AnimatePresence>
         {isOpen && (
@@ -205,7 +226,6 @@ const NotificationDropdown = () => {
                             variant="caption"
                             weight="black"
                             tracking="tighter"
-                            uppercase
                             color={!notif.read_at ? "default" : "muted"}
                           >
                             {notif.title}

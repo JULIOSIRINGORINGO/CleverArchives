@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, Sun, Moon, Bell } from "lucide-react";
 import NotificationDropdown from "./NotificationDropdown";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -12,12 +12,14 @@ import { useLocale, useTranslations } from "next-intl";
 import { getNavigationGroups } from "@/lib/navigation-config";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "@/components/ThemeProvider";
 
 // UI Primitives
 import { Box } from "@/components/ui/Box";
 import { Stack } from "@/components/ui/Stack";
 import { Text } from "@/components/ui/Text";
 import { IconWrapper } from "@/components/ui/IconWrapper";
+import { SegmentRoot, SegmentButton } from "@/components/ui/_components/SegmentedControlAesthetics";
 
 /** 
  * LEVEL 3: ESTETIKA LOKAL (Navbar Specific)
@@ -101,7 +103,6 @@ const ProfileChip = ({ onClick, children }: { onClick: () => void; children: Rea
   </Box>
 );
 
-
 const Navbar = () => {
   const t = useTranslations("Navbar");
   const { user } = useAuth();
@@ -109,7 +110,13 @@ const Navbar = () => {
   const locale = useLocale();
   const pathname = usePathname();
   const navT = useTranslations("Navigation");
+  const { theme, toggleTheme } = useTheme();
   const { unreadCount, systemUnreadCount, messagesUnreadCount } = useNotifications();
+
+  const switchLocale = (newLocale: string) => {
+    const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+    router.push(newPath);
+  };
 
   const role = user?.role?.name || "member";
   const isImpersonating = !!user?.impersonating;
@@ -168,25 +175,39 @@ const Navbar = () => {
 
       {/* Right Area: Action Buttons & User Profile */}
       <Box display="flex" align="center" gap="md">
-        <Box
-          display="flex"
-          align="center"
-          gap="xs"
-          background="muted-soft"
-          padding="xs"
-          rounded="xl"
-          border="subtle"
-        >
-          <LanguageToggle />
-          <ThemeToggle />
-          <NotificationDropdown />
+        {/* Unified Tool Pill Toolbar */}
+        <SegmentRoot>
+          <SegmentButton 
+            isActive={locale === 'id'} 
+            onClick={() => switchLocale('id')}
+          >
+            ID
+          </SegmentButton>
+          <SegmentButton 
+            isActive={locale === 'en'} 
+            onClick={() => switchLocale('en')}
+          >
+            EN
+          </SegmentButton>
+          
+          {/* Theme Divider - Standardized visual break */}
+          <Box width="px" height="6" background="muted-soft" opacity="40" marginX="xs" />
+          
+          <SegmentButton 
+            isActive={false} 
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </SegmentButton>
 
-          {isImpersonating && (
-            <Box marginLeft="xs">
-              <ImpersonateBtn onClick={handleExitImpersonation} title={t("exit_impersonation")} />
-            </Box>
-          )}
-        </Box>
+          <NotificationDropdown isSegmented={true} />
+        </SegmentRoot>
+
+        {isImpersonating && (
+          <Box marginLeft="xs">
+            <ImpersonateBtn onClick={handleExitImpersonation} title={t("exit_impersonation")} />
+          </Box>
+        )}
 
         {/* Separator */}
         <Box width="px" height="6" background="muted-soft" marginLeft="xs" marginRight="xs" />

@@ -38,6 +38,13 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [systemUnreadCount, setSystemUnreadCount] = useState(0);
   const [messagesUnreadCount, setMessagesUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [lastClearedAt, setLastClearedAt] = useState<string | null>(null);
+
+  // Initialize lastClearedAt from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('notifications_cleared_at');
+    if (saved) setLastClearedAt(saved);
+  }, []);
 
   const refreshNotifications = useCallback(async () => {
     if (!user) return;
@@ -50,23 +57,38 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       const fetchedNotifs: Notification[] = notifRes.notifications || [];
       const notifUnread = notifRes.unread_count || 0;
       
-      // Calculate message unread count using server persistence
+      // Calculate message unread count using server persistence AND lastClearedAt
       const lastCheckTime = user.last_message_read_at ? new Date(user.last_message_read_at).getTime() : 0;
+      const clearTimeBaseline = lastClearedAt ? new Date(lastClearedAt).getTime() : 0;
       
       const allMessages = msgRes.messages || [];
-      // Only count messages directed at this user as unread
+      // Only count messages directed at this user as unread AND created after clearTimeBaseline
       const unreadMsgCount = allMessages.filter((m: any) => 
         m.recipient_id === user.id && 
-        new Date(m.created_at).getTime() > lastCheckTime
+        new Date(m.created_at).getTime() > lastCheckTime &&
+        new Date(m.created_at).getTime() > clearTimeBaseline
       ).length;
 
-      // Convert received messages to notification-like items for display in dropdown
+      // ... (messageNotifs and filteredSystemNotifs logic ...)
+
+      // Filter and Map message notifications
       const messageNotifs: Notification[] = allMessages
-        .filter((m: any) => String(m.sender_id) !== String(user.id)) // Filter out own messages strictly
+        .filter((m: any) => {
+          // Rule 1: Not own message
+          const isOwn = String(m.sender_id) === String(user.id);
+          if (isOwn) return false;
+          
+          // Rule 2: Created AFTER last cleared timestamp (if exists)
+          if (lastClearedAt) {
+            const clearTime = new Date(lastClearedAt).getTime();
+            const messageTime = new Date(m.created_at).getTime();
+            if (messageTime <= clearTime) return false;
+          }
+          return true;
+        })
         .slice(0, 20)
         .map((m: any) => {
-          const isSender = m.sender_id === user.id;
-          const partnerId = isSender ? m.recipient_id : m.sender_id;
+          const partnerId = m.sender_id;
           return {
             id: -(m.id),
             title: m.sender_name || 'Pengguna',
@@ -79,25 +101,29 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
           };
         });
 
-      // Refine system notifications titles to be more professional and FILTER SELF
+      // Refine system notifications titles AND filter by lastClearedAt
       const filteredSystemNotifs = fetchedNotifs.filter(n => {
-        // Filter out if sender_id in metadata matches current user
+        // Rule 1: Exclude self-trigger and technical confirmations
         if (n.metadata && (n.metadata as any).sender_id === user.id) return false;
-        
-        // Hide technical "sent" confirmations
         const lowTitle = n.title.toLowerCase();
         if (lowTitle.includes('terkirim') || lowTitle.includes('sent')) return false;
         if (n.body.toLowerCase().includes('pesan untuk semua')) return false;
         
+        // Rule 2: Created AFTER last cleared timestamp (if exists)
+        if (lastClearedAt) {
+          const clearTime = new Date(lastClearedAt).getTime();
+          const notifTime = new Date(n.created_at).getTime();
+          if (notifTime <= clearTime) return false;
+        }
+
+        return true; 
       }).map(n => {
-        // Fix Title: Show sender name if it's a message
         let title = n.title;
         if (n.title.toLowerCase().includes('pesan baru') || n.title.toLowerCase().includes('new message')) {
           const senderName = (n.metadata as any)?.sender_name;
           title = senderName || n.title.replace(/Pesan Baru:?\s*/i, '');
         }
 
-        // Fix Navigation: Determine the correct local URL
         const nav_url = n.metadata?.partnerId 
           ? `/messaging/internal?partnerId=${n.metadata.partnerId}`
           : n.metadata?.url || `/dashboard`;
@@ -108,15 +134,25 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       setNotifications([...filteredSystemNotifs, ...messageNotifs]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
       
-      const refinedSystemUnreadCount = fetchedNotifs.filter(n => 
-        !n.read_at && 
-        n.sender_role === 'system_owner' && 
-        !n.title.toLowerCase().includes('terkirim') && 
-        !n.title.toLowerCase().includes('sent') &&
-        !n.title.toLowerCase().includes('pesan baru') &&
-        !n.title.toLowerCase().includes('new message') &&
-        !n.body.toLowerCase().includes('pesan untuk semua') // Hide broadcast sent confirmation
-      ).length;
+      const refinedSystemUnreadCount = fetchedNotifs.filter(n => {
+        // If it was already read on server, don't count
+        if (n.read_at) return false;
+        
+        // If it was cleared locally, don't count
+        if (lastClearedAt) {
+          const clearTime = new Date(lastClearedAt).getTime();
+          const notifTime = new Date(n.created_at).getTime();
+          if (notifTime <= clearTime) return false;
+        }
+
+        // Functional filters for system notifications
+        return n.sender_role === 'system_owner' && 
+               !n.title.toLowerCase().includes('terkirim') && 
+               !n.title.toLowerCase().includes('sent') &&
+               !n.title.toLowerCase().includes('pesan baru') &&
+               !n.title.toLowerCase().includes('new message') &&
+               !n.body.toLowerCase().includes('pesan untuk semua');
+      }).length;
 
       setSystemUnreadCount(refinedSystemUnreadCount);
       setMessagesUnreadCount(unreadMsgCount);
@@ -124,18 +160,17 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
     }
-  }, [user]);
+  }, [user, lastClearedAt]); // CRITICAL: Refresh when lastClearedAt changes
 
   const markAsRead = async (id: number) => {
     try {
-      // Message-type items have negative IDs — mark locally only, don't call notification API
       if (id > 0) {
         await apiService.notifications.read(id);
       }
-      setUnreadCount(prev => Math.max(0, prev - 1));
       setNotifications(prev => 
         prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n)
       );
+      // Recalculate total unread purely from new state
     } catch (err) {
       console.error('Failed to mark notification as read:', err);
     }
@@ -153,7 +188,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       refreshNotifications();
     } catch (e) {
       console.error(e);
-      // Fallback
       updateUser({ last_message_read_at: new Date().toISOString() });
       refreshNotifications();
     }
@@ -162,14 +196,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const markAllAsRead = async () => {
     if (!user) return;
     try {
-      const [notifRes, msgRes] = await Promise.all([
+      await Promise.all([
         apiService.notifications.readAll().catch(() => null),
         apiService.messages.readAll().catch(() => null)
       ]);
       
-      const newReadTime = msgRes?.last_message_read_at || new Date().toISOString();
-      updateUser({ last_message_read_at: newReadTime });
-      
+      updateUser({ last_message_read_at: new Date().toISOString() });
       setUnreadCount(0);
       setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
     } catch (err) {
@@ -182,14 +214,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       if (id > 0) {
         await apiService.notifications.delete(id);
       }
-      // For message-type items (negative IDs), we only delete locally from state
-      // NEVER call apiService.messages.delete() here as it deletes the actual data
       setNotifications(prev => prev.filter(n => n.id !== id));
-      // Local check if it was unread
-      const removed = notifications.find(n => n.id === id);
-      if (removed && !removed.read_at) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
     } catch (err) {
       console.error('Failed to delete notification:', err);
     }
@@ -198,7 +223,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const clearAllNotifications = async () => {
     try {
       await apiService.notifications.clearAll();
-      // REMOVED: apiService.messages.clearAll() as it incorrectly hides message history
+      
+      // PERSISTENT CLEAR: Record the current timestamp as the baseline for messaging
+      const now = new Date().toISOString();
+      setLastClearedAt(now);
+      localStorage.setItem('notifications_cleared_at', now);
+      
       setNotifications([]);
       setUnreadCount(0);
     } catch (err) {
