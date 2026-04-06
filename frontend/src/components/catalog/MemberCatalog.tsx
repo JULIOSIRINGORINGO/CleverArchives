@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Search, ArrowUpRight, Bookmark } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { useBookCatalog } from "@/hooks/useBookCatalog";
 import { DashboardPage } from "@/components/layout/DashboardPage";
 import { DashboardSection } from "@/components/layout/DashboardSection";
-import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CatalogFilters } from "@/components/catalog/CatalogFilters";
 import { CatalogPagination } from "@/components/catalog/CatalogPagination";
@@ -18,26 +16,20 @@ import { BookListCard } from "@/components/books/BookListCard";
 import { BookListStack } from "@/components/books/BookListStack";
 import BookDetailModal from "@/components/books/BookDetailModal";
 
+// SOP 5.6.0 compliant Aesthetics
+import { CatalogActionButton } from "./_components/CatalogAesthetics";
+
 export default function MemberCatalog() {
   const t = useTranslations("Catalog");
-  const locale = useLocale();
   
-  // Data Logic extracted to hooks
+  // Pure Logic Tier: All state delegated to hook
   const {
     books, categories, loading, error, refresh,
     search, setSearch, filter, setFilter,
     page, setPage, totalPages,
-    viewMode, setViewMode
+    viewMode, setViewMode,
+    selectedBook, isModalOpen, openBookDetails, closeBookDetails
   } = useBookCatalog();
-
-  // Local UI state (modals)
-  const [selectedBook, setSelectedBook] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleBookClick = (book: any) => {
-    setSelectedBook(book);
-    setIsModalOpen(true);
-  };
 
   return (
     <DashboardPage 
@@ -80,7 +72,7 @@ export default function MemberCatalog() {
                 key={book.id}
                 book={book} 
                 index={idx}
-                onClick={() => handleBookClick(book)} 
+                onClick={() => openBookDetails(book)} 
               />
             ))}
           </DashboardSection>
@@ -92,26 +84,14 @@ export default function MemberCatalog() {
                 isCompact={true}
                 title={book.title}
                 author={book.author?.name || t("unknown_author")}
+                category={book.category?.name || t("uncategorized")}
                 status={book.available_copies_count > 0 ? "available" : "borrowed"}
                 coverUrl={book.cover_url}
-                metadata={[
-                  { 
-                    label: t("category") || "Category", 
-                    value: book.category?.name || t("uncategorized"), 
-                    icon: Bookmark
-                  }
-                ]}
+                metadata={[]}
                 action={
-                  <Button 
-                    size="sm" 
-                    variant="primary"
-                    rounded="full"
-                    className="flex items-center gap-2"
-                    onClick={() => handleBookClick(book)}
-                  >
-                    {locale === 'id' ? "Dapatkan" : "Get It"} 
-                    <ArrowUpRight size={14} strokeWidth={2.5} />
-                  </Button>
+                  <CatalogActionButton onClick={() => openBookDetails(book)}>
+                    {t("action_get")}
+                  </CatalogActionButton>
                 }
               />
             ))}
@@ -122,7 +102,7 @@ export default function MemberCatalog() {
       <BookDetailModal 
         book={selectedBook}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={closeBookDetails}
       />
     </DashboardPage>
   );

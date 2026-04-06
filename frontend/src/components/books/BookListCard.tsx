@@ -6,12 +6,14 @@ import { Box } from "@/components/ui/Box";
 import { Stack } from "@/components/ui/Stack";
 import { Inline } from "@/components/ui/Inline";
 import { Text } from "@/components/ui/Text";
+import { CategoryBadge } from "@/components/ui/CategoryBadge";
 import { cn } from "@/lib/utils";
 
 interface BookListCardProps {
   coverUrl?: string;
   title: string;
   author: string;
+  category?: string;
   status: string;
   metadata: {
     label: string;
@@ -34,6 +36,7 @@ export function BookListCard({
   coverUrl,
   title,
   author,
+  category,
   status,
   metadata,
   action,
@@ -97,8 +100,9 @@ export function BookListCard({
               </Box>
               
               <Inline spacing="lg" align="center">
-                <StatusBadge status={status} className="scale-90 origin-right transition-transform group-hover/card:scale-100" />
-                {action && <Box className="scale-90 origin-right -ml-2">{action}</Box>}
+                {category && <CategoryBadge label={category} className="hidden sm:flex" />}
+                <StatusBadge status={status} />
+                {action && <Box>{action}</Box>}
               </Inline>
             </Inline>
           </Inline>
@@ -154,18 +158,21 @@ export function BookListCard({
         {/* Tight Content Section with Large Readability */}
         <Inline flex="1" align="center" justify="between" spacing="lg" wrap className="w-full">
           <Box className="md:w-[40%]">
-            <Text 
-              as="h4" 
-              variant="heading" 
-              weight="bold" 
-              tracking="tight" 
-              className="group-hover/card:text-primary transition-colors duration-300 line-clamp-1"
-            >
-              {title}
-            </Text>
-            <Text variant="subheading" weight="medium" className="text-slate-500 italic truncate">
-              {author}
-            </Text>
+            <Stack spacing="xs">
+              {category && <CategoryBadge label={category} className="h-6 px-2 text-[9px] w-fit" />}
+              <Text 
+                as="h4" 
+                variant="heading" 
+                weight="bold" 
+                tracking="tight" 
+                className="group-hover/card:text-primary transition-colors duration-300 line-clamp-1"
+              >
+                {title}
+              </Text>
+              <Text variant="subheading" weight="medium" className="text-slate-500 italic truncate">
+                {author}
+              </Text>
+            </Stack>
           </Box>
 
           <Inline flex="1" spacing="xl" wrap className="gap-y-1">
@@ -193,7 +200,7 @@ export function BookListCard({
               status && action && "border-l border-border/10"
             )}
           >
-            {status && <StatusBadge status={status} className={cn("scale-100", action && "hidden sm:flex")} />}
+            {status && <StatusBadge status={status} className={cn(action && "hidden sm:flex")} />}
             {action && <Box className="shrink-0">{action}</Box>}
           </Inline>
         </Inline>

@@ -269,6 +269,7 @@
   "Catalog": {
     "title": "Katalog Perpustakaan",
     "browse": "Telusuri",
+    "action_get": "Dapatkan",
     "explore_badge": "Eksplor Koleksi",
     "subtitle": "Jelajahi koleksi luas sumber daya fisik dan digital kami.",
     "loading": "Memuat katalog...",

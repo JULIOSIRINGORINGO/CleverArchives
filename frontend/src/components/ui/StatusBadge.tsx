@@ -6,6 +6,7 @@ import {
   Clock, CheckCircle2, RotateCcw, AlertCircle, 
   HelpCircle, Mail, MessageSquare, FileText, LucideIcon 
 } from "lucide-react";
+import { Text } from "./Text";
 
 /**
  * Robust Status Config - Defined locally to prevent import/purge issues.
@@ -86,13 +87,18 @@ export function StatusBadge({
 
   return (
     <div className={cn(
-      "inline-flex items-center justify-center gap-1.5 px-3 h-7 rounded-full text-xs font-semibold shadow-sm transition-all border border-black/5 whitespace-nowrap shrink-0",
+      "inline-flex items-center justify-center gap-1.5 px-3 h-7 rounded-full shadow-sm transition-all border border-black/5 whitespace-nowrap shrink-0",
       config.bg, 
       config.text,
       className
     )}>
       {showIcon && <Icon size={11} strokeWidth={3} />}
-      <span className="leading-none">{label || t(config.label) || key.replace(/_/g, ' ')}</span>
+      <Text 
+        variant="label-xs" 
+        className="leading-none text-current"
+      >
+        {label || t(config.label) || key.replace(/_/g, ' ')}
+      </Text>
     </div>
   );
 }

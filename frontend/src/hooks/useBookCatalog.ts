@@ -75,6 +75,19 @@ export function useBookCatalog(options: UseBookCatalogOptions = {}) {
     setPage(1);
   }, []);
 
+  // Local UI state (modals) - moved from Component to Hook for absolute loyalty to SOP
+  const [selectedBook, setSelectedBook] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openBookDetails = useCallback((book: any) => {
+    setSelectedBook(book);
+    setIsModalOpen(true);
+  }, []);
+
+  const closeBookDetails = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
   return {
     books,
     categories,
@@ -90,7 +103,12 @@ export function useBookCatalog(options: UseBookCatalogOptions = {}) {
     totalPages,
     viewMode,
     setViewMode,
-    refresh: mutate
+    refresh: mutate,
+    // Modal states
+    selectedBook,
+    isModalOpen,
+    openBookDetails,
+    closeBookDetails
   };
 }
 

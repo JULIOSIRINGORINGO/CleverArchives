@@ -269,6 +269,7 @@
   "Catalog": {
     "title": "Library Catalog",
     "browse": "Browse",
+    "action_get": "Get It",
     "explore_badge": "Explore Collection",
     "subtitle": "Explore our vast collection of physical and digital resources.",
     "loading": "Loading catalog...",

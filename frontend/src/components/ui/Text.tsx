@@ -19,6 +19,7 @@ type TextVariant =
   | "list-title"
   | "list-subtitle"
   | "list-metadata"
+  | "label-xs"
   | "muted";
 
 type TextTracking = "none" | "tight" | "tighter" | "wide" | "widest";
@@ -54,6 +55,7 @@ const variantStyles: Record<TextVariant, string> = {
   "list-title": "text-[13px] truncate transition-colors",
   "list-subtitle": "text-[11px] truncate opacity-60",
   "list-metadata": "text-[10px] text-muted-foreground/60 italic",
+  "label-xs": "text-xs",
   muted: "text-xs",
 };
 
@@ -67,6 +69,7 @@ const variantDefaultWeights: Partial<Record<TextVariant, TextProps["weight"]>> =
   "micro-strong": "black",
   "list-title": "bold",
   "list-metadata": "bold",
+  "label-xs": "semibold",
 };
 
 const trackingStyles: Record<TextTracking, string> = {

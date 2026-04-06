@@ -2,8 +2,8 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { 
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'list-item' | 'action-send' | 'glow' | 'brand-outline',
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'action' | 'icon',
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'list-item' | 'action-send' | 'glow' | 'brand-outline' | 'floating',
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'action' | 'icon' | 'none',
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full',
   fullWidth?: boolean
 }>(
@@ -17,16 +17,18 @@ const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HT
       "list-item": "bg-transparent text-foreground hover:bg-muted/10 justify-start px-0 font-normal border-none",
       "action-send": "h-14 w-14 shrink-0 p-0 text-white bg-primary border border-primary/20 hover:brightness-110 active:scale-95 group rounded-full [&_svg]:transition-transform [&_svg]:group-active:translate-x-0.5 [&_svg]:group-active:-translate-y-0.5",
       glow: "bg-primary text-white shadow-lg shadow-primary/20 border-none hover:scale-[1.02] active:scale-[0.98]",
-      "brand-outline": "bg-transparent border border-primary/30 text-primary hover:bg-primary/5"
+      "brand-outline": "bg-transparent border border-primary/30 text-primary hover:bg-primary/5",
+      floating: "bg-white text-primary shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 border-none"
     }
 
     const sizes = {
-      sm: "h-7 px-3 text-[12px] font-medium gap-1.5",
+      sm: "h-7 px-3 text-[12px] font-semibold gap-1.5",
       md: "h-8 px-4 py-1.5 text-sm font-medium gap-2",
       lg: "h-9 px-5 text-base font-medium gap-2",
       xl: "h-14 px-6 text-base font-medium gap-3",
       action: "h-11 px-6 text-sm font-medium gap-2",
-      icon: "h-7 w-7 p-1"
+      icon: "h-7 w-7 p-1",
+      none: ""
     }
 
     const rounding = {
