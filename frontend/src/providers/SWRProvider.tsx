@@ -20,21 +20,44 @@ export function SWRProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Custom localStorage-based provider
-  const localStorageProvider = () => {
-    if (typeof window === 'undefined') return new Map();
+    // Custom localStorage-based provider with quota management
+    const localStorageProvider = () => {
+      if (typeof window === 'undefined') return new Map();
+  
+      let map: Map<any, any>;
+      try {
+        // Initialize from localStorage with fallback for corrupt data
+        const stored = localStorage.getItem(CACHE_KEY);
+        map = new Map(JSON.parse(stored || '[]'));
+      } catch (e) {
+        console.error('Failed to load SWR cache:', e);
+        map = new Map();
+      }
+  
+      // Before window is closed, save the current cache to localStorage
+      const handleSaveCache = () => {
+        try {
+          const appCache = JSON.stringify(Array.from(map.entries()));
+          
+          // Safety Check: Browsers have ~5MB limit. We cap at 4MB to be safe.
+          if (appCache.length > 4000000) {
+            console.warn('SWR Cache exceeds 4MB safety limit. Pruning required.');
+            localStorage.removeItem(CACHE_KEY);
+            return;
+          }
+          
+          localStorage.setItem(CACHE_KEY, appCache);
+        } catch (e) {
+          // If QuotaExceededError occurs, clear the cache to allow fresh start
+          console.error('SWR Cache Storage Failed:', e);
+          localStorage.removeItem(CACHE_KEY);
+        }
+      };
 
-    // Initialize from localStorage
-    const map = new Map(JSON.parse(localStorage.getItem(CACHE_KEY) || '[]'));
-
-    // Before window is closed, save the current cache to localStorage
-    window.addEventListener('beforeunload', () => {
-      const appCache = JSON.stringify(Array.from(map.entries()));
-      localStorage.setItem(CACHE_KEY, appCache);
-    });
-
-    return map;
-  };
+      window.addEventListener('beforeunload', handleSaveCache);
+  
+      return map;
+    };
 
   if (!mounted) {
     return <>{children}</>;

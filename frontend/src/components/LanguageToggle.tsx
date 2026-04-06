@@ -16,7 +16,7 @@ export default function LanguageToggle() {
   };
 
   return (
-    <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
+    <div className="flex items-center gap-1">
       <button
         onClick={() => switchLocale("id")}
         className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${

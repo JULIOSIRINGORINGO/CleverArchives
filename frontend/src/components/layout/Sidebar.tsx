@@ -1,15 +1,219 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LogOut, ChevronLeft } from "lucide-react";
+import { ChevronLeft, LogOut } from "lucide-react";
 import { getNavigationGroups } from "@/lib/navigation-config";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/lib/store";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslations, useLocale } from "next-intl";
-
 import { useNotifications } from "@/contexts/NotificationContext";
+
+// UI Primitives
+import { Box } from "@/components/ui/Box";
+import { Stack } from "@/components/ui/Stack";
+import { Text } from "@/components/ui/Text";
+import { IconWrapper } from "@/components/ui/IconWrapper";
+
+/** 
+ * LEVEL 3: ESTETIKA LOKAL (Sidebar Specific)
+ * Standardized wrappers to ensure "Zero ClassName" in the main return block.
+ */
+
+// 1. Root Containers
+const SidebarRoot = ({ collapsed, children }: { collapsed: boolean; children: React.ReactNode }) => (
+  <Box
+    as="aside"
+    position="fixed"
+    display="flex"
+    direction="col"
+    border="subtle"
+    background="surface"
+    className={cn(
+      "top-0 left-0 z-30 h-screen transition-all duration-300 overflow-hidden border-r",
+      collapsed ? "w-16" : "w-64"
+    )}
+  >
+    {children}
+  </Box>
+);
+
+const NavContainer = ({ children }: { children: React.ReactNode }) => (
+  <Box
+    as="nav"
+    flex="1"
+    minHeight="0"
+    overflow="auto"
+    paddingX="xs" 
+    paddingY="xs"
+    className="space-y-6 scrollbar-none"
+  >
+    {children}
+  </Box>
+);
+
+// 2. Header & Labels
+const SidebarHeader = ({ children }: { children: React.ReactNode }) => (
+  <Box
+    height="20"
+    paddingX="md"
+    display="flex"
+    align="center"
+    gap="md"
+    shrink="0"
+  >
+    {children}
+  </Box>
+);
+
+const GroupLabel = ({ children }: { children: React.ReactNode }) => (
+  <Box paddingX="md" paddingY="sm">
+    <Text
+      variant="label-strong"
+      weight="black"
+      uppercase
+      opacity="60"
+      className="text-[11px] tracking-widest block"
+    >
+      {children}
+    </Text>
+  </Box>
+);
+
+// 3. Footer Elements
+const FooterRoot = ({ children }: { children: React.ReactNode }) => (
+  <Box
+    as="footer"
+    marginTop="auto"
+    border="subtle"
+    shrink="0"
+    background="surface"
+    className="border-t"
+  >
+    {children}
+  </Box>
+);
+
+const ActionRow = ({ onClick, children, isDanger }: any) => (
+  <Box
+    as="button"
+    onClick={onClick}
+    width="full"
+    display="flex"
+    align="center"
+    gap="lg"
+    paddingX="lg"
+    paddingY="md"
+    variant="interactive"
+    className={cn(
+      "border-none outline-none group",
+      isDanger ? "hover:bg-red-50 text-[--color-muted-foreground] hover:text-red-500" : "text-[--color-muted-foreground]"
+    )}
+  >
+    {children}
+  </Box>
+);
+
+
+const NavItem = ({ 
+  href, 
+  icon: Icon, 
+  name, 
+  collapsed, 
+  active, 
+  badge, 
+  onClick 
+}: { 
+  href: string; 
+  icon: any; 
+  name: string; 
+  collapsed: boolean; 
+  active: boolean; 
+  badge?: string | number;
+  onClick: () => void;
+}) => (
+  <Box
+    as={Link}
+    href={href}
+    onClick={onClick}
+    display="flex"
+    align="center"
+    gap="md"
+    paddingX="md"
+    paddingY="sm"
+    rounded="lg"
+    className={cn(
+      "transition-all duration-200 group no-underline border-none",
+      active 
+        ? "bg-[--color-primary]/10 text-[--color-primary]" 
+        : "text-[--color-text-secondary] hover:bg-[--color-muted] hover:text-[--color-text]"
+    )}
+  >
+    <IconWrapper size="sm" isGhost={!active}>
+      <Icon size={18} strokeWidth={active ? 2.5 : 2} />
+    </IconWrapper>
+    {!collapsed && (
+      <Box flex="1" minWidth="0">
+        <Text 
+          variant="body" 
+          weight={active ? "black" : "medium"} 
+          className="truncate block"
+          color={active ? "primary" : "default"}
+        >
+          {name}
+        </Text>
+      </Box>
+    )}
+    {!collapsed && badge && (
+       <Box width="2" height="2" rounded="full" background="danger" shrink="0" />
+    )}
+  </Box>
+);
+
+const SubNavItem = ({ 
+  href, 
+  name, 
+  active, 
+  badge 
+}: { 
+  href: string; 
+  name: string; 
+  active: boolean; 
+  badge?: string | number;
+}) => (
+  <Box
+    as={Link}
+    href={href}
+    display="flex"
+    align="center"
+    justify="between"
+    paddingX="md"
+    paddingY="xs"
+    rounded="md"
+    className={cn(
+      "transition-all no-underline border-none",
+      active 
+        ? "bg-[--color-primary]/10 text-[--color-primary]" 
+        : "text-[--color-muted-foreground] hover:text-[--color-text] hover:bg-[--color-muted]"
+    )}
+  >
+    <Text 
+      variant="subheading" 
+      weight={active ? "black" : "medium"} 
+      color={active ? "primary" : "default"}
+      className="truncate"
+    >
+      {name}
+    </Text>
+    {badge && (
+      <Box background="danger" rounded="full" paddingX="xs" className="min-w-[18px] text-center py-0.5">
+        <Text variant="caption" weight="black" color="white">{badge}</Text>
+      </Box>
+    )}
+  </Box>
+);
 
 const Sidebar = () => {
   const t = useTranslations("Navigation");
@@ -20,157 +224,152 @@ const Sidebar = () => {
   const { unreadCount, systemUnreadCount, messagesUnreadCount } = useNotifications();
 
   const role = user?.role?.name || "member";
-
-  // ── System Owner menus ─────────────────────────────────────────────────────
   const counts = { unreadCount, systemUnreadCount, messagesUnreadCount };
   const menuGroups = getNavigationGroups(t, role, counts);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || "http://localhost:3001";
   const logoUrl = user?.tenant?.logo_url ? (user.tenant.logo_url.startsWith('http') ? user.tenant.logo_url : `${apiBaseUrl}${user.tenant.logo_url}`) : null;
-  const libraryName = user?.tenant?.name || (role === "system_owner" ? t("logo_main") : t("logo_main"));
-  const librarySub = role === "system_owner" ? t("system_owner") : (user?.tenant?.name || t("logo_sub"));
+  const libraryName = user?.tenant?.name || t("logo_main");
+
+  const getInitials = () => user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || "??";
+  const getAvatarUrl = () => {
+    const avatar = user?.avatar_url || (user as any)?.member?.avatar_url;
+    if (!avatar) return null;
+    return avatar.startsWith('http') ? avatar : `${apiBaseUrl}${avatar}`;
+  };
 
   return (
-    <aside className={cn(
-      "fixed top-0 left-0 z-30 h-screen border-r border-[--color-border] bg-[--color-surface] transition-all duration-300 flex flex-col overflow-hidden",
-      sidebarCollapsed ? "w-16" : "w-64"
-    )}>
-      {/* Logo / Brand */}
-      <div className="px-4 py-5 flex items-center gap-3">
-        <div className="w-8 h-8 bg-[--color-primary] rounded-lg flex items-center justify-center text-white font-semibold text-[14px] shrink-0 overflow-hidden">
+    <SidebarRoot collapsed={sidebarCollapsed}>
+      <SidebarHeader>
+        <Box 
+          width="10" 
+          height="10" 
+          rounded="lg" 
+          background="primary" 
+          display="flex" 
+          align="center" 
+          justify="center" 
+          overflow="hidden" 
+          shrink="0"
+        >
           {logoUrl ? (
-            <img src={logoUrl} alt="" className="w-full h-full object-cover" />
+            <Box as="img" src={logoUrl} alt="" width="full" height="full" className="object-cover" />
           ) : (
-            libraryName.charAt(0).toUpperCase()
+            <Text variant="label-strong" color="white" className="text-lg">
+              {libraryName.charAt(0).toUpperCase()}
+            </Text>
           )}
-        </div>
+        </Box>
         {!sidebarCollapsed && (
-          <div className="flex flex-col leading-none min-w-0">
-            <span className="font-bold text-[18px] text-[--color-text] truncate">{libraryName}</span>
-          </div>
+          <Text variant="heading" weight="black" className="truncate text-[18px]">
+            {libraryName}
+          </Text>
         )}
-      </div>
+      </SidebarHeader>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 space-y-6 mt-2 overflow-y-auto pb-4">
+      <NavContainer>
         {menuGroups.map((group, groupIdx) => (
-          <div key={groupIdx} className="space-y-1">
-            {!sidebarCollapsed && (
-              <h4 className="text-[12px] font-semibold text-[--color-muted-foreground] tracking-widest px-3 mb-2">
-                {group.title}
-              </h4>
-            )}
-            {group.items.map((item: any) => {
-              const fullHref = `/${locale}${item.href}`;
-              const isActive = pathname === fullHref || (item.subItems && (pathname === fullHref || pathname.startsWith(`${fullHref}/`)));
-              return (
-                <div key={item.href} className="space-y-0.5">
-                  <Link
-                    href={`/${locale}${item.href}`}
-                    onClick={() => {
-                      if (window.innerWidth < 1024 && !sidebarCollapsed) {
-                        toggleSidebar();
-                      }
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[16px] transition-colors",
-                      isActive
-                        ? "bg-[--color-primary]/10 text-[--color-primary] font-semibold"
-                        : "text-[--color-text-secondary] hover:bg-[--color-muted] hover:text-[--color-text]"
-                    )}
-                  >
-                    <item.icon size={20} strokeWidth={2} className="shrink-0" />
-                    {!sidebarCollapsed && (
-                      <>
-                        <span className="truncate">{item.name}</span>
-                        {item.badge && (
-                          <div className="ml-auto w-2 h-2 rounded-full bg-[--color-danger]" />
-                        )}
-                      </>
-                    )}
-                  </Link>
-                  
-                  {/* Sub Items */}
-                  {item.subItems && isActive && !sidebarCollapsed && (
-                    <div className="ml-9 space-y-0.5">
-                      {item.subItems.map((sub: any) => {
-                        const isSubActive = pathname === `/${locale}${sub.href}`;
-                        return (
-                          <Link 
+          <Stack key={groupIdx} spacing="xs">
+            {!sidebarCollapsed && <GroupLabel>{group.title}</GroupLabel>}
+            <Stack spacing="xs">
+              {group.items.map((item: any) => {
+                const fullHref = `/${locale}${item.href}`;
+                const isActive = pathname === fullHref || (item.subItems && (pathname === fullHref || pathname.startsWith(`${fullHref}/`)));
+                
+                return (
+                  <Stack key={item.href} spacing="xs">
+                    <NavItem 
+                      href={fullHref}
+                      icon={item.icon}
+                      name={item.name}
+                      collapsed={sidebarCollapsed}
+                      active={isActive}
+                      badge={item.badge}
+                      onClick={() => {
+                        if (window.innerWidth < 1024 && !sidebarCollapsed) toggleSidebar();
+                      }}
+                    />
+                    
+                    {item.subItems && isActive && !sidebarCollapsed && (
+                      <Box marginLeft="lg" display="flex" direction="col" gap="xs">
+                        {item.subItems.map((sub: any) => (
+                          <SubNavItem 
                             key={sub.href}
                             href={`/${locale}${sub.href}`}
-                            className={cn(
-                              "flex items-center justify-between px-3 py-2 rounded-lg text-[14px] transition-colors",
-                              isSubActive 
-                                ? "bg-[--color-primary]/10 text-[--color-primary] font-semibold" 
-                                : "text-[--color-muted-foreground] hover:text-[--color-text] hover:bg-[--color-muted]"
-                            )}
-                          >
-                            <span>{sub.name}</span>
-                            {sub.badge && (
-                              <span className="px-1.5 py-0.5 rounded-full bg-[--color-danger] text-white text-[12px] font-medium min-w-[18px] text-center">
-                                {sub.badge}
-                              </span>
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                            name={sub.name}
+                            active={pathname === `/${locale}${sub.href}`}
+                            badge={sub.badge}
+                          />
+                        ))}
+                      </Box>
+                    )}
+                  </Stack>
+                );
+              })}
+            </Stack>
+          </Stack>
         ))}
-      </nav>
+      </NavContainer>
 
-      {/* Footer: User + Actions */}
-      <div className="mt-auto border-t border-[--color-border]">
-        <div className="px-4 py-3 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[--color-muted] flex items-center justify-center text-[--color-primary] shrink-0 overflow-hidden text-[12px] font-medium">
-            {(() => {
-              const avatarUrl = user?.avatar_url || (user as any)?.member?.avatar_url;
-              if (avatarUrl) {
-                const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || "http://localhost:3001";
-                const fullUrl = avatarUrl.startsWith('http') ? avatarUrl : `${apiBaseUrl}${avatarUrl}`;
-                return <img src={fullUrl} alt="" className="w-full h-full object-cover" />;
-              }
-              const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || "??";
-              return <span>{initials}</span>;
-            })()}
-          </div>
+      <FooterRoot>
+        {/* User Profile Info */}
+        <Box padding="sm" display="flex" align="center" gap="md">
+          <Box 
+            width="10" 
+            height="10" 
+            rounded="lg" 
+            background="muted-soft" 
+            display="flex" 
+            align="center" 
+            justify="center" 
+            overflow="hidden" 
+            shrink="0"
+          >
+            {getAvatarUrl() ? (
+              <Box as="img" src={getAvatarUrl()!} alt="" width="full" height="full" className="object-cover" />
+            ) : (
+              <Text variant="caption" weight="black" color="primary" className="text-sm">
+                {getInitials()}
+              </Text>
+            )}
+          </Box>
           {!sidebarCollapsed && (
-            <div className="flex flex-col leading-none overflow-hidden min-w-0">
-              <span className="font-medium text-[14px] truncate text-[--color-text]">{user?.name || t("guest")}</span>
-              <span className="text-[12px] text-[--color-muted-foreground] truncate capitalize">
+            <Box minWidth="0" display="flex" direction="col">
+              <Text variant="subheading" weight="black" className="truncate text-sm">
+                {user?.name || t("guest")}
+              </Text>
+              <Text variant="caption" color="muted" className="capitalize truncate text-xs">
                 {user?.impersonating 
-                  ? t("system_owner") || "System Owner"
+                  ? t("system_owner") 
                   : user?.role?.name?.replace('_', ' ') || t("visitor")}
-              </span>
-            </div>
+              </Text>
+            </Box>
           )}
-        </div>
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-7 py-3 hover:bg-[--color-danger]/5 hover:text-[--color-danger] transition-colors text-[--color-muted-foreground] text-[14px]"
-        >
-          <LogOut size={20} strokeWidth={2} />
-          {!sidebarCollapsed && <span>{t("logout")}</span>}
-        </button>
-        <button
-          onClick={toggleSidebar}
-          className="w-full px-7 py-3 flex items-center gap-3 hover:bg-[--color-muted] transition-colors text-[--color-muted-foreground] border-t border-[--color-border]"
-        >
-          <div className={cn(
-            "transition-transform duration-300",
-            sidebarCollapsed ? "rotate-180" : "rotate-0"
-          )}>
-            <ChevronLeft size={18} strokeWidth={2} />
-          </div>
-          {!sidebarCollapsed && <span className="text-[12px] font-medium text-[--color-muted-foreground]">{t("collapse")}</span>}
-        </button>
-      </div>
-    </aside>
+        </Box>
+        
+        {/* Logout Button */}
+        <ActionRow onClick={logout} isDanger>
+          <IconWrapper size="xs" isGhost color="primary">
+             <LogOut size={18} strokeWidth={2.5} />
+          </IconWrapper>
+          {!sidebarCollapsed && <Text variant="caption" weight="black" className="text-[13px]">{t("logout")}</Text>}
+        </ActionRow>
+        
+        {/* Collapse Button */}
+        <ActionRow onClick={toggleSidebar}>
+          <Box className={cn("transition-transform duration-300 flex items-center justify-center", sidebarCollapsed ? "rotate-180" : "rotate-0")}>
+            <IconWrapper size="xs" isGhost>
+              <ChevronLeft size={18} strokeWidth={2.5} />
+            </IconWrapper>
+          </Box>
+          {!sidebarCollapsed && (
+            <Text variant="caption" weight="black" opacity="60" className="text-[13px]">
+              {t("collapse")}
+            </Text>
+          )}
+        </ActionRow>
+      </FooterRoot>
+    </SidebarRoot>
   );
 };
 

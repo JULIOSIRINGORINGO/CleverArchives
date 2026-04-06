@@ -1,7 +1,7 @@
 import * as React from "react";
 import { 
   Hash, Calendar, Building2, BookOpen, Clock, Check, AlertCircle, X, ChevronRight, ArrowUpRight, Search, Bookmark,
-  Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download
+  Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download, CheckCheck, Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +35,8 @@ export const ICON_REGISTRY = {
   "chevron-right": ChevronRight,
   calendar: Calendar,
   download: Download,
+  "check-all": CheckCheck,
+  notification: Bell,
 } as const;
 
 export type AppIconName = keyof typeof ICON_REGISTRY;
@@ -54,10 +56,10 @@ interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<IconWrapperVariant, string> = {
-  primary: "bg-primary/10 text-primary",
-  warning: "bg-amber-50 text-amber-500",
-  danger: "bg-destructive/10 text-destructive",
-  success: "bg-emerald-50 text-emerald-500",
+  primary: "bg-[--color-primary]/10 text-[--color-primary]",
+  warning: "bg-[--color-warning]/10 text-[--color-warning]",
+  danger: "bg-[--color-danger]/10 text-[--color-danger]",
+  success: "bg-[--color-success]/10 text-[--color-success]",
   muted: "bg-muted text-muted-foreground",
   white: "bg-white/10 text-white border border-white/10 shadow-sm backdrop-blur-sm",
 };
@@ -99,10 +101,10 @@ const IconWrapper = React.forwardRef<HTMLDivElement, IconWrapperProps>(
           finalOpacity === "40" && "opacity-40",
           finalOpacity === "50" && "opacity-50",
           finalOpacity === "60" && "opacity-60",
-          finalColor === "emerald" && "text-emerald-500",
-          finalColor === "amber" && "text-amber-500",
-          finalColor === "destructive" && "text-destructive",
-          finalColor === "primary" && "text-primary",
+          finalColor === "emerald" && "text-[--color-success]",
+          finalColor === "amber" && "text-[--color-warning]",
+          finalColor === "destructive" && "text-[--color-danger]",
+          finalColor === "primary" && "text-[--color-primary]",
           className
         )}
         {...props}

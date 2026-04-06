@@ -25,10 +25,10 @@ export interface BoxProps extends Omit<React.AllHTMLAttributes<HTMLElement>, 'as
   paddingTop?: Spacing;
   paddingBottom?: Spacing;
   margin?: Spacing;
-  marginTop?: Spacing;
-  marginBottom?: Spacing;
-  marginLeft?: Spacing;
-  marginRight?: Spacing;
+  marginTop?: Spacing | "auto";
+  marginBottom?: Spacing | "auto";
+  marginLeft?: Spacing | "auto";
+  marginRight?: Spacing | "auto";
   minWidth?: "0" | "full" | "auto";
   minHeight?: "0" | "full" | "auto";
   spacing?: Spacing | "gap-5" | "chat-list-skeleton";
@@ -44,8 +44,8 @@ export interface BoxProps extends Omit<React.AllHTMLAttributes<HTMLElement>, 'as
   transition?: "all" | "none";
   whiteSpace?: "normal" | "pre-wrap" | "nowrap";
   centered?: boolean;
-  width?: "full" | "auto" | "10" | "11" | "12" | "14" | "16" | "20" | "80" | "96" | "px" | BoxMaxWidth;
-  height?: "full" | "auto" | "screen" | "10" | "11" | "12" | "14" | "16" | "20" | "32" | "40" | "44" | "48" | "56" | "64" | "80" | "96" | "20px" | "16" | "20" | "px";
+  width?: "full" | "auto" | "2" | "6" | "10" | "11" | "12" | "14" | "16" | "20" | "80" | "96" | "px" | BoxMaxWidth;
+  height?: "full" | "auto" | "screen" | "2" | "6" | "10" | "11" | "12" | "14" | "16" | "20" | "32" | "40" | "44" | "48" | "56" | "64" | "80" | "96" | "20px" | "px";
   cursor?: "pointer";
   scrollbar?: "custom" | "none";
   display?: "flex" | "inline-flex" | "block" | "inline-block" | "grid" | "none" | "hidden";
@@ -132,7 +132,8 @@ export const widths = {
 };
 
 export const heightMap = {
-  full: "h-full",
+  "2": "h-2",
+  "6": "h-6",
   "10": "h-10",
   "11": "h-11",
   "12": "h-12",
@@ -144,12 +145,16 @@ export const heightMap = {
 
 export const widthMap = {
   full: "w-full",
+  "2": "w-2",
+  "6": "w-6",
   "10": "w-10",
   "11": "w-11",
   "12": "w-12",
   "14": "w-14",
   "16": "w-16",
   "20": "w-20",
+  "80": "w-80",
+  "96": "w-96",
   px: "w-px",
 };
 
@@ -239,40 +244,44 @@ export const margins = {
   xl: "m-8",
 };
 
-export const marginsTop = {
+export const marginsTop: Record<Spacing | "auto", string> = {
   none: "mt-0",
   xs: "mt-2",
   sm: "mt-3",
   md: "mt-4",
   lg: "mt-6",
   xl: "mt-8",
+  auto: "mt-auto",
 };
 
-export const marginsBottom = {
+export const marginsBottom: Record<Spacing | "auto", string> = {
   none: "mb-0",
   xs: "mb-2",
   sm: "mb-3",
   md: "mb-4",
   lg: "mb-6",
   xl: "mb-8",
+  auto: "mb-auto",
 };
 
-export const marginsRight = {
+export const marginsRight: Record<Spacing | "auto", string> = {
   none: "mr-0",
   xs: "mr-2",
   sm: "mr-3",
   md: "mr-4",
   lg: "mr-6",
   xl: "mr-8",
+  auto: "mr-auto",
 };
 
-export const marginsLeft = {
+export const marginsLeft: Record<Spacing | "auto", string> = {
   none: "ml-0",
   xs: "ml-2",
   sm: "ml-3",
   md: "ml-4",
   lg: "ml-6",
   xl: "ml-8",
+  auto: "ml-auto",
 };
 
 export const flexMap = {
@@ -467,6 +476,7 @@ export const Box = React.forwardRef<HTMLDivElement, BoxProps>(({
         justify === "around" && "justify-around",
         justify === "evenly" && "justify-evenly",
         spacing && spacingMap[spacing],
+        gap && spacingMap[gap],
         shadow && shadows[shadow],
         flexShrink && shrinkMap[flexShrink],
         variant === "interactive" && "hover:bg-muted/10 transition-colors",

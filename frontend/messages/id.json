@@ -1076,6 +1076,18 @@
     "next_step_title": "Langkah Selanjutnya",
     "next_step_desc": "Setelah mengajukan, bawa buku ke meja Library Admin untuk validasi fisik dan persetujuan akhir peminjaman.",
     "error_failed": "Gagal mengajukan peminjaman. Pastikan Barcode benar dan buku tersedia."
+  },
+  "Notifications": {
+    "title": "Notifikasi",
+    "mark_all_read": "Tandai semua dibaca",
+    "clear_all": "Hapus semua notifikasi",
+    "empty": "Tidak ada notifikasi",
+    "view_all": "Lihat Semua",
+    "confirm_clear_title": "Hapus Semua Notifikasi?",
+    "confirm_clear_desc": "Hapus semua notifikasi permanen? Tindakan ini tidak dapat dibatalkan.",
+    "confirm_clear_btn": "Ya, Hapus Semua",
+    "cancel": "Batal",
+    "success_clear_msg": "Semua notifikasi telah dihapus"
   }
 }
 

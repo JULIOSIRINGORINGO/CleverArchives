@@ -12,6 +12,7 @@ interface Notification {
   sender_role: string;
   created_at: string;
   metadata?: any;
+  nav_url?: string;
 }
 
 interface NotificationContextType {
@@ -61,7 +62,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
       // Convert received messages to notification-like items for display in dropdown
       const messageNotifs: Notification[] = allMessages
-        .filter((m: any) => m.sender_id !== user.id) // Filter out own messages
+        .filter((m: any) => String(m.sender_id) !== String(user.id)) // Filter out own messages strictly
         .slice(0, 20)
         .map((m: any) => {
           const isSender = m.sender_id === user.id;
@@ -73,7 +74,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
             read_at: new Date(m.created_at).getTime() <= lastCheckTime ? m.created_at : null,
             sender_role: 'message',
             created_at: m.created_at,
-            metadata: { partnerId } // For navigation
+            metadata: { partnerId },
+            nav_url: `/messaging/internal?partnerId=${partnerId}`
           };
         });
 
@@ -87,14 +89,20 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         if (lowTitle.includes('terkirim') || lowTitle.includes('sent')) return false;
         if (n.body.toLowerCase().includes('pesan untuk semua')) return false;
         
-        return true;
       }).map(n => {
+        // Fix Title: Show sender name if it's a message
+        let title = n.title;
         if (n.title.toLowerCase().includes('pesan baru') || n.title.toLowerCase().includes('new message')) {
-          // Use name from metadata if available for the title
           const senderName = (n.metadata as any)?.sender_name;
-          return { ...n, title: senderName || n.title.replace(/Pesan Baru:?\s*/i, '') };
+          title = senderName || n.title.replace(/Pesan Baru:?\s*/i, '');
         }
-        return n;
+
+        // Fix Navigation: Determine the correct local URL
+        const nav_url = n.metadata?.partnerId 
+          ? `/messaging/internal?partnerId=${n.metadata.partnerId}`
+          : n.metadata?.url || `/dashboard`;
+
+        return { ...n, title, nav_url };
       });
 
       setNotifications([...filteredSystemNotifs, ...messageNotifs]
