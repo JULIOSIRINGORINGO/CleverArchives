@@ -26,7 +26,7 @@ const variantConfig: Record<AlertCardVariant, {
   primary: {
     icon: Info,
     iconVariant: "primary-solid",
-    containerClass: "bg-white border-primary/20 shadow-lg shadow-primary/5",
+    containerClass: "bg-amber-100/30 border-amber-200/40 shadow-sm",
   },
   warning: {
     icon: AlertTriangle,
@@ -62,7 +62,7 @@ export function AlertCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       className={cn(
-        "flex items-start gap-4 rounded-[2rem] border p-6 relative",
+        "flex items-start gap-4 rounded-2xl border p-6 relative",
         config.containerClass,
         className
       )}

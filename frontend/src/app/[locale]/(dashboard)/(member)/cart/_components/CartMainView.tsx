@@ -1,44 +1,40 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
+import { AnimatePresence, motion } from "framer-motion";
 import { Box } from "@/components/ui/Box";
-import { Stack } from "@/components/ui/Stack";
 import { Inline } from "@/components/ui/Inline";
-import { WorkspacePanel } from "@/components/ui/WorkspacePanel";
+import { Stack } from "@/components/ui/Stack";
 import { AlertCard } from "@/components/ui/AlertCard";
+import { 
+  SearchAesthetics, 
+  ConfirmationAesthetics 
+} from "./CartAesthetics";
 
-import { SearchAesthetics, ConfirmationAesthetics } from "./CartAesthetics";
-
-interface CartMainViewProps {
-  searchProps: any;
-  confirmationProps: any;
-  alertProps: {
-    showWarning: boolean;
-    closeWarning: () => void;
-    t: any;
-  };
-}
-
-export const CartMainView = ({ searchProps, confirmationProps, alertProps }: CartMainViewProps) => {
+/**
+ * LEVEL 2: THE CONTROLLER (Main Layout Orchestration)
+ * Manages the split-panel layout, alerts, and height distribution.
+ * All logic passed from page.tsx (Level 1).
+ */
+export default function CartMainView({
+  searchProps,
+  confirmationProps,
+  alertProps
+}: any) {
   return (
     <Box padding="none" className="h-full">
       <Inline spacing="lg" align="stretch" maxWidth="full" className="h-full">
-        {/* PANEL 1: Pencarian Eksemplar */}
-        <Box flex="1" className="h-full">
-          <WorkspacePanel fullHeight>
-            <SearchAesthetics {...searchProps} />
-          </WorkspacePanel>
-        </Box>
-
-        {/* PANEL 2: Konfirmasi Pinjam */}
-        <Box flex="1.5" className="h-full">
+        
+        {/* PANEL 1: LEFT COLUMN (Search & Alerts) */}
+        <Box flex="1" display="flex" direction="col" className="h-full min-w-[320px]">
           <Stack spacing="lg" flex="1" className="h-full">
-            <WorkspacePanel fullHeight>
-              <ConfirmationAesthetics {...confirmationProps} />
-            </WorkspacePanel>
+            
+            {/* Search results take available space */}
+            <Box flex="1" minHeight="0">
+              <SearchAesthetics {...searchProps} />
+            </Box>
 
+            {/* Alert pops up at the bottom of the left panel area */}
             <AnimatePresence>
               {alertProps.showWarning && (
                 <motion.div
@@ -58,9 +54,13 @@ export const CartMainView = ({ searchProps, confirmationProps, alertProps }: Car
             </AnimatePresence>
           </Stack>
         </Box>
+
+        {/* PANEL 2: RIGHT COLUMN (Confirmation & Actions) */}
+        <Box flex="1.5" className="h-full min-w-[400px]">
+          <ConfirmationAesthetics {...confirmationProps} />
+        </Box>
+
       </Inline>
     </Box>
   );
-};
-
-CartMainView.displayName = "CartMainView";
+}
