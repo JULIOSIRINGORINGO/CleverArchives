@@ -16,7 +16,7 @@ export default function CartPage() {
 
   return (
     <DashboardPage hideHeader hideScroll>
-      <DashboardSection layout="full" spaced>
+      <DashboardSection layout="full" spaced fullHeight>
         <CartMainView
           searchProps={searchProps}
           confirmationProps={confirmationProps}

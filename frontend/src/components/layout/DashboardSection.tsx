@@ -14,6 +14,7 @@ interface DashboardSectionProps {
   layout?: DashboardSectionLayout;
   children: React.ReactNode;
   spaced?: boolean;
+  fullHeight?: boolean;
   className?: string;
 }
 
@@ -33,12 +34,14 @@ export function DashboardSection({
   layout = "full",
   children,
   spaced = false,
+  fullHeight = false,
   className,
 }: DashboardSectionProps) {
   return (
     <div className={cn(
       layoutStyles[layout], 
       spaced && "pt-6 space-y-6",
+      fullHeight && "flex-1 flex flex-col min-h-0",
       className
     )}>
       {children}

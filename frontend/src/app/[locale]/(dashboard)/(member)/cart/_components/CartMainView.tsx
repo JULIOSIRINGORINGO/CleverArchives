@@ -22,15 +22,15 @@ export default function CartMainView({
   alertProps
 }: any) {
   return (
-    <Box padding="none" className="h-full">
-      <Inline spacing="lg" align="stretch" maxWidth="full" className="h-full">
+    <Box padding="none" flex="1" display="flex" direction="col">
+      <Inline spacing="lg" align="stretch" maxWidth="full" flex="1">
         
         {/* PANEL 1: LEFT COLUMN (Search & Alerts) */}
-        <Box flex="1" display="flex" direction="col" className="h-full min-w-[320px]">
-          <Stack spacing="lg" flex="1" className="h-full">
+        <Box flex="1" display="flex" direction="col" minWidth="320px">
+          <Stack spacing="lg" flex="1">
             
             {/* Search results take available space */}
-            <Box flex="1" minHeight="0">
+            <Box flex="1" minHeight="0" display="flex" direction="col">
               <SearchAesthetics {...searchProps} />
             </Box>
 
@@ -41,6 +41,7 @@ export default function CartMainView({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  className="shrink-0"
                 >
                   <AlertCard
                     variant="primary"
@@ -56,7 +57,7 @@ export default function CartMainView({
         </Box>
 
         {/* PANEL 2: RIGHT COLUMN (Confirmation & Actions) */}
-        <Box flex="1.5" className="h-full min-w-[400px]">
+        <Box flex="1.5" display="flex" direction="col" minWidth="400px">
           <ConfirmationAesthetics {...confirmationProps} />
         </Box>
 
