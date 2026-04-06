@@ -2,12 +2,12 @@
 
 import React from "react";
 import { ArrowUpRight, LucideIcon } from "lucide-react";
-import { 
-  StatCardRoot, 
-  StatIconBox, 
-  ProgressBarRoot, 
-  ProgressBarIndicator, 
-  StatLabel, 
+import {
+  StatCardRoot,
+  StatIconBox,
+  ProgressBarRoot,
+  ProgressBarIndicator,
+  StatLabel,
   StatTrend,
   StatCardVariant,
   StatTitleText,
@@ -50,11 +50,6 @@ type StatCardProps = {
   loading?: boolean;
 } & (StatCardGoalProps | StatCardDefaultProps);
 
-
-/**
- * StatCard — Premium Gradient KPI card with Zero ClassName implementation.
- * Strictly follows SOP v5.6.0 with isolated aesthetics and primitive layout.
- */
 export function StatCard({
   title,
   value,

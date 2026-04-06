@@ -5,6 +5,8 @@ import useSWR from "swr";
 import { useTranslations } from "next-intl";
 import { apiService } from "@/services/api";
 
+const DEFAULT_TARGET_READING_GOAL = 12;
+
 /**
  * useDashboardStats — Fetch KPI stats and incremental borrowings.
  */
@@ -48,11 +50,22 @@ export function useDashboardStats() {
     }).length;
   }, [borrowings]);
 
+  const historyCount = statsData?.historyCount || 0;
+  
+  // Business Logic: Reading Goal (Plan: Can be fetched from user profile in future)
+  const readingGoal = DEFAULT_TARGET_READING_GOAL;
+  const readingGoalProgress = useMemo(() => {
+    if (readingGoal <= 0) return 0;
+    return Math.min((historyCount / readingGoal) * 100, 100);
+  }, [historyCount, readingGoal]);
+
   return {
     stats: {
       activeBorrowings: statsData?.activeCount || 0,
-      historyCount: statsData?.historyCount || 0,
-      dueSoonCount
+      historyCount,
+      dueSoonCount,
+      readingGoal,
+      readingGoalProgress
     },
     borrowings,
     loading: !statsData && borrowings.length === 0,

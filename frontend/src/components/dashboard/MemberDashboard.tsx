@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { BookOpen, BookMarked, Star, Activity, CalendarCheck } from "lucide-react";
+import { BookOpen, BookMarked, Star, Activity, CalendarCheck, Target as TargetIcon } from "lucide-react";
 import Link from "next/link";
 
 // Hooks
@@ -16,21 +16,15 @@ import { WelcomeHeader } from "@/components/ui/WelcomeHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { ChartCard } from "@/components/ui/ChartCard";
 import { Button } from "@/components/ui/Button";
-import { Box } from "@/components/ui/Box";
 
 // Feature Components
 import { RecommendationCarousel } from "@/components/features/books/RecommendationCarousel";
 import { DigitalCollectionCard } from "@/components/dashboard/DigitalCollectionCard";
 
-/**
- * MemberDashboard — Main orchestration layer for the member profile view.
- * Strictly follows Design System rules: No direct Tailwind, No manual layout, No large logic.
- */
 export default function MemberDashboard() {
   const { user } = useAuth();
   const locale = useLocale();
   const t = useTranslations("Dashboard");
-  const TARGET_READING_GOAL = 12;
 
   // Data Logic extracted to hooks
   const { stats, borrowings, loading } = useDashboardStats();
@@ -43,7 +37,7 @@ export default function MemberDashboard() {
       headerActions={
         <Link href={`/${locale}/catalog`}>
           <Button size="lg" rounded="lg">
-            {t("viewAll")} 
+            {t("viewAll")}
           </Button>
         </Link>
       }
@@ -51,45 +45,45 @@ export default function MemberDashboard() {
       <DashboardSection layout="full" spaced>
         <DashboardSection layout="stat-grid">
           <Link href={`/${locale}/borrowings`}>
-            <StatCard 
-              title={t("currentReads")} 
-              value={stats.activeBorrowings} 
-              icon={BookOpen} 
-              trend={t("status_active")} 
+            <StatCard
+              title={t("currentReads")}
+              value={stats.activeBorrowings}
+              icon={BookOpen}
+              trend={t("status_active")}
               variant="blue"
               loading={loading}
             />
           </Link>
           <Link href={`/${locale}/history`}>
-            <StatCard 
-              title={t("booksRead")} 
-              value={stats.historyCount} 
-              icon={BookMarked} 
-              trend={t("status_completed")} 
+            <StatCard
+              title={t("booksRead")}
+              value={stats.historyCount}
+              icon={BookMarked}
+              trend={t("status_completed")}
               variant="emerald"
               loading={loading}
             />
           </Link>
           <Link href={`/${locale}/catalog`}>
-            <StatCard 
-              title={t("readingGoal")} 
-              value={stats.historyCount} 
-              icon={Star} 
+            <StatCard
+              title={t("readingGoal")}
+              value={stats.historyCount}
+              target={stats.readingGoal}
+              progress={stats.readingGoalProgress}
+              icon={TargetIcon}
               variant="amber"
               isGoal
-              target={TARGET_READING_GOAL}
-              progress={(stats.historyCount / TARGET_READING_GOAL) * 100}
               completedLabel={t("completed")}
               targetLabel={t("target")}
               loading={loading}
             />
           </Link>
           <Link href={`/${locale}/borrowings`}>
-            <StatCard 
-              title={t("dueSoonTitle")} 
-              value={stats.dueSoonCount} 
-              icon={CalendarCheck} 
-              trend={t("status_soon")} 
+            <StatCard
+              title={t("dueSoonTitle")}
+              value={stats.dueSoonCount}
+              icon={CalendarCheck}
+              trend={t("status_soon")}
               variant="red"
               loading={loading}
             />
@@ -98,7 +92,7 @@ export default function MemberDashboard() {
 
         <DashboardSection layout="chart-sidebar">
           <DashboardSection.Main>
-            <ChartCard 
+            <ChartCard
               title={t("readingActivity")}
               subtitle={t("activitySubtitle")}
               icon={<Activity size={22} />}
@@ -116,7 +110,7 @@ export default function MemberDashboard() {
         </DashboardSection>
 
         <DashboardSection layout="full">
-          <RecommendationCarousel 
+          <RecommendationCarousel
             title={t("recommended")}
             books={recommendations}
             loading={recsLoading}
