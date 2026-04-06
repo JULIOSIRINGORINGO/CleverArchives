@@ -26,7 +26,7 @@ export default function CartMainView({
       <Inline spacing="lg" align="stretch" maxWidth="full" flex="1">
         
         {/* PANEL 1: LEFT COLUMN (Search & Alerts) */}
-        <Box flex="1" display="flex" direction="col" minWidth="320px">
+        <Box flex="1" display="flex" direction="col" className="min-w-[320px]">
           <Stack spacing="lg" flex="1">
             
             {/* Search results take available space */}
@@ -57,7 +57,7 @@ export default function CartMainView({
         </Box>
 
         {/* PANEL 2: RIGHT COLUMN (Confirmation & Actions) */}
-        <Box flex="1.5" display="flex" direction="col" minWidth="400px">
+        <Box flex="1.5" display="flex" direction="col" className="min-w-[400px]">
           <ConfirmationAesthetics {...confirmationProps} />
         </Box>
 
