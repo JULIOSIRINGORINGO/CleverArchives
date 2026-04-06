@@ -1,26 +1,28 @@
 "use client";
 
 import React from "react";
-import { useCartController } from "./_hooks/useCartController";
+import { useCartDomain } from "@/hooks/useCartDomain";
 import { CartMainView } from "./_components/CartMainView";
 
-/**
- * CartPage - "The Atheist Orchestrator" (Gold Level).
- * Page ini 100% suci dari logika bisnis, state management, dan pemrosesan API.
- * Menggunakan pola 'Grouped Props' hasil ekstraksi controller.
- */
+import { DashboardPage } from "@/components/layout/DashboardPage";
+import { DashboardSection } from "@/components/layout/DashboardSection";
+
 export default function CartPage() {
-  const { 
-    searchProps, 
-    confirmationProps, 
-    alertProps 
-  } = useCartController();
+  const {
+    searchProps,
+    confirmationProps,
+    alertProps
+  } = useCartDomain();
 
   return (
-    <CartMainView 
-      searchProps={searchProps}
-      confirmationProps={confirmationProps}
-      alertProps={alertProps}
-    />
+    <DashboardPage hideHeader noPadding>
+      <DashboardSection layout="full" noPadding className="h-full">
+        <CartMainView
+          searchProps={searchProps}
+          confirmationProps={confirmationProps}
+          alertProps={alertProps}
+        />
+      </DashboardSection>
+    </DashboardPage>
   );
 }

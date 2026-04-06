@@ -7,14 +7,27 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 import { apiService } from "@/services/api";
-import { BookCopy } from "../_components/SearchPanel";
+
+export interface BookCopy {
+  id: number;
+  barcode: string;
+  status: string;
+  book: {
+    id: number;
+    title: string;
+    cover_url: string;
+    author?: {
+      name: string;
+    };
+  };
+}
 
 /**
- * useCartController - Otak dari modul Cart.
- * Mengelola seluruh state scan, pencarian buku, dan perpindahan ke checkout.
- * Memisahkan logika bisnis dari level orkestrasi (Page).
+ * useCartDomain - Domain Logic Controller for Cart.
+ * Decouples API calls and state management from the UI Orchestrator.
+ * Compliant with SOP v.5.6.0 (Zero ClassName / Absolute Encapsulation).
  */
-export function useCartController() {
+export function useCartDomain() {
   const t = useTranslations("Cart");
   const locale = useLocale();
   const router = useRouter();
@@ -108,34 +121,27 @@ export function useCartController() {
 
   const closeWarning = useCallback(() => setShowWarning(false), []);
 
-  // 3. Grouped Props for Clean Orchestration
-  const searchProps = {
-    barcode,
-    setBarcode,
-    searching,
-    handleSearch,
-    searchResults,
-    handleSelectItem,
-    t,
-  };
-
-  const confirmationProps = {
-    item,
-    movingToCheckout,
-    handleMoveToCheckout,
-    clearCart,
-    t,
-  };
-
-  const alertProps = {
-    showWarning,
-    closeWarning,
-    t,
-  };
-
   return {
-    searchProps,
-    confirmationProps,
-    alertProps,
+    searchProps: {
+      barcode,
+      setBarcode,
+      searching,
+      handleSearch,
+      searchResults,
+      handleSelectItem,
+      t,
+    },
+    confirmationProps: {
+      item,
+      movingToCheckout,
+      handleMoveToCheckout,
+      clearCart,
+      t,
+    },
+    alertProps: {
+      showWarning,
+      closeWarning,
+      t,
+    },
   };
 }
