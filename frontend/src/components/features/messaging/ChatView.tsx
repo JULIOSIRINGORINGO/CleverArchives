@@ -58,7 +58,7 @@ export function ChatView({
             isGhost
           />
           <Stack spacing="xs" align="center">
-            <Text variant="heading" color="black" textAlign="center">
+            <Text variant="heading" textAlign="center">
               {t("choose_conversation")}
             </Text>
             <Text variant="caption-muted" textAlign="center">

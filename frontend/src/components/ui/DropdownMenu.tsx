@@ -9,7 +9,7 @@ interface DropdownMenuContentProps {
   className?: string;
   isOpen?: boolean;
   setIsOpen?: (open: boolean) => void;
-  width?: "44" | "48" | "56" | "64";
+  width?: "44" | "48" | "56" | "64" | "auto";
 }
 
 export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
@@ -61,7 +61,8 @@ export const DropdownMenuContent = ({
     "44": "w-44",
     "48": "w-48",
     "56": "w-56",
-    "64": "w-64"
+    "64": "w-64",
+    "auto": "w-auto"
   }
 
   const alignStyles = {
@@ -94,8 +95,8 @@ export const DropdownMenuContent = ({
 export const DropdownMenuItem = ({ children, onClick, setIsOpen, color = "default" }: any) => {
   return (
     <Box
-      variant="list-row"
-      paddingX="md"
+      variant="interactive"
+      paddingX="lg"
       paddingY="sm"
       display="flex"
       align="center"

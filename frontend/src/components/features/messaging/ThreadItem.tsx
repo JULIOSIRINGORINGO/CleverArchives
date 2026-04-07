@@ -6,6 +6,7 @@ import { Stack } from "@/components/ui/Stack";
 import { Inline } from "@/components/ui/Inline";
 import { ListRow, AvatarIcon, StatusDot } from "./_components/MessagingAesthetics";
 import { Text } from "@/components/ui/Text";
+import { IconWrapper } from "@/components/ui/IconWrapper";
 import { formatFriendlyDistance } from "@/lib/date-utils";
 import { Locale } from "date-fns";
 
@@ -59,7 +60,7 @@ export function ThreadItem({
           position="relative"
           shrink="0"
         >
-          <AvatarIcon>
+          <AvatarIcon src={thread.partnerAvatar}>
             <Text weight="bold" color="primary">
               {thread.partnerName[0]}
             </Text>

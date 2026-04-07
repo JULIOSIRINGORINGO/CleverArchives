@@ -23,9 +23,11 @@ export interface Message {
   body: string;
   sender_name?: string;
   sender_id: number | string;
+  sender_avatar_url?: string;
   recipient_type?: string;
   recipient_name?: string | null;
   recipient_id?: number | string | null;
+  recipient_avatar_url?: string | null;
   sender_last_seen?: string | null;
   recipient_last_seen?: string | null;
   created_at: string;
@@ -36,6 +38,7 @@ export interface Message {
 export interface ConversationThread {
   partnerId: number;
   partnerName: string;
+  partnerAvatar?: string;
   partnerStatus?: 'online' | 'offline';
   lastSeen?: string | null;
   lastMessage: Message;
@@ -152,8 +155,9 @@ export function useMessagingData() {
     privateMessages.forEach(msg => {
       const partnerId = Number(msg.sender_id === user?.id ? msg.recipient_id : msg.sender_id);
       const possibleName = msg.sender_id === user?.id ? msg.recipient_name : msg.sender_name;
+      const possibleAvatar = (msg.sender_id === user?.id ? msg.recipient_avatar_url : msg.sender_avatar_url) || undefined;
       
-      if (!partnerId) return; // Skip if no clear partner (shouldn't happen with 'specific')
+      if (!partnerId) return; 
 
       const threadKey = partnerId;
       const threadName = possibleName || t("user");
@@ -162,12 +166,18 @@ export function useMessagingData() {
         threads[threadKey] = { 
           partnerId: threadKey, 
           partnerName: threadName, 
+          partnerAvatar: possibleAvatar,
           lastMessage: msg, 
           messages: [],
           lastSeen: (msg.sender_id === user?.id ? msg.recipient_last_seen : msg.sender_last_seen) || undefined
         };
-      } else if (possibleName && possibleName !== "User" && threads[threadKey].partnerName === "User") {
-        threads[threadKey].partnerName = possibleName;
+      } else {
+        if (possibleName && possibleName !== "User" && threads[threadKey].partnerName === "User") {
+          threads[threadKey].partnerName = possibleName;
+        }
+        if (possibleAvatar && !threads[threadKey].partnerAvatar) {
+          threads[threadKey].partnerAvatar = possibleAvatar;
+        }
       }
       threads[threadKey].messages.push(msg);
       

@@ -10,6 +10,7 @@ interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
   inverted?: boolean;
   lineClamp?: number;
   weight?: "bold" | "black" | "semibold";
+  tracking?: "tight" | "tighter" | "wide" | "widest" | "none";
 }
 
 const sizeMap: Record<HeadingSize, string> = {
@@ -17,9 +18,17 @@ const sizeMap: Record<HeadingSize, string> = {
   sm: "text-sm",
   md: "text-base",
   lg: "text-lg leading-tight",
-  xl: "text-xl tracking-tight",
-  "2xl": "text-2xl tracking-tighter",
-  "3xl": "text-3xl tracking-tighter",
+  xl: "text-xl",
+  "2xl": "text-2xl",
+  "3xl": "text-3xl",
+};
+
+const trackingMap = {
+  tight: "tracking-tight",
+  tighter: "tracking-tighter",
+  wide: "tracking-wide",
+  widest: "tracking-widest",
+  none: "tracking-normal",
 };
 
 const weightMap = {
@@ -34,6 +43,7 @@ export function Heading({
   inverted = false, 
   lineClamp,
   weight = "bold",
+  tracking,
   className, 
   ...props 
 }: HeadingProps) {
@@ -44,8 +54,9 @@ export function Heading({
       className={cn(
         sizeMap[size],
         weightMap[weight],
+        tracking && trackingMap[tracking],
         lineClamp && `line-clamp-${lineClamp}`,
-        inverted ? "text-white" : "text-foreground",
+        inverted ? "text-white" : "text-black",
         className
       )}
       {...props}

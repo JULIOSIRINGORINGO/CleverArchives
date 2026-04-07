@@ -129,8 +129,13 @@ export const apiService = {
   supportTickets: {
     list: () => apiFetch('/support_tickets'),
     get: (id: string | number) => apiFetch(`/support_tickets/${id}`),
-    create: (data: { title: string; body: string }) =>
-      apiFetch('/support_tickets', { method: 'POST', body: JSON.stringify(data) }),
+    create: (data: any) => {
+      const isFormData = data instanceof FormData;
+      return apiFetch('/support_tickets', { 
+        method: 'POST', 
+        body: isFormData ? data : JSON.stringify(data) 
+      });
+    },
     update: (id: string | number, data: { status: string }) =>
       apiFetch(`/support_tickets/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     reply: (id: string | number, body: string) =>

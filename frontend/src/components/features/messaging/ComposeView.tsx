@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { IconWrapper } from "@/components/ui/IconWrapper";
 import { Form } from "@/components/ui/Form";
+import { UnifiedSearch } from "@/components/ui/UnifiedSearch";
 import { Label } from "@/components/ui/Label";
 import { WorkspacePanelHeader, WorkspacePanelContent } from "@/components/ui/WorkspacePanel";
 import { motion, AnimatePresence } from "framer-motion";
@@ -105,7 +106,7 @@ export function ComposeView({
           <AvatarIcon background="primary" color="white">
             <IconWrapper icon="plus" size="sm" isGhost color="white" />
           </AvatarIcon>
-          <Text variant="heading" weight="bold" color="black">
+          <Text variant="heading" weight="bold">
             {t("compose_title")}
           </Text>
         </Inline>
@@ -132,7 +133,7 @@ export function ComposeView({
               >
                 <Stack spacing="md" flex="1">
                   <Stack spacing="xs">
-                    <Text variant="subheading" weight="medium" color="black">
+                    <Text variant="subheading">
                       {t("recipient_type")}
                     </Text>
                     <PillGroup className={isMember ? "grid-cols-1" : "grid-cols-2"}>
@@ -155,20 +156,15 @@ export function ComposeView({
 
                   {recipientType === 'specific' && (
                     <Stack spacing="xs" position="relative">
-                      <Text variant="subheading" weight="medium" color="black">
+                      <Text variant="subheading">
                         {t("search_contacts")}
                       </Text>
-                      <SearchInputBox>
-                        <IconWrapper icon="search" size="xs" isGhost />
-                        <Input 
-                          type="text" 
-                          value={userSearchQuery} 
-                          onChange={(e) => setUserSearchQuery(e.target.value)} 
-                          placeholder={t("search_contacts")} 
-                          rounded="xl"
-                          className="pl-10"
-                        />
-                      </SearchInputBox>
+                      <UnifiedSearch 
+                        value={userSearchQuery}
+                        onChange={setUserSearchQuery}
+                        placeholder={t("search_contacts")}
+                        isLoading={false}
+                      />
                       <AnimatePresence>
                         {userSearchResults.length > 0 && userSearchQuery.length >= 2 && (
                           <SearchResultsOverlay>
@@ -192,7 +188,7 @@ export function ComposeView({
                                     <Text weight="bold" variant="subheading">{u.name[0]}</Text>
                                   </AvatarIcon>
                                   <Stack spacing="none" align="start" flex="1">
-                                    <Text variant="list-title" color="black">{u.name}</Text>
+                                    <Text variant="list-title">{u.name}</Text>
                                     <Text variant="list-subtitle">{u.role?.name || "Member"}</Text>
                                   </Stack>
                                 </ListRow>
@@ -205,7 +201,7 @@ export function ComposeView({
                   )}
 
                   <Stack spacing="xs">
-                    <Text variant="subheading" weight="medium" color="black">
+                    <Text variant="subheading">
                       {t("attachment")}
                     </Text>
                     <Label 
@@ -217,7 +213,7 @@ export function ComposeView({
                         <Box marginBottom="xs" opacity="40">
                           <IconWrapper icon="paperclip" isGhost />
                         </Box>
-                        <Text variant="subheading" weight="medium" color="black">
+                        <Text variant="subheading">
                           {attachments.length > 0 ? t("files_selected", { count: attachments.length }) : t("click_to_upload")}
                         </Text>
                         <Input 
@@ -253,7 +249,7 @@ export function ComposeView({
 
                 <Stack spacing="md" flex="1" minHeight="0">
                   <Stack spacing="xs" flex="1" minHeight="0">
-                    <Text variant="subheading" weight="medium" color="black">
+                    <Text variant="subheading">
                       {t("body")}
                     </Text>
                     <Box flex="1" minHeight="0" display="flex" direction="col" height="full">

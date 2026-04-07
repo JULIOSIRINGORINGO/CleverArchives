@@ -41,7 +41,7 @@ export const UserNameText = ({ children }: { children: React.ReactNode }) => (
     as="span"
     variant="heading"
     weight="black"
-    className="font-cursive text-[2.5rem] leading-tight text-slate-800 drop-shadow-sm"
+    className="font-cursive text-[2.5rem] leading-tight drop-shadow-sm"
   >
     {children}
   </Text>

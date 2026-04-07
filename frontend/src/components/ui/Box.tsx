@@ -5,7 +5,7 @@ import { Slot } from "@radix-ui/react-slot";
 type BoxAspect = "square" | "portrait" | "landscape" | "video" | "book";
 type BoxMaxWidth = "xs" | "sm" | "md" | "lg" | "xl" | "3xl" | "full" | "button-group" | "bubble-sm" | "bubble-md";
 type BoxPosition = "relative" | "absolute" | "static" | "fixed" | "sticky";
-type BoxBackground = "surface" | "surface-soft" | "primary" | "primary-soft" | "muted-soft" | "white" | "transparent" | "error-soft" | "danger";
+type BoxBackground = "surface" | "surface-soft" | "primary" | "primary-soft" | "muted-soft" | "white" | "transparent" | "error-soft" | "danger" | "warning-soft";
 
 export type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
@@ -148,6 +148,7 @@ export const backgrounds = {
   transparent: "bg-transparent",
   "error-soft": "bg-red-50",
   danger: "bg-red-500",
+  "warning-soft": "bg-orange-50",
 };
 
 export const borders = {

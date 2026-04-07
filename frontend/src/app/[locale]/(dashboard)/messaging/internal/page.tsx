@@ -8,7 +8,7 @@ import { ThreadSidebar } from "@/components/features/messaging/ThreadSidebar";
 import { ComposeView } from "@/components/features/messaging/ComposeView";
 import { ChatView } from "@/components/features/messaging/ChatView";
 import { AnimatePresence } from "framer-motion";
-import { useMessagingData } from "./hooks/useMessagingData";
+import { useMessagingData } from "@/hooks/useMessagingData";
 import { MessagingModals } from "./_components/MessagingModals";
 
 export default function InternalMessagingPage() {
@@ -27,7 +27,7 @@ export default function InternalMessagingPage() {
       hideScroll
       hideHeader
       title={t("page_title")}
-      icon={<IconWrapper icon="mail" size="sm" isGhost color="primary" />}
+      icon={<IconWrapper icon="message" size="sm" isGhost color="primary" />}
     >
       <Box height="full" display="flex" direction="row" spacing="md" background="surface-soft" padding="sm">
         {/* Sidebar Section */}

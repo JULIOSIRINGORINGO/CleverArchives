@@ -13,6 +13,8 @@ import { useTranslations, useLocale } from "next-intl";
 import { DashboardPage } from "@/components/layout/DashboardPage";
 import { WorkspacePanel, WorkspacePanelContent } from "@/components/ui/WorkspacePanel";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Heading } from "@/components/ui/Heading";
+import { Text } from "@/components/ui/Text";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -208,8 +210,12 @@ export default function BorrowingPage() {
                               
                               <div className="flex-1 min-w-0 space-y-4">
                                 <div>
-                                  <h4 className="font-bold text-xl tracking-tight text-slate-800 leading-none mb-2">{b.book_copy?.book?.title}</h4>
-                                  <p className="text-[11px] font-bold text-slate-400 italic tracking-tight">{b.book_copy?.book?.author?.name}</p>
+                                  <Heading level="h4" weight="bold" tracking="tight" className="mb-2">
+                                    {b.book_copy?.book?.title}
+                                  </Heading>
+                                  <Text variant="caption" weight="bold" opacity="60" italic tracking="tight">
+                                    {b.book_copy?.book?.author?.name}
+                                  </Text>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-x-10 gap-y-3">
                                   <div className="flex items-center gap-3">

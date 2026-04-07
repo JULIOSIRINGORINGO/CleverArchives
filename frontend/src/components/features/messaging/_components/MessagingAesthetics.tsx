@@ -1,5 +1,8 @@
 import React from "react";
 import { Box, BoxProps } from "@/components/ui/Box";
+import { Stack } from "@/components/ui/Stack";
+import { Text as UIText } from "@/components/ui/Text";
+import { IconWrapper } from "@/components/ui/IconWrapper";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,7 +16,7 @@ interface WrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   asChild?: boolean;
 }
 
-export function AvatarIcon({ children, className, ...props }: BoxProps) {
+export function AvatarIcon({ children, src, className, ...props }: BoxProps & { src?: string }) {
   return (
     <Box 
       variant="none" 
@@ -24,10 +27,17 @@ export function AvatarIcon({ children, className, ...props }: BoxProps) {
       background="primary-soft"
       color="primary"
       rounded="2xl"
-      className={cn("font-bold w-11 h-11 transition-all hover:scale-105", className)}
+      overflow="hidden"
+      className={cn("font-bold w-11 h-11 transition-all hover:scale-105 relative", className)}
       {...props}
     >
-      {children}
+      {src ? (
+        <img 
+          src={src} 
+          alt="Avatar" 
+          className="w-full h-full object-cover"
+        />
+      ) : children}
     </Box>
   );
 }
@@ -106,6 +116,7 @@ export function PillItem({ children, active, className, ...props }: BoxProps & {
         active 
           ? "bg-primary text-white shadow-sm" 
           : "text-muted-foreground hover:bg-white/50",
+        "cursor-pointer select-none",
         className
       )}
       {...props}
@@ -149,24 +160,102 @@ export function SearchResultsOverlay({ children, className, ...props }: BoxProps
   );
 }
 
-export function UploadDropzone({ children, ...props }: BoxProps) {
+export function UploadDropzone({ children, active, className, ...props }: BoxProps & { active?: boolean }) {
   return (
     <Box 
       variant="none"
       padding="xl"
       border="dashed"
-      rounded="2xl"
+      rounded="3xl"
       display="flex"
       direction="col"
       align="center"
       justify="center"
       cursor="pointer"
       transition="all"
-      hoverEffect="scale"
-      className="hover:border-primary/40 hover:bg-primary/[0.01]"
+      background="surface-soft"
+      className={cn(
+        "duration-200 border-2",
+        active 
+          ? "border-primary bg-primary/5 shadow-sm" 
+          : "border-border/50 hover:border-primary/40 hover:bg-white hover:shadow-md",
+        className
+      )}
       {...props}
     >
       {children}
+    </Box>
+  );
+}
+
+export function AttachmentItem({ 
+  file, 
+  isMe = false 
+}: { 
+  file: { url: string, filename: string, content_type?: string }, 
+  isMe?: boolean 
+}) {
+  const isImage = file.content_type?.startsWith('image/');
+  
+  return (
+    <Box 
+      as="a"
+      href={file.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      display="flex"
+      align="center"
+      gap="sm"
+      padding="xs"
+      paddingRight="md"
+      background={isMe ? "primary" : "white"}
+      border={isMe ? "none" : "subtle"}
+      rounded="xl"
+      className={cn(
+        "no-underline transition-all group",
+        isMe ? "bg-opacity-10 hover:bg-opacity-20" : "hover:border-primary/30 hover:bg-slate-50 shadow-sm"
+      )}
+    >
+       <Box 
+         width="6" 
+         height="6" 
+         display="flex" 
+         align="center" 
+         justify="center" 
+         background={isMe ? "white" : "surface-soft"} 
+         rounded="lg"
+         shrink="0"
+         className={isMe ? "bg-opacity-20" : undefined}
+       >
+         <IconWrapper 
+           icon={isImage ? "image" : "file-text"} 
+           size="xs" 
+           isGhost 
+           color={isMe ? "white" : "primary"} 
+           opacity={isMe ? "90" : "100"}
+         />
+       </Box>
+        <Stack spacing="none" flex="1" minWidth="0">
+          <UIText 
+            variant="label-xs" 
+            color={isMe ? "white" : "black"} 
+            lineClamp="1"
+            className="select-none"
+          >
+            <Box maxWidth="full" minWidth="0">{file.filename}</Box>
+          </UIText>
+          {file.content_type && (
+            <UIText 
+              variant="micro-strong" 
+              color={isMe ? "white" : "muted"} 
+              opacity="60" 
+              uppercase
+              selectNone
+            >
+              {file.content_type.split('/')[1]}
+            </UIText>
+          )}
+       </Stack>
     </Box>
   );
 }
@@ -248,8 +337,8 @@ export function SendButton({ children, loading, ...props }: any) {
       shadow="lg"
       transition="all"
       className={cn(
-        "p-0 border-none transition-all active:scale-95 group",
-        loading ? "opacity-70 cursor-not-allowed" : "hover:scale-105"
+        "p-0 border-none transition-all active:scale-95 group select-none",
+        loading ? "opacity-70 cursor-not-allowed" : "hover:scale-105 cursor-pointer"
       )}
       {...props}
     >

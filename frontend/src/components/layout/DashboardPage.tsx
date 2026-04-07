@@ -64,7 +64,7 @@ export function DashboardPage({
       
       <div className={cn(
         "flex-1 min-h-0 overflow-hidden flex flex-col relative",
-        noPadding ? "" : "px-4 md:px-6"
+        noPadding ? "" : "px-4 md:px-6 py-4 md:py-6"
       )}>
         <div className={cn(
           "flex-1 min-h-0",

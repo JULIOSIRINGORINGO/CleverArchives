@@ -116,9 +116,9 @@ export const BookInfoBox = ({ children }: { children: React.ReactNode }) => (
 // 8. Book Title with truncation and hover effect
 export const BookTitleText = ({ children, title }: { children: React.ReactNode, title?: string }) => (
   <Text 
-    variant="body" 
+    variant="subheading" 
     weight="black" 
-    className="text-sm line-clamp-1 group-hover:text-primary transition-colors block" 
+    className="line-clamp-1 group-hover:text-primary transition-colors block" 
     title={title}
   >
     {children}

@@ -2,6 +2,7 @@
 
 import { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Text } from "@/components/ui/Text";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { DESIGN } from "@/config/design-system";
@@ -52,7 +53,7 @@ export function EmptyState({
       </div>
       
       <div className="space-y-1">
-        <h3 className="text-sm md:text-base font-bold tracking-tight text-slate-600">{title}</h3>
+        <Text variant="subheading" weight="black" className="tracking-tight">{title}</Text>
         <p className="text-[10px] md:text-[11px] font-medium text-muted-foreground/40 italic max-w-[200px] mx-auto leading-relaxed">
           {description}
         </p>

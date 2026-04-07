@@ -10,6 +10,7 @@ import {
 } from "./DropdownMenu";
 import { Button } from "./Button";
 import { Text } from "./Text";
+import { IconWrapper, AppIconName } from "./IconWrapper";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,7 +18,7 @@ import { cn } from "@/lib/utils";
  */
 export interface ActionMenuItem {
   label: string;
-  icon?: LucideIcon;
+  icon?: AppIconName;
   onClick: () => void;
   variant?: "default" | "danger";
   disabled?: boolean;
@@ -25,7 +26,7 @@ export interface ActionMenuItem {
 
 interface ActionMenuProps {
   items: ActionMenuItem[];
-  triggerIcon?: LucideIcon;
+  triggerIcon?: AppIconName | LucideIcon;
   triggerVariant?: "ghost" | "secondary" | "outline";
   align?: "start" | "end" | "center";
   className?: string;
@@ -37,7 +38,7 @@ interface ActionMenuProps {
  */
 export function ActionMenu({ 
   items, 
-  triggerIcon: TriggerIcon = MoreVertical,
+  triggerIcon,
   triggerVariant = "ghost",
   align = "end",
   className 
@@ -51,12 +52,17 @@ export function ActionMenu({
           rounded="xl" 
           className={cn("shrink-0", className)}
         >
-          <TriggerIcon size={18} />
+          {typeof triggerIcon === 'string' ? (
+            <IconWrapper icon={triggerIcon} size="xs" isGhost />
+          ) : triggerIcon ? (
+            React.createElement(triggerIcon as LucideIcon, { size: 18 })
+          ) : (
+            <IconWrapper icon="more" size="xs" isGhost />
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="min-w-[160px]">
+      <DropdownMenuContent align={align} width="auto" className="min-w-[200px]">
         {items.map((item, index) => {
-          const Icon = item.icon;
           const isDanger = item.variant === "danger";
 
           return (
@@ -68,18 +74,19 @@ export function ActionMenu({
                 isDanger && "text-destructive focus:text-destructive focus:bg-destructive-foreground/5"
               )}
             >
-              {Icon && (
-                <Icon 
-                  size={16} 
-                  className={cn(
-                    "mr-2",
-                    isDanger ? "text-destructive" : "text-muted-foreground"
-                  )} 
+              {item.icon && (
+                <IconWrapper 
+                  icon={item.icon} 
+                  size="xs" 
+                  isGhost 
+                  color={isDanger ? "destructive" : "primary"}
+                  className="mr-2"
                 />
               )}
               <Text 
-                variant="body" 
+                variant="subheading" 
                 weight="medium"
+                whiteSpace="nowrap"
                 className={cn(isDanger && "text-destructive")}
               >
                 {item.label}

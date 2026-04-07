@@ -16,6 +16,7 @@ import {
   DropdownMenuItem 
 } from "@/components/ui/DropdownMenu";
 import { Button } from "@/components/ui/Button";
+import { UnifiedSearch } from "@/components/ui/UnifiedSearch";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreadItem } from "./ThreadItem";
 import { Locale } from "date-fns";
@@ -112,15 +113,37 @@ export function ThreadSidebar({
             active={activeTab === 'inbox'}
             onClick={() => setActiveTab('inbox')}
           >
-            <IconWrapper icon="mail" size="xs" isGhost />
-            {t("tab_inbox")}
+            <IconWrapper 
+              icon="message" 
+              size="sm" 
+              isGhost 
+              color={activeTab === 'inbox' ? "white" : undefined} 
+            />
+            <Text 
+              variant="subheading" 
+              weight="bold" 
+              color={activeTab === 'inbox' ? "white" : "black"}
+            >
+              {t("tab_inbox")}
+            </Text>
           </PillItem>
           <PillItem 
             active={activeTab === 'compose'}
             onClick={() => setActiveTab('compose')}
           >
-            <IconWrapper icon="plus" size="xs" isGhost />
-            {t("tab_compose")}
+            <IconWrapper 
+              icon="plus" 
+              size="sm" 
+              isGhost 
+              color={activeTab === 'compose' ? "white" : undefined} 
+            />
+            <Text 
+              variant="subheading" 
+              weight="bold" 
+              color={activeTab === 'compose' ? "white" : "black"}
+            >
+              {t("tab_compose")}
+            </Text>
           </PillItem>
         </PillGroup>
       </Box>
@@ -133,9 +156,9 @@ export function ThreadSidebar({
                 <Box flex="1">
                   <Inline spacing="md" align="center">
                     <AvatarIcon background="primary" color="white">
-                      <IconWrapper icon="mail" size="sm" isGhost color="white" />
+                      <IconWrapper icon="message" size="sm" isGhost color="white" />
                     </AvatarIcon>
-                    <Text variant="heading" weight="bold" color="black">
+                    <Text variant="heading" weight="bold">
                       {t("inbox_title")}
                     </Text>
                   </Inline>
@@ -157,23 +180,13 @@ export function ThreadSidebar({
               </Inline>
             ) : (
               <Inline key="search" spacing="sm" width="full" align="center">
-                <Box flex="1">
-                  <Input 
-                    autoFocus
-                    value={inboxSearchQuery}
-                    onChange={(e) => setInboxSearchQuery(e.target.value)}
-                    placeholder={t("type_message_placeholder")} 
-                  />
-                </Box>
-                <Box 
-                  asChild 
-                  cursor="pointer"
-                  onClick={() => { setShowInboxSearch(false); setInboxSearchQuery(""); }}
-                >
-                  <Button variant="ghost" size="icon" rounded="xl">
-                    <IconWrapper icon="close" size="sm" isGhost />
-                  </Button>
-                </Box>
+                <UnifiedSearch 
+                  autoFocus
+                  value={inboxSearchQuery}
+                  onChange={setInboxSearchQuery}
+                  placeholder={t("type_message_placeholder")}
+                  onClear={() => { setShowInboxSearch(false); setInboxSearchQuery(""); }}
+                />
               </Inline>
             )}
           </AnimatePresence>
@@ -195,7 +208,7 @@ export function ThreadSidebar({
                 padding="xl" 
                 opacity="50"
               >
-                <IconWrapper icon="mail" size="lg" isGhost opacity="40" />
+                <IconWrapper icon="message" size="lg" isGhost opacity="40" />
                 <Text weight="bold" variant="label-strong">
                   {t("no_messages")}
                 </Text>

@@ -2,7 +2,7 @@ import * as React from "react";
 import { 
   Hash, Calendar, Building2, BookOpen, Clock, Check, AlertCircle, X, ChevronRight, ArrowUpRight, Search, Bookmark,
   Shield, Send, Paperclip, MessageSquare, FileText, Trash2, MoreVertical, ArrowLeft, ChevronLeft, Mail, Download, CheckCheck, Bell, Plus, Loader2, Layers, User, RotateCcw,
-  History, CheckCircle2, ArrowRight, Sparkles
+  History, CheckCircle2, ArrowRight, Sparkles, Image
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,7 @@ export const ICON_REGISTRY = {
   paperclip: Paperclip,
   message: MessageSquare,
   "file-text": FileText,
+  image: Image,
   trash: Trash2,
   more: MoreVertical,
   "arrow-left": ArrowLeft,
@@ -61,7 +62,7 @@ interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: AppIconName;
   preset?: IconPreset;
   isGhost?: boolean;
-  opacity?: "20" | "40" | "50" | "60" | "100";
+  opacity?: "20" | "40" | "50" | "60" | "90" | "100";
   color?: "emerald" | "amber" | "destructive" | "primary" | "white";
 }
 

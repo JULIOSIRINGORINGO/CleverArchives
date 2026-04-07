@@ -40,8 +40,8 @@ interface TextProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const variantStyles: Record<TextVariant, string> = {
-  heading: "text-lg",
-  subheading: "text-sm",
+  heading: "text-lg text-black",
+  subheading: "text-sm text-black",
   body: "text-base",
   "body-strong": "text-base",
   caption: "text-[10px]",
@@ -104,6 +104,7 @@ const defaultTag: Record<TextVariant, TextProps["as"]> = {
   "list-title": "h4",
   "list-subtitle": "p",
   "list-metadata": "span",
+  "label-xs": "span",
   muted: "span",
 };
 

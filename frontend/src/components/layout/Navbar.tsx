@@ -127,7 +127,8 @@ const Navbar = () => {
 
   const activeItem = menuGroups.flatMap(g => g.items).find(item => {
     const fullHref = `/${locale}${item.href}`;
-    return pathname === fullHref || (item.subItems && (pathname === fullHref || pathname.startsWith(`${fullHref}/`)));
+    const isSubActive = item.subItems?.some(sub => pathname === `/${locale}${sub.href}`);
+    return pathname === fullHref || isSubActive || (item.subItems && pathname.startsWith(`${fullHref}/`));
   });
 
   const activeSubItem = activeItem?.subItems?.find(sub => pathname === `/${locale}${sub.href}`);
@@ -191,7 +192,7 @@ const Navbar = () => {
           </SegmentButton>
           
           {/* Theme Divider - Standardized visual break */}
-          <Box width="px" height="6" background="muted-soft" opacity="40" marginX="xs" />
+          <Box width="px" height="6" background="muted-soft" opacity="40" marginLeft="xs" marginRight="xs" />
           
           <SegmentButton 
             isActive={false} 

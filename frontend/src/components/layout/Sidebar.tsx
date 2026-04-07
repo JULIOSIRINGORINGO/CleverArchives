@@ -274,7 +274,8 @@ const Sidebar = () => {
             <Stack spacing="xs">
               {group.items.map((item: any) => {
                 const fullHref = `/${locale}${item.href}`;
-                const isActive = pathname === fullHref || (item.subItems && (pathname === fullHref || pathname.startsWith(`${fullHref}/`)));
+                const isSubActive = item.subItems?.some((sub: any) => pathname === `/${locale}${sub.href}`);
+                const isActive = pathname === fullHref || isSubActive || (item.subItems && pathname.startsWith(`${fullHref}/`));
                 
                 return (
                   <Stack key={item.href} spacing="xs">

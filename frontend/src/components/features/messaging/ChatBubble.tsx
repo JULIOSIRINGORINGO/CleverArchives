@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { Box } from "@/components/ui/Box";
 import { Inline } from "@/components/ui/Inline";
 import { Text as UIText } from "@/components/ui/Text";
-import { BubbleContainer, BubblePaper } from "./_components/MessagingAesthetics";
+import { BubbleContainer, BubblePaper, AttachmentItem } from "./_components/MessagingAesthetics";
 
 interface ChatBubbleProps {
   message: {
@@ -17,6 +17,7 @@ interface ChatBubbleProps {
     body: string;
     created_at: string;
     sender_id: number | string;
+    attachments?: any[];
   };
   currentUserId: number | string;
   isOptimistic?: boolean;
@@ -65,6 +66,16 @@ export function ChatBubble({
               </UIText>
             </Box>
           </Inline>
+          
+          {message.attachments && message.attachments.length > 0 && (
+            <Box marginTop="xs" width="full">
+              <Stack spacing="xs">
+                {message.attachments.map((file: any) => (
+                  <AttachmentItem key={file.id} file={file} isMe={isMe} />
+                ))}
+              </Stack>
+            </Box>
+          )}
         </motion.div>
       </BubblePaper>
     </BubbleContainer>
