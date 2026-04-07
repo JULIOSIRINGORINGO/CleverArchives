@@ -1,76 +1,64 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { Book } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { Book, Play, Download } from "lucide-react";
 
-// UI Primitives & Components
+// UI Primitives & Global Components
 import { UnifiedFilterBar } from "@/components/ui/UnifiedFilterBar";
 import { FilterDropdown } from "@/components/ui/FilterDropdown";
 import { EmptyState } from "@/components/ui/EmptyState";
-
-// UI Feature Components (Modular)
-import { EbookCardSkeleton } from "@/components/books/EbookCardSkeleton";
-import { BookListStack } from "@/components/books/BookListStack";
-import { EbookGridCard } from "@/components/books/EbookGridCard";
-import { EbookListRow } from "@/components/books/EbookListRow";
-
-// Layout & Framework
 import { DashboardPage } from "@/components/layout/DashboardPage";
-import { DashboardSection } from "@/components/layout/DashboardSection";
-import { apiService } from "@/services/api";
-import { useTranslations, useLocale } from "next-intl";
-import { useFilteredEbooks, type Ebook, type Category } from "./ebook-utils";
+import { BookListStack } from "@/components/books/BookListStack";
+import { Inline } from "@/components/ui/Inline";
+import { Button } from "@/components/ui/Button";
+
+// Feature UI Components
+import { EbookCardSkeleton } from "@/components/books/EbookCardSkeleton";
+import { EbookGridCard } from "@/components/books/EbookGridCard";
+import { BookListCard } from "@/components/books/BookListCard";
+import { FileText } from "lucide-react";
+
+// SOP 5.6.0 Isolated Tiers & Utils
+import { useEbookData } from "@/hooks/useEbookData";
+import { EbookMainSection, EbookGrid } from "./_components/EbookAesthetics";
+import { formatSize } from "@/lib/utils";
 
 // --- Configuration ---
-
-const EBOOK_UX_PAGE = {
+const EBOOK_UX = {
   GRID_LOADER_COUNT: 12,
 } as const;
 
-// --- Main Page ---
-
+/**
+ * EbooksPage - The Lean Orchestrator (Orkestrator Ramping).
+ * Zero ClassName in main return.
+ * Logic delegated to useEbookData.
+ * Aesthetics isolated in Level 2 / _components.
+ */
 export default function EbooksPage() {
   const t = useTranslations("EbookLibrary");
   const locale = useLocale();
-  const router = useRouter();
 
-  const [ebooks, setEbooks] = useState<Ebook[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<'standard' | 'compact'>('standard');
+  // 1. Consumption Tier: No Logic, No State, No Direct API.
+  const {
+    ebooks,
+    loading,
+    search,
+    setSearch,
+    filter,
+    setFilter,
+    viewMode,
+    setViewMode,
+    topCategories,
+    restCategories,
+    handleRead,
+    handleResetSearch
+  } = useEbookData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [eRes, cRes] = await Promise.all([apiService.ebooks.list(), apiService.categories.list()]);
-        setEbooks(Array.isArray(eRes) ? eRes : []);
-        setCategories(cRes?.data || cRes || []);
-      } catch (err) {
-        console.error("Library Load Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  const { filtered, top: rawTop, rest: rawRest } = useFilteredEbooks(ebooks, search, filter, categories);
-
-  const top = useMemo(() => rawTop.map(c => ({ id: String(c.id), label: c.name })), [rawTop]);
-  const rest = useMemo(() => rawRest.map(c => ({ id: String(c.id), label: c.name })), [rawRest]);
-
-  const filterConfigs = useMemo(() => [
+  // 2. Local Config (Prop mapping only)
+  const filterOptions = [
     { id: 'all', label: t("all") },
-    ...top
-  ], [top, t]);
-
-  const onRead = useCallback((id: number) => {
-    router.push(`/${locale}/ebooks/${id}/viewer`);
-  }, [locale, router]);
+    ...topCategories
+  ];
 
   return (
     <DashboardPage
@@ -80,14 +68,14 @@ export default function EbooksPage() {
           onSearchChange={setSearch}
           searchPlaceholder={t("search_placeholder")}
           isLoading={loading}
-          filterOptions={filterConfigs}
+          filterOptions={filterOptions}
           activeFilter={filter}
           onFilterChange={setFilter}
           viewMode={viewMode}
           onViewChange={setViewMode}
           extraFilters={
             <FilterDropdown
-              options={rest}
+              options={restCategories}
               activeId={filter}
               onSelect={setFilter}
               defaultLabel={locale === 'id' ? "Kategori Lain" : "Other Categories"}
@@ -96,34 +84,73 @@ export default function EbooksPage() {
         />
       }
     >
-      <DashboardSection layout="full" spaced className="pt-6">
+      <EbookMainSection>
         {loading ? (
-          <DashboardSection layout="book-grid">
-            {Array.from({ length: EBOOK_UX_PAGE.GRID_LOADER_COUNT }).map((_, i) => (
+          <EbookGrid>
+            {Array.from({ length: EBOOK_UX.GRID_LOADER_COUNT }).map((_, i) => (
               <EbookCardSkeleton key={i} />
             ))}
-          </DashboardSection>
-        ) : !filtered.length ? (
+          </EbookGrid>
+        ) : ebooks.length === 0 ? (
           <EmptyState
             icon={Book}
             title={t("no_ebooks")}
             description={t("no_ebooks_subtitle")}
-            action={search ? { label: t("reset"), onClick: () => setSearch("") } : undefined}
+            action={search ? { label: t("reset"), onClick: handleResetSearch } : undefined}
           />
         ) : viewMode === 'standard' ? (
-          <DashboardSection layout="book-grid">
-            {filtered.map(e => (
-              <EbookGridCard key={e.id} ebook={e} onRead={() => onRead(e.id)} />
+          <EbookGrid>
+            {ebooks.map(e => (
+              <EbookGridCard key={e.id} ebook={e} onRead={() => handleRead(e.id)} />
             ))}
-          </DashboardSection>
+          </EbookGrid>
         ) : (
           <BookListStack>
-            {filtered.map(e => (
-              <EbookListRow key={e.id} ebook={e} onRead={() => onRead(e.id)} />
+            {ebooks.map(e => (
+              <BookListCard
+                key={e.id}
+                coverUrl={e.book?.cover_url}
+                title={e.book?.title || ""}
+                author={e.book?.author?.name || t("unknown_author")}
+                status={e.file_format}
+                isCompact={viewMode === 'compact'}
+                metadata={[
+                  { 
+                    label: t("size"), 
+                    value: formatSize(e.file_size), 
+                    icon: 'FileText' as any 
+                  }
+                ]}
+                action={
+                  <Inline spacing="sm">
+                    <Button 
+                      variant="glow" 
+                      size="sm" 
+                      rounded="lg" 
+                      onClick={() => handleRead(e.id)} 
+                      aria-label={t("read_now")}
+                    >
+                      <Inline spacing="xs">
+                        <Play size={12} className="fill-current" /> {t("read") || "Read"}
+                      </Inline>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      rounded="lg" 
+                      className="w-9 p-0" 
+                      aria-label="Download ebook"
+                      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                    >
+                      <Download size={12} />
+                    </Button>
+                  </Inline>
+                }
+              />
             ))}
           </BookListStack>
         )}
-      </DashboardSection>
+      </EbookMainSection>
     </DashboardPage>
   );
 }

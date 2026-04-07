@@ -6,16 +6,11 @@ import { Box } from "@/components/ui/Box";
 import { Inline } from "@/components/ui/Inline";
 import { Stack } from "@/components/ui/Stack";
 import { AlertCard } from "@/components/ui/AlertCard";
-import { 
-  SearchAesthetics, 
-  ConfirmationAesthetics 
+import {
+  SearchAesthetics,
+  ConfirmationAesthetics
 } from "./CartAesthetics";
 
-/**
- * LEVEL 2: THE CONTROLLER (Main Layout Orchestration)
- * Manages the split-panel layout, alerts, and height distribution.
- * All logic passed from page.tsx (Level 1).
- */
 export default function CartMainView({
   searchProps,
   confirmationProps,
@@ -24,11 +19,11 @@ export default function CartMainView({
   return (
     <Box padding="none" flex="1" display="flex" direction="col">
       <Inline spacing="lg" align="stretch" maxWidth="full" flex="1">
-        
+
         {/* PANEL 1: LEFT COLUMN (Search & Alerts) */}
         <Box flex="1" display="flex" direction="col" className="min-w-[320px]">
           <Stack spacing="lg" flex="1">
-            
+
             {/* Search results take available space */}
             <Box flex="1" minHeight="0" display="flex" direction="col">
               <SearchAesthetics {...searchProps} />
