@@ -5,15 +5,11 @@ import { DashboardSection } from "@/components/layout/DashboardSection";
 
 /**
  * EbookMainSection - Level 2 Aesthetic Wrapper.
- * Encapsulates feature-specific spacing (pt-6) to ensure 
+ * Encapsulates feature-specific spacing to ensure 
  * the main orchestrator remains Zero ClassName.
  */
 export const EbookMainSection = ({ children }: { children: React.ReactNode }) => (
-  <DashboardSection 
-    layout="full" 
-    spaced 
-    className="pt-6" // Encapsulated here
-  >
+  <DashboardSection>
     {children}
   </DashboardSection>
 );

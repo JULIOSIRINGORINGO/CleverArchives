@@ -1,6 +1,5 @@
 import React from "react";
-import { TrendingUp } from "lucide-react";
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
+import dynamic from "next/dynamic";
 import { PanelSectionHeader } from "@/components/ui/PanelSectionHeader";
 import { SegmentedControl, SegmentOption } from "@/components/ui/SegmentedControl";
 import { 
@@ -8,11 +7,15 @@ import {
   ChartHeaderBox, 
   ChartSubtitle, 
   ChartBodyBox, 
-  ChartTooltipRoot, 
-  ChartGradientDef 
 } from "./_components/ChartCardAesthetics";
 import { Box } from "@/components/ui/Box";
-import { Text } from "@/components/ui/Text";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+// Dynamic import for recharts to reduce main bundle size
+const DynamicChartWrapper = dynamic(() => import("./_components/DynamicChartWrapper"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-full rounded-lg" />
+});
 
 interface ChartCardProps {
   title: string;
@@ -30,6 +33,7 @@ interface ChartCardProps {
 /**
  * ChartCard — Area chart card with optional segmented time-range control.
  * Strictly follows SOP v5.6.0 with isolated aesthetics and Zero ClassName.
+ * Updated: Uses dynamic import for recharts to maintain "local app" performance.
  */
 export function ChartCard({
   title,
@@ -41,8 +45,6 @@ export function ChartCard({
   activeSegment,
   onSegmentChange,
 }: ChartCardProps) {
-  const GRADIENT_ID = "clever-reading-activity-gradient";
-
   return (
     <ChartCardRoot>
       <ChartHeaderBox>
@@ -63,46 +65,7 @@ export function ChartCard({
       </ChartHeaderBox>
 
       <ChartBodyBox>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-            <ChartGradientDef id={GRADIENT_ID} />
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fontWeight: 700, fill: '#64748B' }}
-              dy={10}
-            />
-            <YAxis hide />
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  return (
-                    <ChartTooltipRoot>
-                      <Box className="text-primary">
-                        <TrendingUp size={16} />
-                      </Box>
-                      <Text variant="caption" weight="black" color="black">
-                        {payload[0].value} {unitLabel}
-                      </Text>
-                    </ChartTooltipRoot>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="count"
-              stroke="#2563EB"
-              strokeWidth={4}
-              fillOpacity={1}
-              fill={`url(#${GRADIENT_ID})`}
-              animationDuration={2000}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <DynamicChartWrapper data={data} unitLabel={unitLabel} />
       </ChartBodyBox>
     </ChartCardRoot>
   );

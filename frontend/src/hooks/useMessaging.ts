@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { apiService } from "@/services/api";
 import useSWR from "swr";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,16 +47,20 @@ export function useMessaging() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastSync, setLastSync] = useState<string | null>(null);
+  const lastSyncRef = useRef<string | null>(null);
   const [isPollingPaused, setIsPollingPaused] = useState(false);
 
-  // useSWR for real-time polling
+  // useSWR for real-time polling — STABLE KEY to prevent infinite loops
   const { mutate } = useSWR(
-    !isPollingPaused ? ['/messaging/sync', lastSync] : null,
-    () => apiService.messages.list(lastSync ? { updated_after: lastSync } : {}),
+    !isPollingPaused ? '/messaging/sync' : null,
+    () => {
+      const currentSync = lastSyncRef.current;
+      return apiService.messages.list(currentSync ? { updated_after: currentSync } : {});
+    },
     {
       refreshInterval: 5000,
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
       onSuccess: (data) => {
         if (data?.messages?.length > 0) {
           setMessages(prev => {
@@ -68,7 +72,7 @@ export function useMessaging() {
             });
             return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           });
-          setLastSync(new Date().toISOString());
+          lastSyncRef.current = new Date().toISOString();
         }
         setLoading(false);
       }

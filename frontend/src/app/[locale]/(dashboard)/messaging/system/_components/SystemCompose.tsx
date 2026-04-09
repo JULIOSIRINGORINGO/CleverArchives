@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 import { MessageSquare, Send, Paperclip, FileText, X } from "lucide-react";
 
@@ -14,15 +14,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Label } from "@/components/ui/Label";
-import { WorkspacePanel, WorkspacePanelContent } from "@/components/ui/WorkspacePanel";
+import { WorkspacePanelContent } from "@/components/ui/WorkspacePanel";
 import { IconWrapper } from "@/components/ui/IconWrapper";
 
 // Aesthetic Tier
 import { 
-  SystemSectionHeader, 
-  SystemSuccessToast, 
-  SystemFieldWrapper, 
-  SystemAvatarIcon
+  SystemSuccessToast
 } from "./SystemAesthetics";
 import { UploadDropzone } from "@/components/features/messaging/_components/MessagingAesthetics";
 
@@ -30,6 +27,63 @@ interface SystemComposeProps {
   submitting: boolean;
   onSendMessage: (formData: FormData) => Promise<boolean>;
 }
+
+/**
+ * Level 3: Local Aesthetic Wrappers
+ * Strictly isolating complex layout and one-off styling.
+ */
+const IconInputWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Box position="relative">
+    <Box 
+      position="absolute" 
+      zIndex="10" 
+      opacity="40"
+      className="left-3 top-1/2 -translate-y-1/2"
+    >
+      <IconWrapper icon="file-text" size="xs" isGhost />
+    </Box>
+    {children}
+  </Box>
+);
+
+const ComposeTextarea = (props: any) => (
+  <Textarea
+    {...props}
+    rounded="2xl"
+    border="subtle"
+    background="surface-soft"
+    padding="md"
+    className="flex-1 resize-none min-h-[220px]"
+  />
+);
+
+const ComposeSubmitButton = ({ children, submitting }: { children: React.ReactNode, submitting: boolean }) => (
+  <Button
+    type="submit"
+    disabled={submitting}
+    rounded="xl"
+    size="lg"
+    variant="primary"
+    fullWidth
+    className="py-5"
+  >
+    {children}
+  </Button>
+);
+
+const InfoFooter = ({ translations: t }: { translations: any }) => (
+  <Stack spacing="none" opacity="40">
+    <Inline spacing="xs" justify="center" align="center">
+      <IconWrapper icon="shield" size="xs" isGhost />
+      <Text variant="caption" color="muted">Informasi Layanan</Text>
+    </Inline>
+    <Box paddingX="lg">
+      <Text variant="caption" weight="medium" color="muted" textAlign="center">
+        {t("info_footer") || "Gunakan fitur ini untuk komunikasi formal terkait teknis platform."}
+      </Text>
+    </Box>
+  </Stack>
+);
 
 export function SystemCompose({ submitting, onSendMessage }: SystemComposeProps) {
   const t = useTranslations("SystemHub");
@@ -60,14 +114,10 @@ export function SystemCompose({ submitting, onSendMessage }: SystemComposeProps)
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setAttachments([...attachments, ...Array.from(e.target.files)]);
     }
-  };
-
-  const removeAttachment = (index: number) => {
-    setAttachments(attachments.filter((_, i) => i !== index));
   };
 
   return (
@@ -82,43 +132,45 @@ export function SystemCompose({ submitting, onSendMessage }: SystemComposeProps)
                 <Text variant="subheading">
                   Judul Masalah
                 </Text>
-                <Box position="relative">
-                  <Box className="absolute left-3 top-1/2 -translate-y-1/2 z-10" opacity="40">
-                    <IconWrapper icon="file-text" size="xs" isGhost />
-                  </Box>
+                <IconInputWrapper>
                   <Input 
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Contoh: Kendala Login..." 
                     rounded="xl" 
-                    className="pl-10 bg-surface"
+                    className="pl-10 bg-background"
                     required
                   />
-                </Box>
+                </IconInputWrapper>
               </Stack>
 
               <Stack spacing="sm" flex="1">
                 <Text variant="subheading">
                   Lampiran (Opsional)
                 </Text>
-                <Label asChild className="flex-1 cursor-pointer">
-                  <UploadDropzone className="h-full flex flex-col items-center justify-center border-dashed">
-                    <Box marginBottom="xs" opacity="40">
-                      <IconWrapper icon="paperclip" isGhost size="sm" />
-                    </Box>
-                    <Text variant="subheading" color="black" textAlign="center">
-                      {attachments.length > 0 
-                        ? t("files_selected", { count: attachments.length }) 
-                        : "Klik Pilih File"}
-                    </Text>
-                    <Input 
-                      type="file" 
-                      multiple 
-                      isHidden 
-                      ref={fileInputRef}
-                      onChange={handleFileChange} 
-                    />
-                  </UploadDropzone>
+                <Label asChild>
+                  <Box flex="1" cursor="pointer">
+                    <UploadDropzone 
+                      border="dashed"
+                      className="h-full flex flex-col items-center justify-center"
+                    >
+                      <Box marginBottom="xs" opacity="40">
+                        <IconWrapper icon="paperclip" isGhost size="sm" />
+                      </Box>
+                      <Text variant="subheading" color="black" textAlign="center">
+                        {attachments.length > 0 
+                          ? t("files_selected", { count: attachments.length }) 
+                          : "Klik Pilih File"}
+                      </Text>
+                      <Input 
+                        type="file" 
+                        multiple 
+                        isHidden 
+                        ref={fileInputRef}
+                        onChange={handleFileChange} 
+                      />
+                    </UploadDropzone>
+                  </Box>
                 </Label>
               </Stack>
             </Box>
@@ -129,42 +181,25 @@ export function SystemCompose({ submitting, onSendMessage }: SystemComposeProps)
                 <Text variant="subheading">
                   Detail Masalah / Saran
                 </Text>
-                <Textarea
+                <ComposeTextarea
                   value={body}
-                  onChange={(e) => setBody(e.target.value)}
+                  onChange={(e: any) => setBody(e.target.value)}
                   placeholder="Jelaskan kendala Anda secara rinci..."
                   required
-                  className="flex-1 resize-none rounded-2xl border-subtle bg-surface-soft p-4 min-h-[220px]"
                 />
               </Stack>
 
               <Stack spacing="sm" marginTop="auto">
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  rounded="xl"
-                  size="lg"
-                  variant="primary"
-                  fullWidth
-                  className="py-5"
-                >
+                <ComposeSubmitButton submitting={submitting}>
                   <Inline spacing="sm" justify="center" align="center" width="full">
                     <IconWrapper icon="send" size="xs" color="white" isGhost />
                     <Text variant="subheading" color="white">
                       {submitting ? t("sending") : "Kirim Bantuan"}
                     </Text>
                   </Inline>
-                </Button>
+                </ComposeSubmitButton>
 
-                <Stack spacing="none" opacity="40">
-                  <Inline spacing="xs" justify="center" align="center">
-                    <IconWrapper icon="shield" size="xs" isGhost />
-                    <Text variant="caption" color="muted">Informasi Layanan</Text>
-                  </Inline>
-                  <Text variant="caption" weight="medium" color="muted" className="text-center px-4">
-                    {t("info_footer") || "Gunakan fitur ini untuk komunikasi formal terkait teknis platform."}
-                  </Text>
-                </Stack>
+                <InfoFooter translations={t} />
               </Stack>
             </Box>
           </Box>

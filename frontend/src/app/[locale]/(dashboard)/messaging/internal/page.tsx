@@ -22,14 +22,8 @@ export default function InternalMessagingPage() {
   } = useMessagingData();
 
   return (
-    <DashboardPage
-      noPadding
-      hideScroll
-      hideHeader
-      title={t("page_title")}
-      icon={<IconWrapper icon="message" size="sm" isGhost color="primary" />}
-    >
-      <Box height="full" display="flex" direction="row" spacing="md" background="surface-soft" padding="sm">
+    <DashboardPage hideScroll={true} hideHeader={true}>
+      <Box height="full" display="flex" direction="row" spacing="md" background="surface-soft">
         {/* Sidebar Section */}
         <Box height="full" display="flex" direction="col" width="full" mdWidth="80" flexShrink="0">
           <ThreadSidebar

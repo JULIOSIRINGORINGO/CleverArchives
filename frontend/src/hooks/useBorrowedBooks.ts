@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
+import useSWR from "swr";
 import { useTranslations } from "next-intl";
 import { apiService } from "@/services/api";
 import { useToast } from "@/components/ui/Toast";
@@ -14,17 +15,35 @@ export const BORROW_STATUS = {
 
 /**
  * useBorrowedBooks - Domain-Specific Hook for Member Borrowings.
- * Encapsulates: Logic (onReturn), Lifecycle (useEffect), and Persistence (localStorage).
+ * 
+ * MIGRATED to SWR for automatic request deduplication.
+ * This prevents the "Request Storm" where the GlobalDataPrefetcher
+ * and this hook both fire separate requests to the same endpoint.
+ * 
+ * SWR Key: '/borrowings'
+ * Deduplication: 30s window — identical requests within 30s are merged.
  */
 export function useBorrowedBooks() {
   const t = useTranslations("Borrowed");
   const { toast } = useToast();
   
-  const [loading, setLoading] = useState(true);
-  const [borrowingsData, setBorrowingsData] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "pending" | "overdue">("all");
-  const [viewMode, setInnerViewMode] = useState<'standard' | 'compact'>('compact');
+  const [viewMode, setInnerViewMode] = useState<'standard' | 'compact'>(() => {
+    if (typeof window === 'undefined') return 'compact';
+    const stored = localStorage.getItem('v');
+    return (stored === 'standard' || stored === 'compact') ? stored : 'compact';
+  });
+
+  // SWR Fetch — Deduplicated, cached, and shared across components
+  const { data: borrowingsData, isLoading: loading, mutate } = useSWR(
+    '/borrowings',
+    () => apiService.borrowings.list(),
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000, // 30s — prevent duplicate requests
+    }
+  );
 
   // Persistence Tier
   const setViewMode = useCallback((mode: 'standard' | 'compact') => {
@@ -33,36 +52,15 @@ export function useBorrowedBooks() {
   }, []);
 
   // Logic Tier: API Actions
-  const fetch = useCallback(async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
-    try {
-      const data = await apiService.borrowings.list();
-      setBorrowingsData(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   const handleReturn = useCallback(async (id: string) => {
     try {
       await apiService.borrowings.requestReturn(id);
       toast(t("returnSuccess"), "success");
-      fetch(true); // Silent refresh
+      mutate(); // SWR revalidation — no manual setState needed
     } catch (e: any) {
       toast(e.message || "Failed to request return", "error");
     }
-  }, [fetch, t, toast]);
-
-  // Lifecycle Tier
-  useEffect(() => {
-    fetch();
-    const stored = localStorage.getItem('v');
-    if (stored === 'standard' || stored === 'compact') {
-      setInnerViewMode(stored);
-    }
-  }, [fetch]);
+  }, [mutate, t, toast]);
 
   // Data Extraction Tier (Safe Array Extraction)
   const borrowings = useMemo(() => {
@@ -83,7 +81,6 @@ export function useBorrowedBooks() {
 
       if (filter === "all") return matchesSearch;
       
-      // Categorization Logic:
       // PENDING/TERJADWAL: Includes initial requests and return requests
       if (filter === "pending") {
         const isScheduled = matchesSearch && (
@@ -143,7 +140,7 @@ export function useBorrowedBooks() {
     viewMode,
     setViewMode,
     groups,
-    fetch,
+    fetch: () => mutate(), // Compatible API — now triggers SWR revalidation
     handleReturn
   };
 }

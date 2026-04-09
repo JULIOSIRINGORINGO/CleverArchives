@@ -104,7 +104,7 @@ export default function MemberDetailPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
+    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-150 pb-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="flex items-center gap-3">

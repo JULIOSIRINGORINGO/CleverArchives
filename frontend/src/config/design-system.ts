@@ -16,7 +16,7 @@ export const DESIGN = {
 
   // --- COMPACT ADAPTIVE SPACING ---
   SPACE: {
-    PAGE_PAD: "p-3 md:p-5 lg:p-6",
+    PAGE_PAD: "px-6 py-5",
     PANEL_GAP: "gap-3 md:gap-5",
     ITEM_GAP: "gap-2 md:gap-3 flex flex-col",
     INNER_PAD: "p-3 md:p-5",

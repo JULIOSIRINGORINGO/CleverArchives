@@ -17,7 +17,8 @@ class ApplicationController < ActionController::API
     if token
       begin
         decoded = JWT.decode(token, Rails.application.secret_key_base).first
-        @current_user = User.find(decoded['user_id'])
+        # Optimization: Preload role and tenant to avoid N+1 queries in BaseController and tenant setup
+        @current_user = User.includes(:role, :tenant).find(decoded['user_id'])
       rescue JWT::DecodeError, ActiveRecord::RecordNotFound
         render json: { error: 'Unauthorized' }, status: :unauthorized
       end
@@ -33,6 +34,12 @@ class ApplicationController < ActionController::API
   def set_current_tenant
     # System owners operate globally — no tenant required
     return if current_user&.system_owner?
+
+    # Optimization: If user is already authenticated and has a tenant, use it directly
+    if current_user&.tenant_id
+      Current.tenant = current_user.tenant
+      return
+    end
 
     subdomain = extract_subdomain_from_request
     tenant = if subdomain.present?

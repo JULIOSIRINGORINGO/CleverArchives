@@ -62,7 +62,7 @@ export default function AdminBookListPage() {
   };
 
   return (
-    <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-150">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>

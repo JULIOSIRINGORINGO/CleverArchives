@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+import useSWR from "swr";
 import { apiService } from "@/services/api";
 
 export interface Category {
@@ -33,37 +34,25 @@ export function useEbookData() {
   const router = useRouter();
   const locale = useLocale();
 
-  // 1. Data States
-  const [ebooks, setEbooks] = useState<Ebook[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-
   // 2. Filter & View States
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [viewMode, setViewMode] = useState<'standard' | 'compact'>('standard');
 
-  // 3. Fetching Logic
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [eRes, cRes] = await Promise.all([
-        apiService.ebooks.list(),
-        apiService.categories.list()
-      ]);
-      setEbooks(Array.isArray(eRes) ? eRes : []);
-      // Handle different API response structures for categories
-      setCategories(cRes?.data || cRes || []);
-    } catch (err) {
-      console.error("Ebook Data Load Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // 3. Fetching Logic (Unified with SWR)
+  const { data: ebooksData, isLoading: ebookLoading } = useSWR(
+    '/ebooks',
+    () => apiService.ebooks.list()
+  );
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const { data: categoriesData, isLoading: catLoading } = useSWR(
+    '/categories',
+    () => apiService.categories.list()
+  );
+
+  const ebooks = useMemo(() => Array.isArray(ebooksData) ? ebooksData : [], [ebooksData]);
+  const categories = useMemo(() => categoriesData?.data || categoriesData || [], [categoriesData]);
+  const loading = ebookLoading || catLoading;
 
   // 4. Filtering Logic (Memoized)
   const filtered = useMemo(() => {
@@ -86,8 +75,8 @@ export function useEbookData() {
     const rawRest = categories.slice(3);
 
     return {
-      topCategories: rawTop.map(c => ({ id: String(c.id), label: c.name })),
-      restCategories: rawRest.map(c => ({ id: String(c.id), label: c.name }))
+      topCategories: rawTop.map((c: any) => ({ id: String(c.id), label: c.name })),
+      restCategories: rawRest.map((c: any) => ({ id: String(c.id), label: c.name }))
     };
   }, [categories]);
 
@@ -120,6 +109,6 @@ export function useEbookData() {
     // Actions
     handleRead,
     handleResetSearch,
-    refresh: fetchData
+    refresh: () => {} // Refresh is managed by SWR automatically
   };
 }

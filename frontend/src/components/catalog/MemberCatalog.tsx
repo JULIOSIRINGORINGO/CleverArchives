@@ -53,7 +53,7 @@ export default function MemberCatalog() {
         />
       }
     >
-      <DashboardSection layout="full" spaced>
+      <DashboardSection layout="full">
         {loading ? (
           <CatalogLoading />
         ) : error ? (

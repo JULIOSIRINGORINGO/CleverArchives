@@ -26,7 +26,6 @@ export const PageBody = memo(({
     overflow="hidden"
     background="surface-soft"
     className={cn(
-      DESIGN.SPACE.PAGE_PAD,
       DESIGN.SPACE.PANEL_GAP,
       className
     )}

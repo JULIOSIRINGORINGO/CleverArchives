@@ -198,14 +198,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ─── Update user ─────────────────────────────────────────────────────────
-  const updateUser = (partialUser: Partial<User>) => {
+  const updateUser = useCallback((partialUser: Partial<User>) => {
     setUser(prev => {
       if (!prev) return null;
       const updated = { ...prev, ...partialUser };
       sessionStorage.setItem("user", JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
 
   // ─── Dynamic Favicon ───────────────────────────────────────────────────
   useEffect(() => {

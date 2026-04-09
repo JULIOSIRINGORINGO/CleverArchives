@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { apiService } from "@/services/api";
 import useSWR from "swr";
 import { useTranslations, useLocale } from "next-intl";
@@ -66,6 +66,7 @@ export function useMessagingData() {
   
   const [sendingReply, setSendingReply] = useState(false);
   const [isPollingPaused, setIsPollingPaused] = useState(false);
+  const lastSyncRef = useRef<string | null>(null);
   const [lastSync, setLastSync] = useState<string | null>(null);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -73,25 +74,32 @@ export function useMessagingData() {
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   const { mutate } = useSWR(
-    !isPollingPaused ? ['/internal_messages', lastSync] : null,
-    () => apiService.messages.list(lastSync ? { updated_after: lastSync } : {}),
+    !isPollingPaused ? '/internal_messages' : null,
+    async () => {
+      const currentLastSync = lastSyncRef.current;
+      return apiService.messages.list(currentLastSync ? { updated_after: currentLastSync } : {});
+    },
     {
-      refreshInterval: 5000,
-      revalidateOnFocus: true,
+      refreshInterval: 10000, 
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
       onSuccess: (newData) => {
         if (newData?.messages) {
-          setMessages(prev => {
-            const newMsgs = newData.messages;
-            if (newMsgs.length === 0) return prev;
-            const merged = [...prev];
-            newMsgs.forEach((msg: Message) => {
-              const idx = merged.findIndex(m => m.id === msg.id);
-              if (idx > -1) merged[idx] = msg; 
-              else merged.unshift(msg); 
+          const newMsgs = newData.messages;
+          if (newMsgs.length > 0) {
+            setMessages(prev => {
+              const merged = [...prev];
+              newMsgs.forEach((msg: Message) => {
+                const idx = merged.findIndex(m => m.id === msg.id);
+                if (idx > -1) merged[idx] = msg; 
+                else merged.unshift(msg); 
+              });
+              return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
             });
-            return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-          });
-          setLastSync(new Date().toISOString());
+            const latestTimestamp = new Date().toISOString();
+            lastSyncRef.current = latestTimestamp;
+            setLastSync(latestTimestamp);
+          }
         }
         if (loading) setLoading(false);
       }
@@ -100,9 +108,14 @@ export function useMessagingData() {
 
   const fetchMessages = useCallback(async () => mutate(), [mutate]);
 
+  // Mark messages as read ONCE when entering inbox — not on every re-render
+  const hasMarkedReadRef = useRef(false);
   useEffect(() => { 
-    if (activeTab === 'inbox') markMessagesAsRead();
-  }, [activeTab, markMessagesAsRead]);
+    if (activeTab === 'inbox' && !hasMarkedReadRef.current) {
+      hasMarkedReadRef.current = true;
+      markMessagesAsRead();
+    }
+  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSendReply = async (bodyText: string) => {
     if (!bodyText.trim() || !selectedThread) return;

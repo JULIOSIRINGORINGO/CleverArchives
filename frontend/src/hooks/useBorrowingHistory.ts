@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
+import useSWR from "swr";
 import { apiService } from "@/services/api";
 
 export type HistoryViewMode = 'standard' | 'compact';
@@ -23,43 +24,38 @@ interface Borrowing {
 
 /**
  * useBorrowingHistory - Domain Hook for member borrowing history.
- * Encapsulates Logic, Lifecycle, and Persistence as per SOP v5.6.0.
+ * 
+ * MIGRATED to SWR for automatic request deduplication.
+ * This prevents the "Request Storm" where multiple components
+ * or the GlobalDataPrefetcher trigger duplicate API calls.
+ * 
+ * SWR Key: '/borrowings?status=returned&items=100'
+ * Deduplication: 30s window — identical requests within 30s are merged.
  */
 export function useBorrowingHistory() {
-  const [borrowingsData, setBorrowingsData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<HistoryFilter>('all');
-  const [viewMode, setInnerViewMode] = useState<HistoryViewMode>('compact');
+  const [viewMode, setInnerViewMode] = useState<HistoryViewMode>(() => {
+    if (typeof window === 'undefined') return 'compact';
+    const stored = localStorage.getItem('h_view');
+    return (stored === 'standard' || stored === 'compact') ? stored : 'compact';
+  });
+
+  // SWR Fetch — Deduplicated, cached, and shared across components
+  const { data: borrowingsData, isLoading: loading, mutate } = useSWR(
+    '/borrowings?status=returned&items=100',
+    () => apiService.borrowings.list({ status: 'returned', items: "100" }),
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000, // 30s — prevent duplicate requests
+    }
+  );
 
   // Persistence Tier
   const setViewMode = useCallback((mode: HistoryViewMode) => {
     setInnerViewMode(mode);
     localStorage.setItem('h_view', mode);
   }, []);
-
-  // Logic Tier: API Actions
-  const fetch = useCallback(async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
-    try {
-      // Fetch only returned books for history
-      const res = await apiService.borrowings.list({ status: 'returned', items: "100" });
-      setBorrowingsData(res);
-    } catch (e) {
-      console.error("Failed to fetch borrowing history:", e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Lifecycle Tier
-  useEffect(() => {
-    fetch();
-    const stored = localStorage.getItem('h_view');
-    if (stored === 'standard' || stored === 'compact') {
-      setInnerViewMode(stored);
-    }
-  }, [fetch]);
 
   // Data Extraction Tier (Safe handling of various API response shapes)
   const allBorrowings = useMemo(() => {
@@ -99,6 +95,6 @@ export function useBorrowingHistory() {
     viewMode,
     setViewMode,
     history,
-    refresh: fetch
+    refresh: () => mutate()
   };
 }

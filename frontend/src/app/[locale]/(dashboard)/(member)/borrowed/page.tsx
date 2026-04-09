@@ -96,7 +96,7 @@ export default function BorrowedBooksPage() {
         />
       }
     >
-      <DashboardSection layout="full" spaced>
+      <DashboardSection layout="full">
         <BorrowedGrid>
           <AnimatePresence mode="wait">
             {loading ? (

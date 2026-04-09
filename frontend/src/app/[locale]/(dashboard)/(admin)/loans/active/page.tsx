@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { apiService } from "@/services/api";
 import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
@@ -36,19 +36,20 @@ export default function ActiveLoansPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [lastSync, setLastSync] = useState<string | null>(null);
-
-  // useSWR for active loans
+  const lastSyncRef = useRef<string | null>(null);
+  
+  // useSWR for active loans - Keep key stable to avoid infinite loops
   const { mutate: mutateLoans } = useSWR(
-    ['/loans/active', lastSync, search],
+    ['/loans/active', search],
     () => apiService.borrowings.list({ 
       status: 'borrowed',
-      updated_after: lastSync || '',
+      updated_after: lastSyncRef.current || '',
       q: search 
     }),
     {
       refreshInterval: 10000,
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
       onSuccess: (newData) => {
         const data = newData?.data || newData || [];
         const newItems = Array.isArray(data) ? data : [];
@@ -70,7 +71,7 @@ export default function ActiveLoansPage() {
             });
             return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           });
-          setLastSync(new Date().toISOString());
+          lastSyncRef.current = new Date().toISOString();
         }
         setLoading(false);
       }
@@ -82,7 +83,7 @@ export default function ActiveLoansPage() {
   };
 
   useEffect(() => { 
-    setLastSync(null);
+    lastSyncRef.current = null;
     // No-clear: we leave the old data shown until SWR gets a fresh list for the search.
   }, [search]);
 
@@ -109,7 +110,7 @@ export default function ActiveLoansPage() {
   };
 
   return (
-    <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-150">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>

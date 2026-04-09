@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import useSWR from "swr";
 import { useTranslations } from "next-intl";
 import { apiService } from "@/services/api";
@@ -9,50 +9,67 @@ const DEFAULT_TARGET_READING_GOAL = 12;
 
 /**
  * useDashboardStats — Fetch KPI stats and incremental borrowings.
+ * Optimized with Stable Keys to prevent Infinite Request Loops.
  */
 export function useDashboardStats() {
   const [borrowings, setBorrowings] = useState<any[]>([]);
-  const [lastSync, setLastSync] = useState<string | null>(null);
+  const syncLock = useRef(false);
 
+  // 1. Static Stats
   const { data: statsData, isLoading: statsLoading } = useSWR('/borrowings/stats', apiService.fetcher, {
-    revalidateOnFocus: true,
-    dedupingInterval: 5000,
+    revalidateOnFocus: false,
+    dedupingInterval: 10000, // 10s deduplication
   });
 
+  // 2. Active Borrowings - STABLE KEY (No more lastSync dependency in URL)
   useSWR(
-    `/borrowings?status=active${lastSync ? `&updated_after=${lastSync}` : ''}`, 
+    '/borrowings?status=active&limit=50', 
     apiService.fetcher, 
     {
-      revalidateOnFocus: true,
-      dedupingInterval: 5000,
+      refreshInterval: 30000, // Sync every 30s instead of storming
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
       onSuccess: (newData) => {
-        if (newData?.data) {
-          setBorrowings(prev => {
-            const merged = [...prev];
-            newData.data.forEach((item: any) => {
-              const idx = merged.findIndex(p => p.id === item.id);
-              if (idx > -1) merged[idx] = item;
-              else merged.unshift(item);
-            });
-            return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-          });
-          setLastSync(new Date().toISOString());
+        // Prevent infinite loop by not using any reactive triggers in the key
+        if (newData?.data && !syncLock.current) {
+          syncLock.current = true;
+          setBorrowings(newData.data);
+          // Release lock on next tick if needed, but here we just replace the whole array 
+          // to keep it simple and fast for dashboard
+          setTimeout(() => { syncLock.current = false; }, 100);
         }
       }
     }
   );
 
-  const dueSoonCount = useMemo(() => {
-    return borrowings.filter((b: any) => {
-      if (!b.due_date) return false;
-      const diffDays = Math.ceil((new Date(b.due_date).getTime() - new Date().getTime()) / 86400000);
-      return diffDays >= 0 && diffDays <= 2;
-    }).length;
-  }, [borrowings]);
+  const { dueSoonCount, overdueCount } = useMemo(() => {
+    // Prefer server-side counts for instant response
+    if (statsData?.dueSoonCount !== undefined && statsData?.overdueCount !== undefined) {
+      return { 
+        dueSoonCount: statsData.dueSoonCount, 
+        overdueCount: statsData.overdueCount 
+      };
+    }
 
+    // Fallback to client-side calc if server doesn't provide it yet
+    let soon = 0;
+    let overdue = 0;
+    const now = new Date().getTime();
+    
+    borrowings.forEach((b: any) => {
+      if (!b.due_date) return;
+      const diffDays = Math.ceil((new Date(b.due_date).getTime() - now) / 86400000);
+      
+      if (diffDays < 0) overdue++;
+      else if (diffDays <= 2) soon++;
+    });
+
+    return { dueSoonCount: soon, overdueCount: overdue };
+  }, [borrowings, statsData]);
+
+  const mustReturnTotal = dueSoonCount + overdueCount;
   const historyCount = statsData?.historyCount || 0;
   
-  // Business Logic: Reading Goal (Plan: Can be fetched from user profile in future)
   const readingGoal = DEFAULT_TARGET_READING_GOAL;
   const readingGoalProgress = useMemo(() => {
     if (readingGoal <= 0) return 0;
@@ -64,6 +81,8 @@ export function useDashboardStats() {
       activeBorrowings: statsData?.activeCount || 0,
       historyCount,
       dueSoonCount,
+      overdueCount,
+      mustReturnTotal,
       readingGoal,
       readingGoalProgress
     },
@@ -77,12 +96,12 @@ export function useDashboardStats() {
  * useSmartRecommendations — Personalized book logic.
  */
 export function useSmartRecommendations() {
-  const { data: historyData } = useSWR('/borrowings?status=returned', apiService.fetcher, {
+  const { data: historyData } = useSWR('/borrowings?status=returned&limit=20', apiService.fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 60000
   });
 
-  const { data: allBooksData, isLoading: loading } = useSWR('/books?limit=100', apiService.fetcher, {
+  const { data: allBooksData, isLoading: loading } = useSWR('/books?limit=50', apiService.fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 60000
   });

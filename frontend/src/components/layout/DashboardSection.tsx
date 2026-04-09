@@ -41,7 +41,7 @@ export function DashboardSection({
     <div className={cn(
       layoutStyles[layout], 
       spaced && "pt-6 space-y-6",
-      fullHeight && "flex-1 flex flex-col min-h-0 pb-6",
+      fullHeight && "flex-1 flex flex-col min-h-0",
       className
     )}>
       {children}

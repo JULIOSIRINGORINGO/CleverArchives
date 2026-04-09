@@ -53,7 +53,7 @@ export function EmptyState({
       </div>
       
       <div className="space-y-1">
-        <Text variant="subheading" weight="black" className="tracking-tight">{title}</Text>
+        <Text variant="subheading">{title}</Text>
         <p className="text-[10px] md:text-[11px] font-medium text-muted-foreground/40 italic max-w-[200px] mx-auto leading-relaxed">
           {description}
         </p>

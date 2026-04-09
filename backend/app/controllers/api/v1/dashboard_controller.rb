@@ -12,13 +12,13 @@ module Api
         }
         
         recent_borrowings = Borrowing.where(tenant: Current.tenant)
-                                     .includes(:member, book_copy: :book)
+                                     .includes(:member, book_copy: { book: { cover_image_attachment: :blob } })
                                      .order(created_at: :desc)
                                      .limit(5)
                                      
         due_today = Borrowing.where(tenant: Current.tenant, due_date: today)
                              .where.not(status: 'returned')
-                             .includes(:member, book_copy: :book)
+                             .includes(:member, book_copy: { book: { cover_image_attachment: :blob } })
                              .limit(5)
         
         render json: {

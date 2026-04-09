@@ -21,12 +21,25 @@ import { WorkspacePanelContent } from "@/components/ui/WorkspacePanel";
 import { SystemBadge } from "./SystemAesthetics";
 import { AttachmentItem } from "@/components/features/messaging/_components/MessagingAesthetics";
 
+interface SystemDetailViewProps {
+  type: 'notification' | 'ticket';
+  item: any;
+  replies?: any[];
+  loading?: boolean;
+  onClose?: () => void;
+  locale: string;
+}
+
+/**
+ * Level 3: Local Aesthetic Wrappers
+ */
 const MessageBody = ({ children, shadow = false }: { children: React.ReactNode, shadow?: boolean }) => (
   <Box 
     padding="xl" 
     background="muted-soft" 
     rounded="2xl" 
     border="subtle" 
+    shadow={shadow ? "sm" : "none"}
     className={cn(
       "text-sm leading-relaxed whitespace-pre-wrap transition-all",
       shadow && "shadow-inner"
@@ -36,14 +49,38 @@ const MessageBody = ({ children, shadow = false }: { children: React.ReactNode, 
   </Box>
 );
 
-interface SystemDetailViewProps {
-  type: 'notification' | 'ticket';
-  item: any;
-  replies?: any[];
-  loading?: boolean;
-  onClose?: () => void;
-  locale: string;
-}
+const DetailBackButton = ({ onClick }: { onClick: () => void }) => (
+  <Box 
+    padding="xs" 
+    rounded="lg" 
+    transition="all" 
+    cursor="pointer"
+    marginTop="none"
+    className="-mt-1 hover:bg-muted-soft"
+    onClick={onClick}
+  >
+    <IconWrapper 
+      icon="chevron-left" 
+      size="sm" 
+      isGhost 
+      opacity="60" 
+      className="hover:opacity-100" 
+    />
+  </Box>
+);
+
+const DetailStatus = ({ type, item }: { type: string, item: any }) => (
+  <Box shrink="0">
+    <StatusBadge 
+      status={type === 'ticket' ? item.status : (item.read_at ? 'read' : 'new')} 
+      label={type === 'ticket' ? item.status?.replace('_', ' ') : (!item.read_at ? 'new' : 'read')} 
+      className={cn(
+        type === 'notification' && !item.read_at && "bg-orange-500 shadow-orange-500/20 shadow-lg",
+        type === 'notification' && item.read_at && "opacity-40"
+      )}
+    />
+  </Box>
+);
 
 export function SystemDetailView({
   type,
@@ -73,23 +110,7 @@ export function SystemDetailView({
       <Stack spacing="xl">
         {/* Header Section */}
         <Box display="flex" align="start" width="full" spacing="sm">
-          {onClose && (
-            <Box 
-              padding="xs" 
-              rounded="lg" 
-              transition="all" 
-              className="cursor-pointer -mt-1 hover:bg-muted-soft"
-              onClick={onClose}
-            >
-              <IconWrapper 
-                icon="chevron-left" 
-                size="sm" 
-                isGhost 
-                opacity="60" 
-                className="hover:opacity-100" 
-              />
-            </Box>
-          )}
+          {onClose && <DetailBackButton onClick={onClose} />}
 
           <Stack spacing="sm" flex="1">
             <Box display="flex" justify="between" align="baseline" width="full">
@@ -97,13 +118,7 @@ export function SystemDetailView({
                 {type === 'notification' ? (item.metadata?.title || item.title) : item.title}
               </Heading>
               
-              <Box shrink="0">
-                <StatusBadge 
-                  status={type === 'ticket' ? item.status : (item.read_at ? 'read' : 'new')} 
-                  label={type === 'ticket' ? item.status?.replace('_', ' ') : (!item.read_at ? 'new' : 'read')} 
-                  className={cn(type === 'notification' ? (item.read_at ? 'opacity-40' : 'bg-orange-500 shadow-orange-500/20 shadow-lg') : '')}
-                />
-              </Box>
+              <DetailStatus type={type} item={item} />
             </Box>
             
             <Inline spacing="sm" align="center">
@@ -172,7 +187,7 @@ export function SystemDetailView({
               </Box>
             ) : (
               <Stack spacing="sm">
-                {replies.map((reply) => (
+                {replies.map((reply: any) => (
                   <Card 
                     key={reply.id} 
                     padding="md" 

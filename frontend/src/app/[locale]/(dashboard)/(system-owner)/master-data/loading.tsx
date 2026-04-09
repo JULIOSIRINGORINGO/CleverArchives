@@ -1,29 +1,24 @@
 "use client";
 
-import { Skeleton } from "@/components/ui/Skeleton";
+import { Box } from "@/components/ui/Box";
+import { Stack } from "@/components/ui/Stack";
+import { IconWrapper } from "@/components/ui/IconWrapper";
+import { Loader2 } from "lucide-react";
+import { Text } from "@/components/ui/Text";
 
-export default function GenericListLoading() {
+export default function DashboardGlobalLoading() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="space-y-1">
-        <Skeleton className="h-9 w-56 rounded-md" />
-        <Skeleton className="h-4 w-80 rounded-md opacity-60" />
-      </div>
-
-      <div className="flex gap-4">
-        <Skeleton className="h-10 w-64 rounded-xl" />
-        <Skeleton className="h-10 w-32 rounded-xl" />
-      </div>
-
-      <div className="rounded-xl border border-[--color-border] bg-white overflow-hidden shadow-sm">
-        <div className="p-4 space-y-4">
-          <Skeleton className="h-10 w-full rounded-md" />
-          <Skeleton className="h-10 w-full rounded-md" />
-          <Skeleton className="h-10 w-full rounded-md" />
-          <Skeleton className="h-10 w-full rounded-md" />
-          <Skeleton className="h-10 w-full rounded-md" />
-        </div>
-      </div>
-    </div>
+    <Box 
+      className="w-full h-full min-h-[60vh] flex flex-col items-center justify-center animate-in fade-in duration-300"
+    >
+      <Stack align="center" spacing="md" className="opacity-60">
+        <IconWrapper size="lg" isGhost color="primary">
+          <Loader2 className="w-8 h-8 animate-spin text-[--color-primary]" />
+        </IconWrapper>
+        <Text variant="subheading" weight="medium" color="muted">
+          Menyiapkan Workspace...
+        </Text>
+      </Stack>
+    </Box>
   );
 }

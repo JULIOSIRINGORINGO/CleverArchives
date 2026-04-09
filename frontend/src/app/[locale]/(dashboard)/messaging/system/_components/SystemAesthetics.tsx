@@ -11,22 +11,16 @@ import { IconWrapper } from "@/components/ui/IconWrapper";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/**
- * Level 2: Aesthetic Wrappers for System Communication Page.
- * Standardizes the 3:2 layout and panel containers.
- */
-
 export function SystemLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Box 
-      display="flex" 
+    <Box
+      display="flex"
       direction="row"
-      spacing="md" 
-      flex="1" 
+      spacing="md"
+      flex="1"
       minHeight="0"
       height="full"
       background="surface-soft"
-      padding="sm"
     >
       {children}
     </Box>
@@ -45,14 +39,14 @@ export function SystemMainPanel({ children }: { children: React.ReactNode }) {
 
 export function SystemSidePanel({ children }: { children: React.ReactNode }) {
   return (
-    <Box 
+    <Box
       width="full"
       mdWidth="80"
-      display="flex" 
-      direction="col" 
-      gap="md" 
+      display="flex"
+      direction="col"
+      gap="md"
       shrink="0"
-      overflow="hidden" 
+      overflow="hidden"
       paddingRight="xs"
       height="full"
       minHeight="0"
@@ -62,14 +56,14 @@ export function SystemSidePanel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SystemSectionHeader({ 
-  iconKey, 
-  title, 
+export function SystemSectionHeader({
+  iconKey,
+  title,
   badge,
   action
-}: { 
-  iconKey: any; 
-  title: string; 
+}: {
+  iconKey: any;
+  title: string;
   badge?: React.ReactNode;
   action?: React.ReactNode;
 }) {
@@ -93,23 +87,23 @@ export function SystemSectionHeader({
 
 export function SystemEmptyState({ icon: Icon, message }: { icon: any, message: string }) {
   return (
-    <Box 
-      height="full" 
-      display="flex" 
-      direction="col" 
-      align="center" 
-      justify="center" 
-      gap="md" 
-      paddingY="xl" 
+    <Box
+      height="full"
+      display="flex"
+      direction="col"
+      align="center"
+      justify="center"
+      gap="md"
+      paddingY="xl"
       opacity="50"
     >
-      <Box 
-        width="16" 
-        height="16" 
-        background="muted-soft" 
-        rounded="full" 
-        display="flex" 
-        align="center" 
+      <Box
+        width="16"
+        height="16"
+        background="muted-soft"
+        rounded="full"
+        display="flex"
+        align="center"
         justify="center"
       >
         <Icon size={24} className="text-muted-foreground" />
@@ -124,11 +118,11 @@ export function SystemEmptyState({ icon: Icon, message }: { icon: any, message: 
 export function SystemUnreadBadge({ count }: { count: number }) {
   if (count <= 0) return null;
   return (
-    <Box 
-      background="primary" 
-      color="white" 
-      rounded="full" 
-      paddingX="xs" 
+    <Box
+      background="primary"
+      color="white"
+      rounded="full"
+      paddingX="xs"
       display="flex"
       align="center"
       justify="center"
@@ -162,10 +156,10 @@ export function SystemListEmpty({ message }: { message: string }) {
  */
 export function SystemBadge({ children, variant = "muted" }: { children: React.ReactNode, variant?: "muted" | "primary" }) {
   return (
-    <Box 
-      paddingX="sm" 
-      background={variant === "primary" ? "primary-soft" : "muted-soft"} 
-      rounded="lg" 
+    <Box
+      paddingX="sm"
+      background={variant === "primary" ? "primary-soft" : "muted-soft"}
+      rounded="lg"
       border={variant === "primary" ? "none" : "subtle"}
       className={cn(
         "text-[9px] font-bold h-5 flex items-center shadow-sm uppercase tracking-wider",
@@ -182,9 +176,9 @@ export function SystemBadge({ children, variant = "muted" }: { children: React.R
  */
 export function SystemUnreadStripe() {
   return (
-    <Box 
-      position="absolute" 
-      background="primary" 
+    <Box
+      position="absolute"
+      background="primary"
       className="top-4 left-0 w-0.5 h-10 rounded-r-full"
     />
   );
@@ -195,10 +189,10 @@ export function SystemUnreadStripe() {
  */
 export function SystemSuccessToast({ children }: { children: React.ReactNode }) {
   return (
-    <Box 
-      padding="md" 
-      background="muted-soft" 
-      rounded="xl" 
+    <Box
+      padding="md"
+      background="muted-soft"
+      rounded="xl"
       border="subtle"
       className="bg-emerald-50 border-emerald-100 text-emerald-600 animate-in fade-in slide-in-from-top-1"
     >
@@ -231,7 +225,7 @@ export function SystemFieldWrapper({ label, children }: { label: string, childre
  */
 export function SystemAvatarIcon({ children, background = "primary", color = "white" }: { children: React.ReactNode, background?: any, color?: any }) {
   return (
-    <Box 
+    <Box
       shrink="0"
       display="flex"
       align="center"
@@ -251,7 +245,7 @@ export function SystemAvatarIcon({ children, background = "primary", color = "wh
  */
 export function SystemUploadDropzone({ children, ...props }: any) {
   return (
-    <Box 
+    <Box
       padding="lg"
       border="dashed"
       rounded="2xl"

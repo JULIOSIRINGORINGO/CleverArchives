@@ -96,7 +96,7 @@ export default function MemberBookCopiesPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 animate-in fade-in duration-500">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 animate-in fade-in duration-150">
         <div className="relative">
           <div className="w-16 h-16 rounded-3xl border-4 border-primary/20 border-t-primary animate-spin" />
           <div className="absolute inset-x-0 -bottom-12 flex justify-center">
@@ -262,7 +262,7 @@ export default function MemberBookCopiesPage() {
                      >
                         <CardContent className="p-0 flex items-center h-20">
                            <div className={cn(
-                             "w-2 h-full shrink-0 transition-colors duration-500",
+                             "w-2 h-full shrink-0 transition-colors duration-150",
                              copy.status === 'available' ? 'bg-emerald-500 group-hover:bg-primary' :
                              copy.status === 'borrowed' ? 'bg-amber-500' : 'bg-rose-500'
                            )} />
@@ -270,7 +270,7 @@ export default function MemberBookCopiesPage() {
                            <div className="flex-1 flex items-center justify-between px-8 gap-10">
                               <div className="flex items-center gap-6 min-w-[220px]">
                                  <div className={cn(
-                                   "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-sm",
+                                   "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all duration-150 group-hover:scale-110 group-hover:rotate-3 shadow-sm",
                                    justAdded ? 'bg-emerald-100 border-emerald-500 text-emerald-600' :
                                    copy.status === 'available' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 group-hover:bg-primary group-hover:text-white group-hover:border-primary shadow-emerald-100/50' :
                                    copy.status === 'borrowed' ? 'bg-amber-50 border-amber-200 text-amber-600' :
@@ -294,7 +294,7 @@ export default function MemberBookCopiesPage() {
 
                               <div className="flex-1 flex flex-col items-start min-w-[200px]">
                                  <p className="text-[10px] font-black text-muted-foreground/30 tracking-widest mb-1 italic leading-none">{t("asset_barcode")}</p>
-                                 <code className="text-lg font-black text-primary p-0 leading-none tracking-tighter group-hover:tracking-normal transition-all duration-500">{copy.barcode}</code>
+                                 <code className="text-lg font-black text-primary p-0 leading-none tracking-tighter group-hover:tracking-normal transition-all duration-150">{copy.barcode}</code>
                               </div>
 
                               <div className="flex items-center gap-4 min-w-[180px]">
@@ -327,7 +327,7 @@ export default function MemberBookCopiesPage() {
            </AnimatePresence>
 
            {copies.length === 0 && (
-              <div className="py-32 text-center bg-muted/[0.03] rounded-[3rem] border-2 border-dashed border-border/40 flex flex-col items-center gap-6 animate-in zoom-in duration-500">
+              <div className="py-32 text-center bg-muted/[0.03] rounded-[3rem] border-2 border-dashed border-border/40 flex flex-col items-center gap-6 animate-in zoom-in duration-150">
                  <div className="w-20 h-20 bg-muted/20 rounded-[2.5rem] flex items-center justify-center shadow-inner">
                    <Layers size={40} className="text-muted-foreground/10" />
                  </div>

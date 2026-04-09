@@ -68,7 +68,6 @@ export function SystemHistory({
                 <Box display="flex" justify="between" align="baseline" width="full" minWidth="0">
                   <Box flex="1" minWidth="0">
                     <Text 
-                      weight="bold" 
                       variant="body-strong"
                       color="black"
                       lineClamp="1"
@@ -84,7 +83,7 @@ export function SystemHistory({
                 </Box>
                 <Box display="flex" justify="end" width="full">
                   <SystemBadge variant={msg.status === 'open' ? "primary" : "muted"}>
-                    <Text variant="caption" weight="bold">
+                    <Text variant="caption">
                       {(msg.itemType === 'notification' && !msg.read_at) ? "NEW" : (msg.status?.toUpperCase().replace('_', ' ') || "DONE")}
                     </Text>
                   </SystemBadge>

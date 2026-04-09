@@ -59,7 +59,7 @@ export default function AddMemberPage() {
 
   if (success) {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-500">
+      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-150">
         <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-500/20">
           <CheckCircle2 size={32} />
         </div>
@@ -75,7 +75,7 @@ export default function AddMemberPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-3xl mx-auto space-y-5 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-150">
       <div className="flex items-center gap-3">
         <Link 
           href={`/${locale}/members`}

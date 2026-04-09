@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { apiService } from "@/services/api";
 import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
@@ -232,18 +232,19 @@ export default function ProcessLoanPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const [lastSync, setLastSync] = useState<string | null>(null);
-
-  // useSWR for pending borrowings
+  const lastSyncRef = useRef<string | null>(null);
+  
+  // useSWR for pending borrowings - Stable key
   const { mutate: mutatePending } = useSWR(
-    ['/loans/pending', lastSync],
+    ['/loans/pending'],
     () => apiService.borrowings.list({ 
       status: 'pending',
-      updated_after: lastSync || ''
+      updated_after: lastSyncRef.current || ''
     }),
     {
       refreshInterval: 10000,
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
       onSuccess: (newData) => {
         const data = newData?.data || newData || [];
         const newItems = Array.isArray(data) ? data : [];
@@ -265,7 +266,7 @@ export default function ProcessLoanPage() {
             });
             return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           });
-          setLastSync(new Date().toISOString());
+          lastSyncRef.current = new Date().toISOString();
         }
         setLoading(false);
       }
@@ -277,7 +278,7 @@ export default function ProcessLoanPage() {
   };
 
   useEffect(() => { 
-    setLastSync(null);
+    lastSyncRef.current = null;
     // No-clear: we leave the old data shown until SWR gets a fresh list.
   }, []);
 
@@ -329,7 +330,7 @@ export default function ProcessLoanPage() {
   };
 
   return (
-    <div className="space-y-4 pb-8 animate-in fade-in duration-500">
+    <div className="space-y-4 pb-8 animate-in fade-in duration-150">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>

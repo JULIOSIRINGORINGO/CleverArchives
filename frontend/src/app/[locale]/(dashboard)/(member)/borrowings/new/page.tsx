@@ -62,7 +62,7 @@ export default function RequestBorrowingPage() {
 
   if (success) {
     return (
-      <div className="h-[60vh] flex flex-col items-center justify-center gap-6 animate-in fade-in zoom-in duration-500">
+      <div className="h-[60vh] flex flex-col items-center justify-center gap-6 animate-in fade-in zoom-in duration-150">
         <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 shadow-xl shadow-emerald-200">
           <CheckCircle2 size={48} />
         </div>
@@ -75,7 +75,7 @@ export default function RequestBorrowingPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12 px-2 md:px-0">
+    <div className="space-y-8 animate-in fade-in duration-150 pb-12 px-2 md:px-0">
       <div className="sticky top-0 z-20 bg-[--color-background] -mx-6 px-6 pt-10 pb-6 border-b border-border/50 shadow-sm transition-all overflow-visible mb-8">
         <div className="flex items-center gap-4">
           <Link 
@@ -121,7 +121,7 @@ export default function RequestBorrowingPage() {
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3 text-sm font-bold border border-red-100 animate-in shake duration-500">
+            <div className="p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3 text-sm font-bold border border-red-100 animate-in shake duration-150">
               <AlertCircle size={20} />
               {error}
             </div>

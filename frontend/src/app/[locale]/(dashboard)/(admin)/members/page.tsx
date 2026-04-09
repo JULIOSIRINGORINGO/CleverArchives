@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { apiService } from "@/services/api";
 import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
@@ -48,18 +48,19 @@ export default function MembersListPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [lastSync, setLastSync] = useState<string | null>(null);
-
-  // useSWR for members
+  const lastSyncRef = useRef<string | null>(null);
+  
+  // useSWR for members - Stable key
   const { mutate: mutateMembers } = useSWR(
-    ['/members', lastSync, search, statusFilter],
+    ['/members', search, statusFilter],
     () => apiService.members.list({ 
-      updated_after: lastSync || '',
+      updated_after: lastSyncRef.current || '',
       q: search 
     }),
     {
       refreshInterval: 10000,
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
       onSuccess: (newData) => {
         const data = newData?.data || newData?.members || newData || [];
         const newItems = Array.isArray(data) ? data : [];
@@ -73,7 +74,7 @@ export default function MembersListPage() {
             });
             return merged.sort((a, b) => a.name?.localeCompare(b.name));
           });
-          setLastSync(new Date().toISOString());
+          lastSyncRef.current = new Date().toISOString();
         }
         setLoading(false);
       }
@@ -85,7 +86,7 @@ export default function MembersListPage() {
   };
 
   useEffect(() => { 
-    setLastSync(null);
+    lastSyncRef.current = null;
     // No-clear: we leave the old data shown until SWR gets a fresh list for the search/filter.
   }, [search, statusFilter]);
 
@@ -133,7 +134,7 @@ export default function MembersListPage() {
   };
 
   return (
-    <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-150">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>

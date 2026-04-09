@@ -26,7 +26,7 @@ const variantConfig: Record<AlertCardVariant, {
   primary: {
     icon: Info,
     iconVariant: "primary-solid",
-    containerClass: "bg-amber-100/30 border-amber-200/40 shadow-sm",
+    containerClass: "bg-blue-50/80 border-blue-100/40 shadow-sm",
   },
   warning: {
     icon: AlertTriangle,

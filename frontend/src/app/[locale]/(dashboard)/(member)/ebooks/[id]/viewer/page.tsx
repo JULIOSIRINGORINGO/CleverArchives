@@ -70,7 +70,7 @@ export default function EbookViewer() {
   }
 
   return (
-    <div className={`fixed inset-0 z-50 flex flex-col transition-colors duration-500 ${
+    <div className={`fixed inset-0 z-50 flex flex-col transition-colors duration-150 ${
       theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 
       theme === 'sepia' ? 'bg-[#f4ecd8] text-[#5b4636]' : 
       'bg-white text-zinc-900'
@@ -157,7 +157,7 @@ export default function EbookViewer() {
           {t("page_info", { current: currentPage, total: 100 })}
         </div>
         <div className="flex-1 mx-12 h-1 bg-muted rounded-full relative overflow-hidden">
-          <div className="absolute inset-y-0 left-0 bg-primary w-[5%] rounded-full transition-all duration-500" style={{ width: `${(currentPage / 100) * 100}%` }}></div>
+          <div className="absolute inset-y-0 left-0 bg-primary w-[5%] rounded-full transition-all duration-150" style={{ width: `${(currentPage / 100) * 100}%` }}></div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-xl h-10 w-10 p-0" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}>

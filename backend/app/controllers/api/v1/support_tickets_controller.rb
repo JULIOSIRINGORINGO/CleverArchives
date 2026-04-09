@@ -67,7 +67,7 @@ module Api
       end
 
       def ticket_params
-        params.permit(:title, :body)
+        params.permit(:title, :body, attachments: [])
       end
 
       def update_params
@@ -85,7 +85,8 @@ module Api
           tenant_id: t.tenant_id,
           replies_count: t.support_replies.count,
           created_at: t.created_at,
-          updated_at: t.updated_at
+          updated_at: t.updated_at,
+          attachments: t.attachments.attached? ? t.attachments.map { |a| { id: a.id, filename: a.filename.to_s, url: Rails.application.routes.url_helpers.rails_blob_url(a, only_path: true) } } : []
         }
       end
     end

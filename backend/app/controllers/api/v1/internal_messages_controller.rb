@@ -8,6 +8,7 @@ module Api
         if current_user.system_owner?
           messages = InternalMessage.where(tenant_id: nil)
                                    .where.not(recipient_type: 'specific')
+                                   .with_attached_attachments
                                    .includes(:sender, :recipient)
         else
           # Users can see items not hidden by them and after their clear date
@@ -22,7 +23,7 @@ module Api
             messages = messages.where("created_at > ?", current_user.messages_cleared_at)
           end
           
-          messages = messages.includes(:sender, :recipient)
+          messages = messages.with_attached_attachments.includes(:sender, :recipient)
         end
         
         # Delta Fetching Support (Incremental Updates)

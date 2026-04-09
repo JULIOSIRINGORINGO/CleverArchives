@@ -51,7 +51,7 @@ export default function BorrowHistory() {
         />
       }
     >
-      <DashboardSection layout="full" spaced>
+      <DashboardSection layout="full">
         <HistoryGrid>
           <AnimatePresence mode="wait">
             {loading ? (

@@ -15,7 +15,7 @@ interface PageHeaderProps {
 export const PageHeader = ({ title, subtitle, badge, children, icon, className }: PageHeaderProps) => {
   return (
     <div className={cn(
-      "sticky top-0 z-20 bg-[--color-background] px-4 md:px-6 pt-6 pb-6 border-b border-border/50 shadow-sm transition-all overflow-visible",
+      "sticky top-0 z-20 bg-[--color-background] px-6 py-5 border-b border-border/50 transition-all overflow-visible",
       className
     )}>
       <div className="flex flex-col md:flex-row items-center gap-6 w-full">

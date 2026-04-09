@@ -2,22 +2,36 @@ module Api
   module V1
     class BorrowingsController < BaseController
       def stats
-        borrowings = current_user.member.borrowings
-        active_statuses = ['borrowed', 'pending', 'return_pending', 'cancellation_requested', 'late']
+        member = current_user.member
+        return render json: { activeCount: 0, pendingCount: 0, historyCount: 0, overdueCount: 0, dueSoonCount: 0 } unless member
+
+        # Adaptive Date Counting: Captures all items past due regardless of status label
+        today = Date.today
+        borrowings = member.borrowings
+        active_borrowings = borrowings.where.not(status: :returned)
         
-        stats = {
-          activeCount: borrowings.where(status: active_statuses).count,
-          pendingCount: borrowings.where(status: :pending).count,
-          historyCount: borrowings.where(status: :returned).count
+        active_count   = active_borrowings.count
+        pending_count  = active_borrowings.where(status: :pending).count
+        history_count  = borrowings.where(status: :returned).count
+        
+        # Calculate based on actual deadline (Safe & Accurate)
+        overdue_count  = active_borrowings.where('due_date < ?', today).count
+        due_soon_count = active_borrowings.where('due_date >= ?', today).count
+
+        render json: {
+          activeCount: active_count,
+          pendingCount: pending_count,
+          historyCount: history_count,
+          overdueCount: overdue_count,
+          dueSoonCount: due_soon_count
         }
-        render json: stats
       end
 
       def index
         if current_user.role.name == 'admin'
-          borrowings = Borrowing.where(tenant: Current.tenant).includes(member: {}, book_copy: { book: :author })
+          borrowings = Borrowing.where(tenant: Current.tenant).includes(member: {}, book_copy: { book: [:author, { cover_image_attachment: :blob }] })
         else
-          borrowings = current_user.member.borrowings.includes(book_copy: { book: :author })
+          borrowings = current_user.member.borrowings.includes(book_copy: { book: [:author, { cover_image_attachment: :blob }] })
         end
         
         # Filter by status if provided (active vs returned)

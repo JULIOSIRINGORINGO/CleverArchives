@@ -95,7 +95,7 @@ export default function BorrowingDetailPage() {
   const isOverdue = borrowing.status === 'late' || (borrowing.status === 'borrowed' && new Date() > new Date(borrowing.due_date));
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-150">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="space-y-1">

@@ -52,7 +52,7 @@ export const ICON_REGISTRY = {
 
 export type AppIconName = keyof typeof ICON_REGISTRY;
 
-type IconWrapperVariant = "primary" | "warning" | "danger" | "success" | "muted" | "white" | "primary-solid";
+type IconWrapperVariant = "primary" | "warning" | "danger" | "success" | "muted" | "white" | "primary-solid" | "avatar";
 type IconWrapperSize = "sm" | "md" | "lg" | "xl" | "xs";
 type IconPreset = "security-note" | "send-message" | "attachment-clip";
 
@@ -64,6 +64,7 @@ interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   isGhost?: boolean;
   opacity?: "20" | "40" | "50" | "60" | "90" | "100";
   color?: "emerald" | "amber" | "destructive" | "primary" | "white";
+  shouldSpin?: boolean;
 }
 
 const variantStyles: Record<IconWrapperVariant, string> = {
@@ -74,6 +75,7 @@ const variantStyles: Record<IconWrapperVariant, string> = {
   success: "bg-[--color-success]/10 text-[--color-success]",
   muted: "bg-muted text-muted-foreground",
   white: "bg-white/10 text-white border border-white/10 shadow-sm backdrop-blur-sm",
+  avatar: "bg-[--color-primary] text-white shadow-sm shadow-primary/20",
 };
 
 const sizeStyles: Record<IconWrapperSize, string> = {
@@ -91,7 +93,7 @@ const ICON_PRESETS: Record<IconPreset, Partial<IconWrapperProps>> = {
 };
 
 const IconWrapper = React.forwardRef<HTMLDivElement, IconWrapperProps>(
-  ({ variant = "primary", size = "md", className, children, icon, preset, isGhost, opacity, color, ...props }, ref) => {
+  ({ variant = "primary", size = "md", className, children, icon, preset, isGhost, opacity, color, shouldSpin, ...props }, ref) => {
     const presetProps = preset ? ICON_PRESETS[preset] : {};
     const finalIcon = (icon || presetProps.icon) as AppIconName;
     const finalSize = (presetProps.size || size) as IconWrapperSize;
@@ -118,6 +120,7 @@ const IconWrapper = React.forwardRef<HTMLDivElement, IconWrapperProps>(
           finalColor === "amber" && "text-[--color-warning]",
           finalColor === "destructive" && "text-[--color-danger]",
           finalColor === "primary" && "text-[--color-primary]",
+          shouldSpin && "animate-spin",
           className
         )}
         {...props}

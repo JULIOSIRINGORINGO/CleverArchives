@@ -23,8 +23,10 @@ import { ListRow, AvatarIcon } from "@/components/features/messaging/_components
 const NotificationActions = ({ onDelete }: { onDelete: () => void }) => {
   const t = useTranslations("SystemHub");
   return (
-    <div 
-      className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+    <Box 
+      position="absolute"
+      zIndex="10"
+      className="top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
       onClick={(e) => e.stopPropagation()}
     >
       <ActionMenu 
@@ -38,7 +40,7 @@ const NotificationActions = ({ onDelete }: { onDelete: () => void }) => {
           }
         ]}
       />
-    </div>
+    </Box>
   );
 };
 
@@ -97,7 +99,6 @@ export function SystemAlerts({
                 <Box display="flex" justify="between" align="baseline" width="full" minWidth="0">
                   <Box flex="1" minWidth="0">
                     <Text 
-                      weight="bold" 
                       variant="body-strong"
                       color="black"
                       lineClamp="1"
@@ -113,7 +114,7 @@ export function SystemAlerts({
                 </Box>
                 <Box display="flex" justify="end" width="full" paddingRight="xl">
                   <SystemBadge variant={!notif.read_at ? "primary" : "muted"}>
-                    <Text variant="caption" weight="bold">
+                    <Text variant="caption">
                       {!notif.read_at ? "NEW" : "READ"}
                     </Text>
                   </SystemBadge>

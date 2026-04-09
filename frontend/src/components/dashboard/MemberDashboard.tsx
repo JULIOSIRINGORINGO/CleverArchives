@@ -32,17 +32,8 @@ export default function MemberDashboard() {
   const { recommendations, loading: recsLoading } = useSmartRecommendations();
 
   return (
-    <DashboardPage
-      title={<WelcomeHeader name={user?.name} />}
-      headerActions={
-        <Link href={`/${locale}/catalog`}>
-          <Button size="lg" rounded="lg">
-            {t("viewAll")}
-          </Button>
-        </Link>
-      }
-    >
-      <DashboardSection layout="full" spaced>
+    <DashboardPage hideHeader>
+      <DashboardSection layout="full">
         <DashboardSection layout="stat-grid">
           <Link href={`/${locale}/borrowings`}>
             <StatCard
@@ -81,9 +72,11 @@ export default function MemberDashboard() {
           <Link href={`/${locale}/borrowings`}>
             <StatCard
               title={t("dueSoonTitle")}
-              value={stats.dueSoonCount}
+              value={stats.mustReturnTotal}
               icon={CalendarCheck}
-              trend={t("status_soon")}
+              trend={stats.overdueCount > 0 
+                ? `${stats.dueSoonCount} ${t("status_soon")} • ${stats.overdueCount} ${t("status_late")}` 
+                : `${stats.dueSoonCount} ${t("status_soon")}`}
               variant="red"
               loading={loading}
             />

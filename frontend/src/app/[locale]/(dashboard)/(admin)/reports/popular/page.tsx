@@ -32,7 +32,7 @@ export default function PopularBooksPage() {
   useEffect(() => { fetchData(); }, []);
 
   return (
-    <div className="space-y-6 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-150">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
@@ -63,7 +63,7 @@ export default function PopularBooksPage() {
               className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-xl p-5 border border-border/50 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all overflow-hidden"
             >
               {/* Rank Badge */}
-              <div className={`absolute top-0 right-0 w-12 h-12 flex items-center justify-center font-black text-lg group-hover:scale-110 transition-transform duration-500 ${
+              <div className={`absolute top-0 right-0 w-12 h-12 flex items-center justify-center font-black text-lg group-hover:scale-110 transition-transform duration-150 ${
                 index === 0 ? 'text-amber-500' : 
                 index === 1 ? 'text-slate-400' :
                 index === 2 ? 'text-amber-700' : 'text-primary/20'
@@ -72,7 +72,7 @@ export default function PopularBooksPage() {
               </div>
 
               <div className="relative mb-4">
-                <div className="w-20 aspect-[3/4] bg-muted rounded-lg overflow-hidden shadow-sm border border-border/50 group-hover:rotate-3 transition-transform duration-500 shrink-0">
+                <div className="w-20 aspect-[3/4] bg-muted rounded-lg overflow-hidden shadow-sm border border-border/50 group-hover:rotate-3 transition-transform duration-150 shrink-0">
                   {book.cover_url ? (
                     <img src={book.cover_url} className="w-full h-full object-cover" />
                   ) : (

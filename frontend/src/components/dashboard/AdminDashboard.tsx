@@ -59,7 +59,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
+    <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-200">
       <PageHeader
         title={t("welcome", { name: user?.name?.split(' ')[0] || "" }) + " 👋"}
         subtitle={format(new Date(), 'EEEE, dd MMMM yyyy', { locale: dateLocale })}

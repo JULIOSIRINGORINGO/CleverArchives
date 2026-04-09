@@ -12,9 +12,9 @@ import { WorkspacePanel, WorkspacePanelHeader } from "@/components/ui/WorkspaceP
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 // Aesthetics Tier (Level 2)
-import { 
-  SystemLayout, 
-  SystemMainPanel, 
+import {
+  SystemLayout,
+  SystemMainPanel,
   SystemSidePanel,
   SystemSectionHeader
 } from "./_components/SystemAesthetics";
@@ -25,43 +25,37 @@ import { SystemMasterList } from "./_components/SystemMasterList";
 import { SystemCompose } from "./_components/SystemCompose";
 import { SystemDetailView } from "./_components/SystemDetailView";
 
-/**
- * SystemCommunicationPage (Level 3 Orchestrator)
- * SOP v5.6.0 Compliance: Lean Orchestrator
- * Fully delegating all business logic to useSystemHub hook.
- * Achieving Zero ClassName in main return via extracted sub-components.
- */
 export default function SystemCommunicationPage() {
   const t = useTranslations("SystemHub");
   const hub = useSystemHub();
 
   return (
-    <DashboardPage title={t("system_alerts")} hideHeader={true} hideScroll={true} noPadding>
+    <DashboardPage title={t("system_alerts")} hideHeader={true} hideScroll={true}>
       <SystemLayout>
         {/* Left Sidebar: Navigation + Master List */}
         <SystemSidePanel>
-          <SystemNavigation 
-            layoutMode={hub.layoutMode} 
-            setLayoutMode={hub.setLayoutMode} 
-            translations={t} 
+          <SystemNavigation
+            layoutMode={hub.layoutMode}
+            setLayoutMode={hub.setLayoutMode}
+            translations={t}
           />
-          <SystemMasterList 
-            hub={hub} 
-            onSelectItem={hub.handleSelectItem} 
-            translations={t} 
+          <SystemMasterList
+            hub={hub}
+            onSelectItem={hub.handleSelectItem}
+            translations={t}
           />
         </SystemSidePanel>
 
         {/* Right Panel: Viewport Area (Detail) */}
         <SystemMainPanel>
-          <WorkspacePanel 
-            fullHeight 
-            border="subtle" 
-            rounded="3xl" 
-            background="surface" 
-            display="flex" 
-            direction="col" 
-            minHeight="0" 
+          <WorkspacePanel
+            fullHeight
+            border="subtle"
+            rounded="3xl"
+            background="surface"
+            display="flex"
+            direction="col"
+            minHeight="0"
             overflow="hidden"
           >
             {hub.layoutMode === 'compose' ? (
@@ -72,7 +66,7 @@ export default function SystemCommunicationPage() {
                 <SystemCompose submitting={hub.submitting} onSendMessage={hub.handleSendMessage} />
               </>
             ) : (
-              <SystemDetailView 
+              <SystemDetailView
                 type={hub.selectedNotif ? 'notification' : 'ticket'}
                 item={hub.selectedNotif || hub.selectedTicket}
                 replies={hub.ticketReplies}
@@ -102,7 +96,7 @@ export default function SystemCommunicationPage() {
 
       <ConfirmDialog
         isOpen={hub.clearConfirmOpen}
-        onClose={() => hub.setDeleteConfirmOpen(false)}
+        onClose={() => hub.setClearConfirmOpen(false)}
         onConfirm={hub.confirmClearAll}
         title={t("clear_confirm_title")}
         description={t("clear_confirm_desc")}

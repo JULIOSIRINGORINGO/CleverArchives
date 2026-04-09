@@ -135,9 +135,7 @@ const NavItem = ({
   onClick: () => void;
 }) => (
   <Box
-    as={Link}
-    href={href}
-    onClick={onClick}
+    asChild
     display="flex"
     align="center"
     gap="md"
@@ -151,24 +149,26 @@ const NavItem = ({
         : "text-[--color-text-secondary] hover:bg-[--color-muted] hover:text-[--color-text]"
     )}
   >
-    <IconWrapper size="sm" isGhost={!active}>
-      <Icon size={18} strokeWidth={active ? 2.5 : 2} />
-    </IconWrapper>
-    {!collapsed && (
-      <Box flex="1" minWidth="0">
-        <Text 
-          variant="body" 
-          weight={active ? "black" : "medium"} 
-          className="truncate block"
-          color={active ? "primary" : "default"}
-        >
-          {name}
-        </Text>
-      </Box>
-    )}
-    {!collapsed && badge && (
-       <Box width="2" height="2" rounded="full" background="danger" shrink="0" />
-    )}
+    <Link href={href} onClick={onClick}>
+      <IconWrapper size="sm" isGhost={!active}>
+        <Icon size={18} strokeWidth={active ? 2.5 : 2} />
+      </IconWrapper>
+      {!collapsed && (
+        <Box flex="1" minWidth="0">
+          <Text 
+            variant="body" 
+            weight={active ? "black" : "medium"} 
+            className="truncate block"
+            color={active ? "primary" : "default"}
+          >
+            {name}
+          </Text>
+        </Box>
+      )}
+      {!collapsed && badge && (
+         <Box width="2" height="2" rounded="full" background="danger" shrink="0" />
+      )}
+    </Link>
   </Box>
 );
 
@@ -176,16 +176,17 @@ const SubNavItem = ({
   href, 
   name, 
   active, 
-  badge 
+  badge,
+  onClick
 }: { 
   href: string; 
   name: string; 
   active: boolean; 
   badge?: string | number;
+  onClick?: () => void;
 }) => (
   <Box
-    as={Link}
-    href={href}
+    asChild
     display="flex"
     align="center"
     justify="between"
@@ -199,19 +200,21 @@ const SubNavItem = ({
         : "text-[--color-muted-foreground] hover:text-[--color-text] hover:bg-[--color-muted]"
     )}
   >
-    <Text 
-      variant="subheading" 
-      weight={active ? "black" : "medium"} 
-      color={active ? "primary" : "default"}
-      className="truncate"
-    >
-      {name}
-    </Text>
-    {badge && (
-      <Box background="danger" rounded="full" paddingX="xs" className="min-w-[18px] text-center py-0.5">
-        <Text variant="caption" weight="black" color="white">{badge}</Text>
-      </Box>
-    )}
+    <Link href={href} onClick={onClick}>
+      <Text 
+        variant="subheading" 
+        weight={active ? "black" : "medium"} 
+        color={active ? "primary" : "default"}
+        className="truncate"
+      >
+        {name}
+      </Text>
+      {badge && (
+        <Box background="danger" rounded="full" paddingX="xs" className="min-w-[18px] text-center py-0.5">
+          <Text variant="caption" weight="black" color="white">{badge}</Text>
+        </Box>
+      )}
+    </Link>
   </Box>
 );
 
@@ -219,6 +222,14 @@ const Sidebar = () => {
   const t = useTranslations("Navigation");
   const locale = useLocale();
   const pathname = usePathname();
+  const [optimisticPath, setOptimisticPath] = React.useState<string | null>(null);
+  
+  React.useEffect(() => {
+    setOptimisticPath(null);
+  }, [pathname]);
+  
+  const currentPath = optimisticPath || pathname;
+
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
   const { unreadCount, systemUnreadCount, messagesUnreadCount } = useNotifications();
@@ -274,8 +285,8 @@ const Sidebar = () => {
             <Stack spacing="xs">
               {group.items.map((item: any) => {
                 const fullHref = `/${locale}${item.href}`;
-                const isSubActive = item.subItems?.some((sub: any) => pathname === `/${locale}${sub.href}`);
-                const isActive = pathname === fullHref || isSubActive || (item.subItems && pathname.startsWith(`${fullHref}/`));
+                const isSubActive = item.subItems?.some((sub: any) => currentPath === `/${locale}${sub.href}`);
+                const isActive = currentPath === fullHref || isSubActive || (item.subItems && currentPath.startsWith(`${fullHref}/`));
                 
                 return (
                   <Stack key={item.href} spacing="xs">
@@ -287,6 +298,7 @@ const Sidebar = () => {
                       active={isActive}
                       badge={item.badge}
                       onClick={() => {
+                        setOptimisticPath(fullHref);
                         if (window.innerWidth < 1024 && !sidebarCollapsed) toggleSidebar();
                       }}
                     />
@@ -298,8 +310,9 @@ const Sidebar = () => {
                             key={sub.href}
                             href={`/${locale}${sub.href}`}
                             name={sub.name}
-                            active={pathname === `/${locale}${sub.href}`}
+                            active={currentPath === `/${locale}${sub.href}`}
                             badge={sub.badge}
+                            onClick={() => setOptimisticPath(`/${locale}${sub.href}`)}
                           />
                         ))}
                       </Box>

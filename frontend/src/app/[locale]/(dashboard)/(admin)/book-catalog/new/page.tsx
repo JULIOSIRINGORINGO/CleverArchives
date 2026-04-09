@@ -233,7 +233,7 @@ export default function AddBookPage() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                 <div className="md:col-span-2 p-8 bg-muted/30 border-2 border-dashed border-border/50 rounded-[2rem] flex flex-col items-center gap-6 group hover:border-primary/50 transition-all">
-                  <div className="w-40 h-56 rounded-2xl bg-card shadow-xl border border-border/50 overflow-hidden flex items-center justify-center relative group-hover:scale-105 transition-transform duration-500">
+                  <div className="w-40 h-56 rounded-2xl bg-card shadow-xl border border-border/50 overflow-hidden flex items-center justify-center relative group-hover:scale-105 transition-transform duration-150">
                     {coverImage ? (
                       <img src={URL.createObjectURL(coverImage)} className="w-full h-full object-cover" alt="Preview" />
                     ) : (

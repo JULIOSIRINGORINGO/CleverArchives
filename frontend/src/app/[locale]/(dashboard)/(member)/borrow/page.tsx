@@ -76,7 +76,7 @@ export default function MemberBorrowPage() {
                 <form onSubmit={handleSubmit} className="relative z-10 space-y-10">
                   <Stack spacing="lg">
                     <div className="relative group">
-                      <div className="absolute left-8 top-1/2 -translate-y-1/2 text-primary/30 group-focus-within:text-primary transition-all duration-500 scale-110">
+                      <div className="absolute left-8 top-1/2 -translate-y-1/2 text-primary/30 group-focus-within:text-primary transition-all duration-150 scale-110">
                         <ScanLine size={32} strokeWidth={2.5} />
                       </div>
                       <input 

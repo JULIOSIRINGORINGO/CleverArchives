@@ -40,10 +40,11 @@ export const SearchAesthetics = ({
     <Stack spacing="none" className="h-full flex-1">
       <WorkspacePanelHeader showDivider={false}>
         <Stack spacing="lg" maxWidth="full">
-          <Inline spacing="md" align="center">
-            <IconWrapper variant="primary-solid" icon="search" className="w-10 h-10" />
-            <Heading level="h4" weight="bold">{t("search_title")}</Heading>
-          </Inline>
+          <PanelSectionHeader
+            icon="search"
+            title={t("search_title")}
+            iconVariant="primary-solid"
+          />
           <Box as="form" onSubmit={handleSearch}>
             <Inline spacing="sm" align="center" maxWidth="full">
               <Box flex="1">
@@ -129,10 +130,11 @@ export const ConfirmationAesthetics = ({
   <WorkspacePanel fullHeight>
     <Stack spacing="none" className="h-full">
       <WorkspacePanelHeader showDivider>
-        <Inline spacing="sm" align="center">
-          <IconWrapper variant="primary-solid" icon="isbn" size="sm" />
-          <Text variant="subheading">{t("borrow_confirmation")}</Text>
-        </Inline>
+        <PanelSectionHeader
+          icon="isbn"
+          title={t("borrow_confirmation")}
+          iconVariant="primary-solid"
+        />
       </WorkspacePanelHeader>
 
       <WorkspacePanelContent>

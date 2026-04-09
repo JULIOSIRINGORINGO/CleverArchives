@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { apiService } from "@/services/api";
 import useSWR, { useSWRConfig, unstable_serialize } from "swr";
 import { 
@@ -47,18 +47,19 @@ export default function ActivityLogsPage() {
     tenant_id: tenantId || ""
   });
 
-  const [lastSync, setLastSync] = useState<string | null>(null);
-
-  // useSWR for activity logs
+  const lastSyncRef = useRef<string | null>(null);
+  
+  // useSWR for activity logs - Stable key
   const { mutate: mutateLogs } = useSWR(
-    !authLoading && user ? ['/activity_logs', lastSync, filter.action_type, filter.from, filter.to, filter.tenant_id] : null,
+    !authLoading && user ? ['/activity_logs', filter.action_type, filter.from, filter.to, filter.tenant_id] : null,
     () => apiService.auditLogs.list({ 
       ...filter,
-      updated_after: lastSync || ''
+      updated_after: lastSyncRef.current || ''
     }),
     {
       refreshInterval: 15000,
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
       onSuccess: (newData) => {
         if (newData?.logs) {
           setLogs(prev => {
@@ -73,7 +74,7 @@ export default function ActivityLogsPage() {
             });
             return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           });
-          setLastSync(new Date().toISOString());
+          lastSyncRef.current = new Date().toISOString();
         }
         setLoading(false);
       }
@@ -85,7 +86,7 @@ export default function ActivityLogsPage() {
   };
 
   useEffect(() => { 
-    setLastSync(null);
+    lastSyncRef.current = null;
     // No-clear: we leave the old data shown until SWR gets a fresh list for the new filter.
   }, [filter.action_type, filter.from, filter.to, filter.tenant_id]);
 

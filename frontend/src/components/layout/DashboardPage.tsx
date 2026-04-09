@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "./PageHeader";
+import { DESIGN } from "@/config/design-system";
 
 interface DashboardPageProps {
   children?: ReactNode;
@@ -47,7 +48,7 @@ export function DashboardPage({
 
   return (
     <div className={cn(
-      "flex flex-col flex-1 min-h-0 h-full overflow-hidden animate-in fade-in duration-150", 
+      "flex flex-col flex-1 min-h-0 h-full overflow-hidden animate-in fade-in duration-100", 
       className
     )}>
       {!hideHeader && (
@@ -64,7 +65,10 @@ export function DashboardPage({
       
       <div className={cn(
         "flex-1 min-h-0 overflow-hidden flex flex-col relative",
-        noPadding ? "" : "px-4 md:px-6 py-4 md:py-6"
+        noPadding ? "" : cn(
+          "px-6",
+          hideHeader ? "py-5" : "pb-5 pt-3"
+        )
       )}>
         <div className={cn(
           "flex-1 min-h-0",
@@ -74,7 +78,7 @@ export function DashboardPage({
         </div>
         
         {footer && (
-          <div className="sticky bottom-0 z-30 w-full bg-[#f1f5f9] border-t border-border/10 px-6 py-4 mt-auto">
+          <div className="sticky bottom-0 z-30 w-full bg-[#f1f5f9] border-t border-border/10 px-6 py-5 mt-auto">
             {footer}
           </div>
         )}

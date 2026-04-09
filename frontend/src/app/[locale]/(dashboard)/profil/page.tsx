@@ -184,7 +184,7 @@ export default function SharedProfilePage() {
   };
 
   return (
-    <div className="flex flex-col h-full -mx-6 px-6 animate-in fade-in duration-500 overflow-hidden">
+    <div className="flex flex-col h-full -mx-6 px-6 animate-in fade-in duration-150 overflow-hidden">
       <PageHeader
         title={t("title")}
         badge={t("account_settings")}

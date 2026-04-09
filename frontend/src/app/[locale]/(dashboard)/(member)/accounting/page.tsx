@@ -19,7 +19,7 @@ const accounts = [
 export default function AccountingPage() {
   const t = useTranslations("Accounting");
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12 px-2 md:px-0">
+    <div className="space-y-8 animate-in fade-in duration-150 pb-12 px-2 md:px-0">
       <div className="sticky top-0 z-20 bg-[--color-background] -mx-6 px-6 pt-10 pb-6 border-b border-border/50 shadow-sm transition-all overflow-visible mb-8">
         <div className="flex items-center justify-between">
           <div>

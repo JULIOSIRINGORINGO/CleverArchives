@@ -2,6 +2,7 @@ class SupportTicket < ApplicationRecord
   belongs_to :tenant
   belongs_to :sender, class_name: 'User'
   has_many :support_replies, dependent: :destroy
+  has_many_attached :attachments
 
   validates :title, :body, :status, presence: true
 

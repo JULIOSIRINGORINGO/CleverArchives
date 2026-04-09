@@ -1,35 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { apiService } from "@/services/api";
 import { AlertCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const MaintenanceBanner = () => {
-  const [maintenance, setMaintenance] = useState<{ active: boolean; message: string }>({ 
-    active: false, 
-    message: "" 
-  });
+  const { data: statusData } = useSWR(
+    '/system_settings/status',
+    () => apiService.systemSettings.status(),
+    { refreshInterval: 60000 }
+  );
+
   const [isVisible, setIsVisible] = useState(true);
 
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const res = await apiService.systemSettings.status();
-        setMaintenance({ 
-          active: res.maintenance_mode, 
-          message: res.maintenance_message 
-        });
-      } catch (err) {
-        console.error("Failed to fetch maintenance status", err);
-      }
-    };
-
-    checkStatus();
-    // Re-check every 1 minute
-    const interval = setInterval(checkStatus, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  const maintenance = {
+    active: statusData?.maintenance_mode || false,
+    message: statusData?.maintenance_message || ""
+  };
 
   if (!maintenance.active || !isVisible) return null;
 

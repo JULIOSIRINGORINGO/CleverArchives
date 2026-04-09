@@ -110,7 +110,11 @@ export function StatCard({
             <Box display="flex" align="center" justify="between" width="full">
               <Box display="flex" align="center" gap="sm">
                 <StatLiveIndicator />
-                <StatTrendText>{trend}</StatTrendText>
+                {loading ? (
+                  <Skeleton className="h-3 w-20 bg-white/20" />
+                ) : (
+                  <StatTrendText>{trend}</StatTrendText>
+                )}
               </Box>
               <StatActionIcon>
                 <ArrowUpRight size={16} strokeWidth={3} />

@@ -120,7 +120,7 @@ export default function BorrowingPage() {
             { icon: Clock, color: "amber", label: "Pending", value: borrowings.filter(b => b.status === 'pending').length, desc: "Menunggu verifikasi" },
             { icon: CheckCircle, color: "emerald", label: "Selesai", value: stats.historyCount, desc: "Total koleksi terbaca" }
           ].map((stat, i) => (
-            <WorkspacePanel key={i} className="flex-row items-center gap-5 p-6 border-primary/5 hover:translate-y-[-4px] transition-all duration-500 shadow-xl shadow-primary/[0.02]">
+            <WorkspacePanel key={i} className="flex-row items-center gap-5 p-6 border-primary/5 hover:translate-y-[-4px] transition-all duration-150 shadow-xl shadow-primary/[0.02]">
               <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner", 
                 stat.color === 'blue' ? "bg-blue-50 text-blue-500" : 
                 stat.color === 'amber' ? "bg-amber-50 text-amber-500" : 
